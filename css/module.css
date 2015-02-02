@@ -1,0 +1,107 @@
+.dndhelp { display:none; } /* changed at runtime if js is available */
+
+table.table_sort thead tr th, table.table_sort tfoot tr th
+{
+	padding: 5px 0 5px 10px;
+    color: #000;
+ 	background: #E5B400; /*gold*/
+	text-align: left;
+    cursor: default;
+}
+
+table.table_sort thead tr .SortAble
+{
+	background-image: url(../images/bgdark.gif);
+	background-repeat: no-repeat;
+	background-position: center left;
+	cursor: pointer;
+}
+
+table.table_sort thead tr .SortUp
+{
+	background-image: url(../images/ascdark.gif);
+	background-repeat: no-repeat;
+	background-position: center left;
+	cursor: pointer;
+}
+
+table.table_sort thead tr .SortDown
+{
+	background-image: url(../images/descdark.gif);
+	background-repeat: no-repeat;
+	background-position: center left;
+	cursor: pointer;
+}
+
+table.table_sort tbody td.row1s {
+	background-color: #E9E9E9;
+}
+
+table.table_sort tbody td.row2s {
+	background: #D9D9D9;
+}
+
+th
+{
+ 	background: #AAA;
+	height: 2.5em;
+	text-align: center;
+    cursor: default;
+}
+
+th.divider, td.divider { padding-left: 5px; border-left: 3px dotted #E5B400; }
+
+texarea { width:650px; }
+
+/* for making inputs look like links */
+input.fakeicon
+{
+	margin:0;
+	padding:0;
+	border:medium;
+	vertical-align:middle;
+}
+/* color and size will be conformed at runtime, if js is enabled */
+input.fakelink
+{
+	margin:0;
+	padding:0;
+	text-align:left;
+	text-decoration:underline;
+	font-size:1em;
+	color:#000;
+	background:url("");
+}
+
+input.fakelink:hover
+{
+	text-decoration:none;
+	background:url("");
+}
+
+div.modal-overlay
+{
+	display:none;
+	position:fixed;
+	top:0;
+	left:0;
+	height:100%;
+	width:100%;
+	z-index:1001;
+	background-color:rgba(0,0,0,.3); //can be safely ignored
+}
+div.confirm-container
+{
+	display:none;
+	position: absolute;
+	top:50%;
+	left:50%;
+	border:2px solid #FDEAD0;
+	-moz-border-radius:5px 5px 5px 5px;
+	-webkit-border-radius:5px 5px 5px 5px;
+	border-radius:5px 5px 5px 5px;
+	padding:10px 40px;
+	background:#FEF4E7 url(../images/warning.gif) no-repeat 5px 10px;
+  	z-index:1002;
+}
+

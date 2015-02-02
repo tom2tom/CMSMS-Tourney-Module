@@ -1,0 +1,50 @@
+/* Defaults for chart styling. See also tmtStyler::__construct() */
+.chart
+{
+	padding:2px;
+	gapwidth:10px;
+	background-color:#fff7ed; //off-white
+	font-family:sans;
+}
+.line
+{
+	width:2px;
+	style:dotted;
+	color:#008000;
+}
+/* matches descriptions */
+.box
+{
+	margin:3px 5px;
+	padding:0;
+	height:40px; /* at least font-size*4 */
+	width:150px;
+	border:2px solid #f00;
+	background-color:#fff;
+	color:#000;
+	font-size:12px; //font normally set as pts
+}
+/* matches to be played and whose schedule is indicative, tentative ... */
+.box:nonfirm
+{
+	border-color:#00f;
+	background-color:#ffcb94; //orange
+}
+/* matches to be played and whose schedule is finalised, confirmed ... */
+.box:firm
+{
+	border-color:#f00;
+	background-color:#b7e8b1; //green
+}
+/* matches already finished */
+.box:played
+{
+	border-color:#002c8f;
+	background-color:#bfd6ec; //blue
+}
+.box:winner
+{
+	border-color:#80007f;
+	background-color:#e5b400; //gold
+	color:#000;
+}

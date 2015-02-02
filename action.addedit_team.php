@@ -1,0 +1,688 @@
+<?php
+/*
+This file is part of CMS Made Simple module: Tourney.
+Copyright (C) 2014 Tom Phane <tpgww@onepost.net>
+Refer to licence and other details at the top of file Tourney.module.php
+More info at http://dev.cmsmadesimple.org/projects/tourney
+*/
+if(!function_exists('OrderTeamMembers'))
+{
+ function OrderTeamMembers(&$db,$tid)
+ {
+	$pref = cms_db_prefix();
+	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder ASC';
+	$rows = $db->GetAll($sql,array($tid));
+	if($rows)
+	{
+		//to avoid overwrites,in the first pass stored orders are < 0,-1-based
+		$tmporder = -1;
+		$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=? WHERE id=? AND displayorder=?';
+		foreach($rows as &$row)
+		{
+			$db->Execute($sql,array($tmporder,$tid,$row['displayorder']));
+			$row['displayorder'] = -$tmporder;
+			$tmporder--;
+		}
+		unset($row);
+		$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=-displayorder WHERE id=?';
+		$db->Execute($sql,array($tid));
+	}
+	return $rows;
+ }
+}
+
+/*
+Arrive here following competitors-tab add or edit click,or one of the actions
+initiated from the page setup and displayed here.
+Determine what to do,set mode-enumerator $op accordingly
+NOTE: some team parameters can be edited inline,after which the update btn would be clicked
+See action: save_comp
+*/
+if(!$this->CheckAccess('admod'))
+{
+	$newparms = $this->GetEditParms($params,'playerstab');
+	if(!isset($params['cancel']))
+		$newparms['tmt_message'] = $this->PrettyMessage('lackpermission',FALSE);
+	$this->Redirect($id,'addedit_comp',$returnid,$newparms);
+}
+
+$pref = cms_db_prefix();
+
+if(isset($params['submit']))
+{
+ 	if(!empty($params['newteam_id']))
+	 	$tid = (int)$params['newteam_id'];
+	else
+	 	$tid = (int)$params['team_id'];
+	$teamflags = 0;
+	$saver = 1;
+ 	$sql = 'UPDATE '.$pref.'module_tmt_people SET name=?,contact=?,displayorder=?,flags=? WHERE id=? AND displayorder=? AND flags!=2';
+	foreach($params['plr_order'] as $indx=>$order)
+	{
+		$name = $params['plr_name'][$indx] ? trim($params['plr_name'][$indx]):NULL;
+		$contact = $params['plr_contact'][$indx] ? trim($params['plr_contact'][$indx]):NULL;
+		$flags = (int)$params['plr_flags'][$indx];
+		if($flags)
+			$teamflags = 3; //any non-0 member-flag signals team has been altered
+		//1st set new orders < 0 to prevent overwrites
+		$db->Execute($sql,array($name,$contact,-$saver,$flags,$tid,$params['plr_order'][$indx]));
+		$saver++;
+	}
+	//now we can set real orders
+ 	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=-displayorder WHERE id=? AND displayorder<0';
+	$db->Execute($sql,array($tid));
+	$name = !empty($params['tem_name'])?trim($params['tem_name']):NULL;
+	$seed = ($params['tem_seed'])?(int)$params['tem_seed']:NULL;
+	$tell = $params['tem_tellall']?1:0;
+	$order = $params['tem_order']?(int)$params['tem_order']:1000; //blank goes last
+ 	if(!empty($params['newteam_id']))
+		$teamflags = 1; //force new-team flag, otherwise whatever from members-saving
+ 	$sql = 'UPDATE '.$pref.'module_tmt_teams SET name=?,seeding=?,contactall=?,displayorder=?,flags=? WHERE team_id=?';
+	$db->Execute($sql,array($name,$seed,$tell,$order,$teamflags,$tid));
+	if($teamflags == 1)
+	{
+		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder ASC';
+		$teams = $db->GetCol($sql,array($params['bracket_id']));
+		$order = 1;
+		$sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder=? WHERE team_id=?';
+		foreach($teams as $tid)
+		{
+			$db->Execute($sql,array($order,$tid));
+			$order++;
+		}
+	}
+	$this->Redirect($id,'addedit_comp',$returnid,$this->GetEditParms($params,'playerstab'));
+}
+elseif(isset($params['cancel']))
+{
+	if(!empty($params['newteam_id']))
+	{
+		$tid = $params['newteam_id'];
+		$sql = 'DELETE FROM '.$pref.'module_tmt_teams WHERE team_id=?';
+		$db->Execute($sql,array($tid));
+		$sql = 'DELETE FROM '.$pref.'module_tmt_people WHERE id=?';
+		$db->Execute($sql,array($tid));
+	}
+	else //editing an existing team
+	{
+		$tid = $params['team_id'];
+		$sql = 'DELETE FROM '.$pref.'module_tmt_people WHERE id=? AND flags=1';
+		$db->Execute($sql,array($tid));
+		//TODO support content reversion where flags = 3
+		$sql = 'UPDATE '.$pref.'module_tmt_people SET flags = 0 WHERE id=? AND flags IN (2,3)';
+		$db->Execute($sql,array($tid));
+	}
+	$this->Redirect($id,'addedit_comp',$returnid,$this->GetEditParms($params,'playerstab'));
+}
+
+//simple cases
+$op = FALSE;
+foreach(array(
+ 1 => 'add',//comp add-button clicked
+ 3 => 'addplayer',//team add-button clicked
+ 5 => 'moveup',//move team up 1
+ 6 => 'movedown',//move down 1
+) as $i => $name)
+{
+	if(isset($params[$name]))
+	{
+		$op = $i;
+		unset($params[$name]);
+		break;
+	}
+}
+
+if(!$op) //special cases
+{
+	if(isset($params['edit'])) //new session: comp edit button clicked
+	{
+		reset($params['edit']);
+		$params['team_id'] = key($params['edit']);
+		unset($params['edit']);
+		$op = 2;
+	}
+	elseif(isset($params['delete']))
+	{
+		if(is_array($params['delete'])) //row-specific delete button clicked
+			$op = 4;
+		else
+			$op = (!empty($params['psel'])) ? 11 : 99; //delete selected(if any)
+	}
+	elseif(isset($params['export']))
+	{
+		unset($params['export']);
+		$op = (!empty($params['psel'])) ? 12 : 99; //export selected
+	}
+	else
+	{
+		//default to edit if possible or else add
+		if(!empty($params['team_id']))
+		{
+			$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE team_id=?';
+			$indx = $db->GetOne($sql,array($params['team_id']));
+			$op = ($indx) ? 2 : 1;
+		}
+		else
+			$op = 1;
+	}
+}
+
+if($op == 99)
+	$this->Redirect($id,'addedit_comp',$returnid,$this->GetEditParms($params,'playerstab'));
+if($op == 1)
+{
+	$newtid = $db->GenID($pref.'module_tmt_teams_seq');
+	$params['newteam_id'] = $newtid;
+}
+
+$bracket_id = (int)$params['bracket_id'];
+$name = FALSE;
+$teamtitle = FALSE;
+$bigteam = TRUE;
+$pref = cms_db_prefix();
+$sql = 'SELECT name,teamsize FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
+$bdata = $db->GetRow($sql,array($bracket_id));
+if($bdata)
+{
+	if($bdata['name']) $name = $bdata['name'];
+	if($bdata['teamsize'] == 1)
+	{
+		$teamtitle = $this->Lang('title_player');
+		$bigteam = FALSE;
+	}
+}
+
+if($name == FALSE)
+	$name = $this->Lang('tournament');
+if($teamtitle == FALSE)
+	$teamtitle = $this->Lang('title_team');
+
+$canmod = $this->CheckAccess('admod');
+$smarty->assign('canmod',($canmod)?1:0);
+
+$smarty->assign('form_start',$this->CreateFormStart($id,'addedit_team',$returnid));
+$smarty->assign('form_end',$this->CreateFormEnd());
+//accumulator for hidden stuff
+$hidden = $this->GetHiddenParms($id,$params,'playerstab');
+
+if(!empty($params['newteam_id']))
+{
+	$thistid = $params['newteam_id'];
+	$hidden .= $this->CreateInputHidden($id,'newteam_id',$thistid);
+	$smarty->assign('pagetitle',strtoupper($this->Lang('title_add_long',$teamtitle,$name)));
+}
+else
+{
+	$thistid = $params['team_id'];
+	$hidden .= $this->CreateInputHidden($id,'team_id',$thistid);
+	$smarty->assign('pagetitle',strtoupper($this->Lang('title_edit_long',$teamtitle,$name)));
+}
+
+if($bigteam)
+{
+	$smarty->assign('title_teamname',$this->Lang('title_teamname'));
+	$smarty->assign('help_name',$this->Lang('help_teamname'));
+	$smarty->assign('title_sendto',$this->Lang('title_sendto'));
+	$smarty->assign('help_sendto',$this->Lang('help_sendto'));
+}
+$smarty->assign('title_seed',$this->Lang('title_seed'));
+$smarty->assign('title_order',$this->Lang('title_ordernum'));
+$smarty->assign('help_order',$this->Lang('help_order'));
+
+if($op == 1) //new team
+{
+	$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags != 2';
+	$num = $db->GetOne($sql,array($bracket_id)); //start team last in order
+	$num++;
+	$sql = 'INSERT INTO '.$pref."module_tmt_teams VALUES (?,?,NULL,NULL,0,$num,1)";//new-team flag
+	$db->Execute($sql,array($newtid,$bracket_id));
+	$main = array(
+	 'team_id'=>$newtid,
+	 'bracket_id'=>$bracket_id,
+	 'name'=>'',
+	 'seeding'=>'',
+	 'contactall'=>0,
+	 'displayorder'=>$num,
+	 'flags'=>1
+	);
+}
+else
+{
+	$sql = 'SELECT * FROM '.$pref.'module_tmt_teams WHERE team_id=?';
+	$main = $db->GetRow($sql,array($thistid));
+}
+
+if($canmod)
+{
+	if($bigteam)
+	{
+		$smarty->assign('input_name',$this->CreateInputText($id,'tem_name',$main['name'],30,64));
+		$getters = array($this->Lang('one')=>0,$this->Lang('all')=>1);
+		$smarty->assign('input_sendto',
+			$this->CreateInputRadioGroup($id,'tem_tellall',$getters,intval($main['contactall']),'',' '));
+	}
+	else
+		$hidden .= $this->CreateInputHidden($id,'tem_tellall',0);
+	
+	$smarty->assign('input_seed',$this->CreateInputText($id,'tem_seed',$main['seeding'],2,2));
+	$smarty->assign('input_order',$this->CreateInputText($id,'tem_order',$main['displayorder'],3,3));
+}
+else
+{
+	if($bigteam)
+	{
+		$smarty->assign('input_name',$main['name']);
+		if($main['contactall']=='0')
+			$smarty->assign('input_sendto',$this->Lang('one'));
+		else
+			$smarty->assign('input_sendto',$this->Lang('all'));
+	}
+	$smarty->assign('input_seed',$main['seeding']);
+	$smarty->assign('input_order',$main['displayorder']);
+}
+//table column-headings
+$smarty->assign('nametext',$this->Lang('title_player'));
+$smarty->assign('contacttext',$this->Lang('title_contact'));
+if($canmod)
+	$smarty->assign('movetext',$this->Lang('title_move'));
+
+switch($op)
+{
+ case 1://no players yet in a newly-added team
+	$sql = 'INSERT INTO '.$pref.'module_tmt_people VALUES (?,null,null,1,1)';//new-member flag
+	$db->Execute($sql,array($newtid));
+	$rows = array();
+	$rows[] = array(
+	 'id'=>$newtid,
+	 'name'=>'',
+	 'contact'=>'',
+	 'displayorder'=>1,
+	 'flags'=>1
+	);
+	break;
+ case 2://starting a new edit-session
+	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder ASC';
+	$rows = $db->GetAll($sql,array($thistid));
+	break;
+ case 3://add player to team
+ 	$rows = array();
+ 	if(isset($params['plr_order']))
+	{
+		foreach($params['plr_order'] as $indx=>$order)
+		{
+			$rows[] = array(
+			 'id'=>$thistid,
+			 'name'=>$params['plr_name'][$indx],
+			 'contact'=>$params['plr_contact'][$indx],
+			 'displayorder'=>$order,
+			 'flags'=>$params['plr_flags'][$indx]
+			);
+		}
+		$next = count($params['plr_order'])+1; //assume no gaps in the recorded orders
+	}
+	else
+		$next = 1;
+
+	$sql = 'INSERT INTO '.$pref.'module_tmt_people VALUES (?,null,null,?,1)';//new-member flag
+	$db->Execute($sql,array($thistid,$next));
+	$rows[] = array(
+	 'id'=>$thistid,
+	 'name'=>'',
+	 'contact'=>'',
+	 'displayorder'=>$next,
+	 'flags'=>1
+	);
+	break;
+ case 4://remove player from team
+ 	reset($params['delete']);
+	$order = key($params['delete']);
+	$sql = 'UPDATE '.$pref.'module_tmt_people SET flags=2 WHERE id=? AND flags!=2 AND displayorder=?';
+	$res = $db->Execute($sql,array($thistid,$order));
+	$keeps = array_diff($params['plr_order'],array($order));
+	if($keeps)
+	{
+		//get values for display
+		//TODO this stuff is probably borked!!
+		$rows = OrderTeamMembers($db,$thistid);
+		$indx = 0;
+		foreach($keeps as $key=>$order)
+		{
+			$rows[$indx]['name'] = $params['plr_name'][$key];
+			$rows[$indx]['contact'] = $params['plr_contact'][$key];
+			$rows[$indx]['displayorder'] = $order;
+			$rows[$indx]['flags'] = $params['plr_flags'][$key];
+			$indx++;
+		}
+	}
+	else
+		$rows = array();
+	break;
+ case 5://change member's displayorder
+ 	$tmp = array_keys($params['moveup']);
+	$order = $tmp[0];
+	$neworder = $order-1;
+	//no break here
+ case 6:
+	if($op == 6)
+	{
+	 	$tmp = array_keys($params['movedown']);
+		$order = $tmp[0];
+		$neworder = $order+1;
+	}
+	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=? WHERE id=? AND flags!=2 AND displayorder=?';
+	$db->Execute($sql,array(-$neworder,$thistid,$order));
+	$db->Execute($sql,array($order,$thistid,$neworder));
+	$db->Execute($sql,array($neworder,$thistid,-$neworder));
+	//get values for display
+	$rows = OrderTeamMembers($db,$thistid);
+	$indx = 0;
+	foreach($params['plr_order'] as $key=>$oldorder)
+	{
+		if($oldorder == $order)
+			$key = $neworder-1;
+		elseif($oldorder == $neworder)
+			$key = $order-1;
+		$rows[$indx]['name']=$params['plr_name'][$key];
+		$rows[$indx]['contact']=$params['plr_contact'][$key];
+		$indx++;
+	}
+ 	break;
+ case 11://remove selected member(s)
+	$args = $params['psel'];
+ 	$num = count($args);
+	$selector = ($num > 1) ? ' IN ('.str_repeat('?,',$num-1).'?)' : '=?';
+	$sql = 'UPDATE '.$pref.'module_tmt_people SET flags=2 WHERE id=? AND flags!=2 AND displayorder'.$selector;
+	array_unshift($args,$thistid);
+	$db->Execute($sql,$args);
+	$keeps = array_diff($params['plr_order'],$params['psel']);
+	if($keeps)
+	{
+		//get values for display
+		$rows = OrderTeamMembers($db,$thistid);
+		$indx = 0;
+		foreach($keeps as $key=>$order)
+		{
+			$rows[$indx]['name'] = $params['plr_name'][$key];
+			$rows[$indx]['contact'] = $params['plr_contact'][$key];
+			$indx++;
+		}
+	}
+	else
+		$rows = array();
+	break;
+ case 12://export selected member(s)
+	$rows = array();
+	foreach($params['psel'] as $id)
+	{
+		$indx = array_search($id,$params['plr_order']);
+		$rows[] = array(
+		 'name'=>$params['plr_name'][$indx],
+		 'contact'=>$params['plr_contact'][$indx]);
+	}
+	$funcs = new tmtCSV();
+	$funcs->TeamsToCSV($this,$bracket_id,$thistid,$rows);
+	return;
+ default:
+	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder ASC';
+	$rows = $db->GetAll($sql,array($thistid));
+	break;
+}
+
+$jsfuncs = array();	//context-specific-code accumulators
+$jsloads = array();
+
+if($rows)
+{
+	$pc = count($rows);
+	$newo = $pc + 1;
+	$players = array();
+	$theme = cmsms()->get_variable('admintheme'); //CMSMS 1.9+
+	$rowclass = 'row1';
+	$indx = 1;
+	$s = array('/class="(.*)"/','/id=.*\[\]" /'); //for xhtml string cleanup
+	$r = array('class="plr_name $1"',''); //fails if backref first!
+	foreach($rows as $row)
+	{
+		$one = new stdClass();
+		$one->rowclass = $rowclass;
+		if($canmod)
+		{
+			$tmp = $this->CreateInputText($id,'plr_name[]',$row['name'],25,64);
+			$one->input_name = preg_replace($s,$r,$tmp);
+			$one->input_contact = $this->CreateInputText($id,'plr_contact[]',$row['contact'],30,80);
+			if($indx > 1)
+				$one->uplink = $this->CreateInputLinks($id,'moveup['.$row['displayorder'].']','arrow-u.gif');
+			else
+				$one->uplink = '';
+			if($indx < $pc)
+				$one->downlink = $this->CreateInputLinks($id,'movedown['.$row['displayorder'].']','arrow-d.gif');
+			else
+				$one->downlink = '';
+			$one->deletelink = $this->CreateInputLinks($id,'delete['.$row['displayorder'].']','delete.gif',
+				FALSE,$this->Lang('deleteplayer'));
+			$ord = ($row['displayorder']) ? (int)$row['displayorder'] : $newo++;
+			//hiddens in table-row to support re-ordering and ajax manipulation
+			$one->hidden = $this->CreateInputHidden($id,'plr_order[]',$ord,'class="ord"').
+				$this->CreateInputHidden($id,'plr_flags[]',$row['flags']);
+		}
+		else
+		{
+			$one->input_name = $row['name'];
+			$one->input_contact = $row['contact'];
+		}
+		$one->selected = $this->CreateInputCheckbox($id,'psel[]',$row['displayorder'],-1,'class="pagecheckbox"');
+		$players[] = $one;
+		($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
+		$indx++;
+	}
+	$smarty->assign('items',$players);
+
+	if($canmod)
+	{
+		$jsloads[] = <<< EOF
+ $('#team').find('.plr_delete').children().modalconfirm({
+  preShow: function(){
+	var name = \$(this).closest('tr').find('.plr_name').attr('value');
+	var tpl = '{$this->Lang('confirm_delete','/^/')}';
+	var exp = tpl.replace('/^/',name);
+	var para = this.children('p:first')[0];
+	para.innerHTML = exp;
+  }
+ });
+
+EOF;
+	}
+}
+else
+	$pc = 0;
+
+$smarty->assign('pc',$pc);
+
+if($pc > 1)
+{
+	if($canmod)
+	{
+		//setup some ajax-parameters - partial data for tableDnD::onDrop
+		$url = $this->CreateLink($id,'order_team',NULL,NULL,array('team_id'=>$thistid,'neworders'=>''),NULL,TRUE);
+		$offs = strpos($url,'?mact=');
+		$ajfirst = str_replace('amp;','',substr($url,$offs+1));
+		$jsfuncs[] = <<< EOF
+function ajaxData(droprow,dropcount) {
+ var orders = [];
+ $(droprow.parentNode).find('.ord').each(function(){
+  orders[orders.length] = this.value;
+ });
+ var ajaxdata = '$ajfirst'+orders.join();
+ return ajaxdata;
+}
+function dropresponse(data,status) {
+ if(status == 'success' && data) {
+	var i = 1;
+	$('#team').find('.ord').each(function(){\$(this).attr('value',i++);});
+	var name;
+	var oddclass = 'row1';
+	var evenclass = 'row2';
+	i = true;
+	$('#team').trigger('update').find('tbody tr').each(function() {
+		name = i ? oddclass : evenclass;
+		\$(this).removeClass().addClass(name);
+		i = !i;
+	});
+ } else {
+  $('#page_tabs').prepend('<p style=\"font-weight:bold;color:red;\">{$this->Lang('err_ajax')}!</p><br />');
+ }
+}
+
+EOF;
+	$onsort = <<< EOF
+function () {
+ var orders = [];
+ $(this).find('tbody tr td').children('.ord').each(function(){
+  orders[orders.length] = this.value;
+ });
+ var ajaxdata = '$ajfirst'+orders.join();
+ $.ajax({
+  url: 'moduleinterface.php',
+  type: 'POST',
+  data: ajaxdata,
+  dataType: 'text',
+  success: function (data,status) {
+   if(status == 'success' && data) {
+    var i = 1;
+	$('#team').find('.ord').each(function(){\$(this).attr('value',i++);});
+   } else {
+    $('#page_tabs').prepend('<p style="font-weight:bold;color:red;">{$this->Lang('err_ajax')}!</p><br />');
+   }
+  }
+ });
+}
+EOF;
+	}
+	else //!$canmod
+		$onsort = 'null'; //no mods >> do nothing after sorting
+
+	$jsloads[] = <<< EOF
+ $.SSsort.addParser({
+  id: 'textinput',
+  is: function(s,node) {
+   var n = node.childNodes[0];
+   return (n && n.nodeName.toLowerCase() == 'input' && n.type.toLowerCase() == 'text');
+  },
+  format: function(s,node) {
+   return $.trim(node.childNodes[0].value);
+  },
+  watch: true,
+  type: 'text'
+ });
+ $('#team').addClass('table_drag').addClass('table_sort').SSsort({
+  sortClass: 'SortAble',
+  ascClass: 'SortUp',
+  descClass: 'SortDown',
+  oddClass: 'row1',
+  evenClass: 'row2',
+  oddsortClass: 'row1s',
+  evensortClass: 'row2s',
+  onSorted: $onsort
+ });
+
+EOF;
+	$jsfuncs[] = <<< EOF
+function select_all_players() {
+ var st = $('#playsel').attr('checked');
+ if(!st) st = false;
+ $('#team > tbody').find('input[type="checkbox"]').attr('checked',st);
+}
+
+EOF;
+	$smarty->assign('selectall',$this->CreateInputCheckbox($id,'p',FALSE,-1,
+		'id="playsel" onclick="select_all_players();"'));
+} //end $pc > 1
+
+$jsfuncs[] = <<< EOF
+function player_selected() {
+ var cb = $('#team > tbody').find('input:checked');
+ return(cb.length > 0);
+}
+
+EOF;
+
+if($canmod)
+{
+	if($pc > 1)
+	{
+		$smarty->assign('dndhelp',$this->Lang('help_dnd'));
+		$smarty->assign('delete',$this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
+			'title="'.$this->Lang('delete_tip').'"'));
+		$jsloads[] = <<< EOF
+ $('#{$id}delete').modalconfirm({
+  doCheck: player_selected,
+  preShow: function(){
+	var para = this.children('p:first')[0];
+	para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_players'))}';
+  }
+ });
+
+EOF;
+	}
+	if($bigteam || $pc == 0)
+	{
+		$smarty->assign('add',$this->CreateInputLinks($id,'addplayer','newobject.gif',TRUE,
+			$this->Lang('title_add',strtolower($this->Lang('title_player')))));
+	}
+	$smarty->assign('submit',$this->CreateInputSubmit($id,'submit',$this->Lang('save')));
+	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('cancel')));
+
+	switch($op)
+	{
+	 case 2:
+	 case 12: //maybe changed since export done
+		$test = 'null'; //TODO check for any change e.g. ajax
+		break;
+	 default:
+		$test = 'null'; //ask
+	  	break;
+	}
+	//onCheckFail: true; means submit form if no check needed
+	$jsloads[] = <<< EOF
+ $('#{$id}cancel').modalconfirm({
+  doCheck: $test,
+  preShow: function(){
+	var para = this.children('p:first')[0];
+	para.innerHTML = '{$this->Lang('abandon')}';
+  },
+  onCheckFail: true
+ });
+
+EOF;
+}
+else
+	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('close')));
+
+if($pc > 0)
+	$smarty->assign('export',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
+		'title="'.$this->Lang('export_tip').'" onclick="return player_selected();"'));
+
+$smarty->assign('hidden',$hidden);
+
+$btn = '<input id="%s" class="cms_submit" type="submit" value="%s" />';
+$ident = $id.'no';
+$smarty->assign('no',sprintf($btn,$ident,$this->Lang('no')));
+$ident = $id.'yes';
+$smarty->assign('yes',sprintf($btn,$ident,$this->Lang('yes')));
+
+$smarty->assign('incpath',$this->GetModuleURLPath().'/include/');
+
+if($jsloads)
+{
+	$jsfuncs[] = '
+$(function() {
+';
+	$jsfuncs = array_merge($jsfuncs,$jsloads);
+	$jsfuncs[] = '});
+';
+}
+$smarty->assign('jsfuncs',$jsfuncs);
+
+echo $this->ProcessTemplate('addedit_team.tpl');
+
+?>
