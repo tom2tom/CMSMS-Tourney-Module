@@ -36,7 +36,7 @@ switch ($oldversion)
 	$sql = 'INSERT INTO'.$pref.'module_tmt_tweet (bracket_id,handle) VALUES (0,\'firstrow\')';
 	$db->Execute($sql);
 
-	$rel = this->GetPreference('uploads_dir');
+	$rel = $this->GetPreference('uploads_dir');
 	if(!$rel)
 		$this->SetPreference('uploads_dir',$this->GetName());
 	break;
