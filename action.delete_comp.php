@@ -20,9 +20,13 @@ if ($file)
 	$num = $db->GetOne($sql,array($file));
 	if ($num < 2)
 	{
-		$path = cms_join_path($config['uploads_path'],
-			$this->GetPreference('uploads_dir'),$file);
-		unlink($path);
+		if($this->GetPreference('uploads_dir'))
+			$path = cms_join_path($config['uploads_path'],
+				$this->GetPreference('uploads_dir'),$file);
+		else
+			$path = cms_join_path($config['uploads_path'],$file);
+		if(is_file($path))
+			unlink($path);
 	}
 }
 $file = $this->ChartImageFile($bid);
