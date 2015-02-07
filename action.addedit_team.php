@@ -178,7 +178,7 @@ if($op == 1)
 $bracket_id = (int)$params['bracket_id'];
 $name = FALSE;
 $teamtitle = FALSE;
-$bigteam = TRUE;
+$isteam = TRUE;
 $pref = cms_db_prefix();
 $sql = 'SELECT name,teamsize FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 $bdata = $db->GetRow($sql,array($bracket_id));
@@ -188,7 +188,7 @@ if($bdata)
 	if($bdata['teamsize'] == 1)
 	{
 		$teamtitle = $this->Lang('title_player');
-		$bigteam = FALSE;
+		$isteam = FALSE;
 	}
 }
 
@@ -197,8 +197,8 @@ if($name == FALSE)
 if($teamtitle == FALSE)
 	$teamtitle = $this->Lang('title_team');
 
-$canmod = $this->CheckAccess('admod');
-$smarty->assign('canmod',($canmod)?1:0);
+$pmod = $this->CheckAccess('admod');
+$smarty->assign('canmod',($pmod)?1:0);
 
 $smarty->assign('form_start',$this->CreateFormStart($id,'addedit_team',$returnid));
 $smarty->assign('form_end',$this->CreateFormEnd());
@@ -218,7 +218,7 @@ else
 	$smarty->assign('pagetitle',strtoupper($this->Lang('title_edit_long',$teamtitle,$name)));
 }
 
-if($bigteam)
+if($isteam)
 {
 	$smarty->assign('title_teamname',$this->Lang('title_teamname'));
 	$smarty->assign('help_name',$this->Lang('help_teamname'));
@@ -252,9 +252,9 @@ else
 	$main = $db->GetRow($sql,array($thistid));
 }
 
-if($canmod)
+if($pmod)
 {
-	if($bigteam)
+	if($isteam)
 	{
 		$smarty->assign('input_name',$this->CreateInputText($id,'tem_name',$main['name'],30,64));
 		$getters = array($this->Lang('one')=>0,$this->Lang('all')=>1);
@@ -269,7 +269,7 @@ if($canmod)
 }
 else
 {
-	if($bigteam)
+	if($isteam)
 	{
 		$smarty->assign('input_name',$main['name']);
 		if($main['contactall']=='0')
@@ -283,7 +283,7 @@ else
 //table column-headings
 $smarty->assign('nametext',$this->Lang('title_player'));
 $smarty->assign('contacttext',$this->Lang('title_contact'));
-if($canmod)
+if($pmod)
 	$smarty->assign('movetext',$this->Lang('title_move'));
 
 switch($op)
@@ -439,16 +439,17 @@ if($rows)
 	$theme = cmsms()->get_variable('admintheme'); //CMSMS 1.9+
 	$rowclass = 'row1';
 	$indx = 1;
-	$s = array('/class="(.*)"/','/id=.*\[\]" /'); //for xhtml string cleanup
-	$r = array('class="plr_name $1"',''); //fails if backref first!
+	$finds = array('/class="(.*)"/','/id=.*\[\]" /'); //for xhtml string cleanup
+	$repls = array('class="plr_name $1"',''); //fails if backref first!
+	
 	foreach($rows as $row)
 	{
 		$one = new stdClass();
 		$one->rowclass = $rowclass;
-		if($canmod)
+		if($pmod)
 		{
 			$tmp = $this->CreateInputText($id,'plr_name[]',$row['name'],25,64);
-			$one->input_name = preg_replace($s,$r,$tmp);
+			$one->input_name = preg_replace($finds,$repls,$tmp);
 			$one->input_contact = $this->CreateInputText($id,'plr_contact[]',$row['contact'],30,80);
 			if($indx > 1)
 				$one->uplink = $this->CreateInputLinks($id,'moveup['.$row['displayorder'].']','arrow-u.gif');
@@ -459,7 +460,7 @@ if($rows)
 			else
 				$one->downlink = '';
 			$one->deletelink = $this->CreateInputLinks($id,'delete['.$row['displayorder'].']','delete.gif',
-				FALSE,$this->Lang('deleteplayer'));
+				FALSE,$this->Lang('deleteplayer')); //confirm via modal dialog
 			$ord = ($row['displayorder']) ? (int)$row['displayorder'] : $newo++;
 			//hiddens in table-row to support re-ordering and ajax manipulation
 			$one->hidden = $this->CreateInputHidden($id,'plr_order[]',$ord,'class="ord"').
@@ -477,20 +478,18 @@ if($rows)
 	}
 	$smarty->assign('items',$players);
 
-	if($canmod)
+	if($pmod)
 	{
-		$jsloads[] = <<< EOF
+		$jsloads[] = <<< EOS
  $('#team').find('.plr_delete').children().modalconfirm({
-  preShow: function(){
+  preShow: function(d){
 	var name = \$(this).closest('tr').find('.plr_name').attr('value');
-	var tpl = '{$this->Lang('confirm_delete','/^/')}';
-	var exp = tpl.replace('/^/',name);
-	var para = this.children('p:first')[0];
-	para.innerHTML = exp;
+	var para = d.children('p:first')[0];
+	para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
   }
  });
 
-EOF;
+EOS;
 	}
 }
 else
@@ -500,13 +499,13 @@ $smarty->assign('pc',$pc);
 
 if($pc > 1)
 {
-	if($canmod)
+	if($pmod)
 	{
 		//setup some ajax-parameters - partial data for tableDnD::onDrop
 		$url = $this->CreateLink($id,'order_team',NULL,NULL,array('team_id'=>$thistid,'neworders'=>''),NULL,TRUE);
 		$offs = strpos($url,'?mact=');
 		$ajfirst = str_replace('amp;','',substr($url,$offs+1));
-		$jsfuncs[] = <<< EOF
+		$jsfuncs[] = <<< EOS
 function ajaxData(droprow,dropcount) {
  var orders = [];
  $(droprow.parentNode).find('.ord').each(function(){
@@ -533,8 +532,8 @@ function dropresponse(data,status) {
  }
 }
 
-EOF;
-	$onsort = <<< EOF
+EOS;
+	$onsort = <<< EOS
 function () {
  var orders = [];
  $(this).find('tbody tr td').children('.ord').each(function(){
@@ -556,12 +555,12 @@ function () {
   }
  });
 }
-EOF;
+EOS;
 	}
-	else //!$canmod
+	else //!$pmod
 		$onsort = 'null'; //no mods >> do nothing after sorting
 
-	$jsloads[] = <<< EOF
+	$jsloads[] = <<< EOS
  $.SSsort.addParser({
   id: 'textinput',
   is: function(s,node) {
@@ -585,46 +584,48 @@ EOF;
   onSorted: $onsort
  });
 
-EOF;
-	$jsfuncs[] = <<< EOF
+EOS;
+	$jsfuncs[] = <<< EOS
 function select_all_players() {
  var st = $('#playsel').attr('checked');
  if(!st) st = false;
  $('#team > tbody').find('input[type="checkbox"]').attr('checked',st);
 }
 
-EOF;
+EOS;
 	$smarty->assign('selectall',$this->CreateInputCheckbox($id,'p',FALSE,-1,
 		'id="playsel" onclick="select_all_players();"'));
 } //end $pc > 1
 
-$jsfuncs[] = <<< EOF
+$jsfuncs[] = <<< EOS
 function player_selected() {
  var cb = $('#team > tbody').find('input:checked');
  return(cb.length > 0);
 }
 
-EOF;
+EOS;
 
-if($canmod)
+if($pmod)
 {
 	if($pc > 1)
 	{
 		$smarty->assign('dndhelp',$this->Lang('help_dnd'));
 		$smarty->assign('delete',$this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
 			'title="'.$this->Lang('delete_tip').'"'));
-		$jsloads[] = <<< EOF
+		$t = ($isteam) ? $this->Lang('sel_teams') : $this->Lang('sel_players');
+		$t = $this->Lang('confirm_delete',$t);
+		$jsloads[] = <<< EOS
  $('#{$id}delete').modalconfirm({
   doCheck: player_selected,
-  preShow: function(){
-	var para = this.children('p:first')[0];
-	para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_players'))}';
+  preShow: function(d){
+	var para = d.children('p:first')[0];
+	para.innerHTML = '{$t}';
   }
  });
 
-EOF;
+EOS;
 	}
-	if($bigteam || $pc == 0)
+	if($isteam || $pc == 0)
 	{
 		$smarty->assign('add',$this->CreateInputLinks($id,'addplayer','newobject.gif',TRUE,
 			$this->Lang('title_add',strtolower($this->Lang('title_player')))));
@@ -643,17 +644,17 @@ EOF;
 	  	break;
 	}
 	//onCheckFail: true; means submit form if no check needed
-	$jsloads[] = <<< EOF
+	$jsloads[] = <<< EOS
  $('#{$id}cancel').modalconfirm({
   doCheck: $test,
-  preShow: function(){
-	var para = this.children('p:first')[0];
+  preShow: function(d){
+	var para = d.children('p:first')[0];
 	para.innerHTML = '{$this->Lang('abandon')}';
   },
   onCheckFail: true
  });
 
-EOF;
+EOS;
 }
 else
 	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('close')));
