@@ -39,6 +39,14 @@ switch ($oldversion)
 	$rel = $this->GetPreference('uploads_dir');
 	if(!$rel)
 		$this->SetPreference('uploads_dir',$this->GetName());
+ case '0.1.2':
+ 	if (!$dict) $dict = NewDataDictionary($db);
+	$sql = $dict->AlterColumnSQL($pref.'module_tmt_brackets','match_days C(128),match_hours C(128)');
+	if(!$sql || !$db->ExecuteSQLArray($sql))
+	{
+		//error message
+		return FALSE;
+	}
 	break;
 }
 // put mention into the admin log
