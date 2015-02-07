@@ -182,15 +182,15 @@ if ($mdata)
 		$smarty->assign('inputcaptcha',$this->CreateInputText($id,'captcha','',5,10));
 	}
 
-	$jsloads[] = <<< EOF
+	$jsloads[] = <<< EOS
  $('.seeblock').css('display','none');  
  $('.mradio').click(function() {
   $('.seeblock').css('display','none');
   \$(this).parent().next().css('display','block');
  });
 
-EOF;
-	$jsfuncs[] = <<< EOF
+EOS;
+	$jsfuncs[] = <<< EOS
 function eventCancel(ev) {
  if (!ev) {
   if (window.event) ev = window.event;
@@ -206,26 +206,26 @@ function showerr(msg) {
  $('#localerr').html(msg).css('display','block');
 }
 
-EOF;
+EOS;
 	if($bdata['logic'])
 	{
-		$jsfuncs[] = <<< EOF
+		$jsfuncs[] = <<< EOS
 function customvalidate() {
  {$bdata['logic']}
  return true;
 }
 
-EOF;
-		$xjs = <<< EOF
+EOS;
+		$xjs = <<< EOS
   else if (!customvalidate()) {
    ok = false;
   }
-EOF;
+EOS;
 	}
 	else //no logic
 		$xjs = '';
 
-	$funcstr = <<< EOF
+	$funcstr = <<< EOS
 function validate(ev,btn) {
  $('#syserr').css('display','none');
  var ok = true;
@@ -279,7 +279,7 @@ function validate(ev,btn) {
  }
 }
 
-EOF;
+EOS;
 	$jsfuncs[] = sprintf($funcstr,WONA,WONB,MTIED);
 }
 else //no mdata
