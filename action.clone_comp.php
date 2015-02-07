@@ -19,8 +19,10 @@ if ($bdata == FALSE)
 		array('tmt_message'=>$this->PrettyMessage('err_missing',FALSE)));
 $bid = $db->GenID($pref.'module_tmt_brackets_seq');
 $bdata['bracket_id'] = $bid;
-$bdata['name'] .= ' '.$this->Lang('copy');
-$bdata['alias'] = null;
+$c = $this->Lang('clone');
+$bdata['name'] .= ' '.$c;
+if($bdata['alias'])
+	$bdata['alias'] .= '_'.strtolower($c);
 //check for date(s) > local current date
 $dt = new DateTime ('now',new DateTimeZone($bdata['timezone']));
 $stamp = $dt->getTimestamp();
@@ -55,6 +57,7 @@ $tpl = $this->GetTemplate('chart_'.$sid.'_template');
 if ($tpl)
 	$this->SetTemplate('chart_'.$bid.'_template',$tpl);
 
+/* include this if teams are to be copied too
 $sql = 'SELECT * FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2';
 $teams = $db->GetAll($sql,array($sid));
 if ($teams)
@@ -93,6 +96,7 @@ if ($teams)
 	unset($thisteam);
 	//no matches are copied
 }
+*/
 
 $this->Redirect($id,'addedit_comp',$returnid,array('bracket_id'=>$bid));
 

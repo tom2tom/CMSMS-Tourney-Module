@@ -183,13 +183,14 @@ else
 	$funcs = new tmtData();
 	$data = $funcs->GetBracketData($this,$params['real_action'],$id,$bid,$params);
 	unset($funcs);
-
 	if (isset ($params['tmt_message']))
 		$message = $params['tmt_message'];
 }
 
 if ($data)
 {
+	if ($params['real_action'] == 'view')
+		$data->readonly = 1;
 	$funcs = new tmtEditSetup();
 	$funcs->Setup($this,$smarty,$data,$id,$returnid,$tab,$message);
 	unset($funcs);
