@@ -6,26 +6,33 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
 //permissions hierarchy
-$canadmin = $this->CheckAccess('admin');
-if ($canadmin)
+$pdev = $this->CheckPermission('Modify Any Page');
+$padm = $this->CheckAccess('admin');
+if ($padm)
 {
-	$canmod = TRUE;
-	$canscore = TRUE;
+	$pmod = TRUE;
+	$pscore = TRUE;
+	$pview = TRUE;
 }
 else
 {
-	$canmod = $this->CheckAccess('modify');
-	if ($canmod)
-		$canscore = TRUE;
+	$pmod = $this->CheckAccess('modify');
+	if ($pmod)
+	{
+		$pscore = TRUE;
+		$pview = TRUE;
+	}
 	else
-		$canscore = $this->CheckAccess('score');
+	{
+		$pscore = $this->CheckAccess('score');
+		$pview = $this->CheckAccess('adview');
+	}
 }
-$candev = $this->CheckPermission('Modify Any Page');
 
 if (isset($params['tmt_message']) && $params['tmt_message'] != '')
 	$smarty->assign('message',$params['tmt_message']);
 
-if ($canadmin)
+if ($padm)
 {
 	$smarty->assign('tab_headers',$this->starttabheaders().
 		$this->settabheader('compdata',$this->lang('tab_items')).
@@ -46,7 +53,7 @@ $smarty->assign('tab_footers',$this->EndTabContent());
 
 $smarty->assign('title_name',$this->Lang('title_name'));
 
-$t = ($candev) ? $this->Lang('title_tag'):null;
+$t = ($pdev) ? $this->Lang('title_tag'):null;
 $smarty->assign('title_tag',$t);
 
 $smarty->assign('title_status',$this->Lang('title_status'));
@@ -55,6 +62,8 @@ $gCms = cmsms();
 $theme = $gCms->variables['admintheme'];
 
 $comps = array();
+$jsfuncs = array();
+$jsincudes = array();
 
 $pref = cms_db_prefix();
 $rows = $db->GetAll('SELECT bracket_id,name,alias FROM '.$pref.'module_tmt_brackets ORDER BY name');
@@ -64,10 +73,28 @@ if ($rows)
 	$sql2 = $sql1.' AND status>='.MRES;
 	$sql3 = $sql1.' AND status!=0 AND status<'.ANON;
 	$currow = 'row1';
+	
+	if($pmod || $pscore)
+		$iconedit = $theme->DisplayImage('icons/system/edit.gif',$this->Lang('edit'),'','','systemicon');
+	$iconview = $theme->DisplayImage('icons/system/view.gif',$this->Lang('view'),'','','systemicon');
+
+	if($pmod)
+	{
+		$iconclone = $theme->DisplayImage('icons/system/copy.gif',$this->Lang('clone'),'','','systemicon');
+		$icondel = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon');
+	}
+	if ($pmod || $padm)
+	{
+		$alt = $this->Lang('export');
+		$iconexport =
+		'<img src="'.$this->GetModuleURLPath().'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />';
+//	'<img src="../modules/'.$this->GetName().'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />';
+	}
+	
 	foreach ($rows as $bdata)
 	{
 		$oneset = new stdClass();
-		$oneset->rowclass = $currow;
+
 		$total = $db->GetOne($sql1,array($bdata['bracket_id']));
 		if (!$total)
 			$oneset->status = $this->Lang('status_notyet');
@@ -83,37 +110,55 @@ if ($rows)
 			else
 				$oneset->status = $this->Lang('status_ended');
 		}
-		if ($canmod || $canscore)
+		if ($pmod || $pscore)
 		{
 			$oneset->name = $this->CreateLink($id, 'addedit_comp', '',
 				$bdata['name'], array('bracket_id'=>$bdata['bracket_id']));
 			$oneset->editlink = $this->CreateLink($id, 'addedit_comp', '',
-				$theme->DisplayImage('icons/system/edit.gif',$this->Lang('edit'),'','','systemicon'),
+				$iconedit,
 					array('bracket_id'=>$bdata['bracket_id']));
-			if ($candev)
+			if ($pdev)
 				$oneset->alias = $bdata['alias']; //info for site-content developers
-			if ($canmod)
+			if ($pmod)
 			{
 			$oneset->copylink = $this->CreateLink($id, 'clone_comp', '',
-				$theme->DisplayImage('icons/system/copy.gif',$this->Lang('copy'),'','','systemicon'),
+				$iconclone,
 					array('bracket_id'=>$bdata['bracket_id']));
 			$oneset->deletelink = $this->CreateLink($id, 'delete_comp', '',
-				$theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon'),
-					array('bracket_id'=>$bdata['bracket_id']),
-					$this->Lang('confirm_delete',$bdata['name']));
+				$icondel,
+					array('bracket_id'=>$bdata['bracket_id']),'',false,false,
+					'class="'.$id.'delete_comp"'); //confirmation by modalconfirm dialog
 			}
 		}
 		else //no mod allowed
 		{
-			$oneset->name=$bdata['name'];
+			$oneset->name = $bdata['name'];
 		}
-		$alt = $this->Lang('export');
-		$oneset->exportlink = $this->CreateLink($id, 'export_comp', '',
-		'<img src="'.$this->config['root_url'].'/modules/'.$this->GetName().'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />',
-			array('bracket_id'=>$bdata['bracket_id']));
+		if ($pview || $pscore)
+				$oneset->viewlink = $this->CreateLink($id, 'addedit_comp', '',
+					$iconview,
+						array('bracket_id'=>$bdata['bracket_id'],
+						'real_action'=>'view'));
+		else
+			$oneset->viewlink = '';
 
-		$comps[] = $oneset;
-		($currow == 'row1'?$currow='row2':$currow='row1');
+		if ($pmod || $padm)
+		{
+			$oneset->exportlink = $this->CreateLink($id, 'export_comp', '',
+				$iconexport,
+					array('bracket_id'=>$bdata['bracket_id']));
+		}
+		else
+			$oneset->exportlink = '';
+
+		if ((bool)$oneset) //object isn't empty
+		{
+			$oneset->rowclass = $currow;
+			$comps[] = $oneset;
+			($currow == 'row1'?$currow='row2':$currow='row1');
+		}
+		else
+			unset($oneset);
 	}
 }
 
@@ -122,14 +167,35 @@ if ($comps)
 	$smarty->assign('count',count($comps));
 	$smarty->assign('comps',$comps);
 	$smarty->assign('modname',$this->GetName());
-	$smarty->assign('candev',$candev);
+	$smarty->assign('candev',$pdev);
+	if ($pmod)
+	{
+		$btn = '<input id="%s" class="cms_submit" type="submit" value="%s" />';
+		$smarty->assign('no',sprintf($btn,$id.'no',$this->Lang('no')));
+		$smarty->assign('yes',sprintf($btn,$id.'yes',$this->Lang('yes')));
+		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.min.js"></script>';
+		$jsfuncs[] = <<< EOS
+$(document).ready(function() {
+ $('.{$id}delete_comp')/*.click(function(e) {return false;})*/
+ .modalconfirm({
+  preShow: function(d){
+	var name = \$('td:first > a', $(this).closest('tr')).text();
+	if (name.search(' ') > -1)
+	 name = '"'+name+'"';
+	var para = d.children('p:first')[0];
+	para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+  }
+ });
+});
+EOS;
+	}
 }
 else
 {
 	$smarty->assign('notourn',$this->Lang('no_tourney'));
 }
 
-if ($canmod)
+if ($pmod)
 {
 	$smarty->assign('addlink',$this->CreateLink($id,'addedit_comp', '',
 		$theme->DisplayImage('icons/system/newobject.gif', $this->Lang('title_add_tourn'),'','','systemicon')));
@@ -143,7 +209,7 @@ if ($canmod)
 	$smarty->assign('submitxml', $this->CreateInputSubmit($id, 'tmt_import', $this->Lang('upload')));
 }
 
-if ($canadmin)
+if ($padm)
 {
 	$smarty->assign('canconfig',1);
 
@@ -219,6 +285,12 @@ if ($canadmin)
 else
 {
 	$smarty->assign('canconfig',0);
+}
+
+if ($jsfuncs)
+{
+	$smarty->assign('jsincs',$jsincudes);
+	$smarty->assign('jsfuncs',$jsfuncs);
 }
 
 echo $this->ProcessTemplate('adminpanel.tpl');
