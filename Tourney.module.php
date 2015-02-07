@@ -94,7 +94,7 @@ class Tourney extends CMSModule
 		if ($cont)
 		{
 			$example = preg_replace(array('~\s?/\*(.*)?\*/~Usm','~\s?//.*$~m'),array('',''),$cont);
-			$example = str_replace(array("\n\n","\n","\t"),array('<br />','<br />',' '),$example);
+			$example = str_replace(array("\n\n","\n","\t"),array('<br />','<br />',' '),trim($example));
 		}
 		else
 			$example = $this->Lang('missing');
@@ -129,7 +129,7 @@ class Tourney extends CMSModule
 
 	function LazyLoadAdmin()
 	{
-		return TRUE;
+		return FALSE; //need immediate load for menu creation
 	}
 
 	function GetAdminSection()
@@ -419,7 +419,9 @@ class Tourney extends CMSModule
 	*/
 	function GetZoneDateType($zone)
 	{
-		//US date format
+		if(!$zone)
+			return 'uk'; //default UK format
+		//US date format ?
 		if(strpos(
 'Africa/Johannesburg
 America/Adak
@@ -454,7 +456,7 @@ Pacific/Honolulu'
 					return 'us';
 			}
 		}
-		//YMD date format
+		//YMD date format ?
 		if(strpos(
 'America/Atikokan
 America/Blanc-Sablon
@@ -500,7 +502,7 @@ Europe/Budapest
 Europe/Vilnius'
 		,$zone) !== FALSE)
 			return 'ymd';
-		//default UK format
+
 		return 'uk';
 	}
 
@@ -546,18 +548,24 @@ Europe/Vilnius'
 		asort($offs); //replacements in order of increasing offset
 		reset($offs);
 
-		switch($this->GetZoneDateType($zone))
+		if($zone)
 		{
-		 case 'us':
-			$repl = array('2','1','3'); //indices for MDY
-			break;
-		 case 'ymd':
-			$repl = array('3','2','1'); //indices for YMD
-			break;
-		 default:
-			$repl = array('1','2','3'); //indices for DMY
-			break;
+			switch($this->GetZoneDateType($zone))
+			{
+			 case 'us':
+				$repl = array('2','1','3'); //indices for MDY
+				break;
+			 case 'ymd':
+				$repl = array('3','2','1'); //indices for YMD
+				break;
+			 default:
+				$repl = array('1','2','3'); //indices for DMY
+				break;
+			}
 		}
+		else
+			$repl = array('1','2','3');
+		
 		foreach($repl as $indx)
 		{
 			if(isset(${"s$indx"}))
