@@ -46,7 +46,7 @@ $lang['all_groups']='All Groups';
 $lang['help_login']='Any logged-in user in this group may record match results';
 
 //$lang['administer']='Administer';
-//$lang['clone']='Clone';
+$lang['clone']='Clone';
 $lang['copy']='Copy';
 $lang['delete']='Delete';
 $lang['export']='Export';
@@ -61,6 +61,7 @@ $lang['plan_tip']='Show all matches';
 $lang['actual']='Actual';
 $lang['actual_tip']='Show pending matches';
 $lang['confirm_delete']='Are you sure you want to delete %s?';
+$lang['confirm_deletethis']='Are you sure you want to delete this %s?';
 //these are for inclusion in the above template to create delete-confirmation prompts
 $lang['match_data']='all match data';
 $lang['sel_players']='selected players';
@@ -81,6 +82,9 @@ $lang['upload_tip']='Upload selected file to website host';
 $lang['update_tip']='Save data for selected rows';
 $lang['submit_tip']='Send result to tournament manager';
 $lang['err_save']='Error during data save.';
+
+$lang['team']='team';
+$lang['player']='competitor';
 
 $lang['titlescored']='Matches to be scored';
 $lang['titlewhen']='Completed at';
@@ -156,23 +160,32 @@ $lang['success_import']='Tournament imported successfully.';
 $lang['title_teamimport']='Import team data for tournament \'%s\' from CSV file';
 $lang['team_import_failed']='Team data import failed.';
 $lang['team_imported']='Team data imported successfully.';
-$lang['help_teamimport']=
-'<h3>File Format Information</h3>
-<p>The input file must be in ASCII format with data fields separated by commas. Any actual comma in a field should be represented by \'&amp;#44;\'. Each line in the file (except the header line, discussed below) represents one team.</p>
+$lang['help_teamimport']=<<< EOS
+<h3>File Format Information</h3>
+<p>The input file must be in ASCII format with data fields separated by commas.
+Any actual comma in a field should be represented by '&amp;#44;'.
+Each line in the file (except the header line, discussed below) represents one team.</p>
 <h4>Header Line</h4>
-<p>The first line of the file names the fields in the file. The first field name must be \'##Teamname\' (without the quotes). After that, up to two optional fields, named \'#Seeded\' and/or \'#Tellall\' (again, no quotes). Further fieldnames, if they exist, can have any names but must be in pairs - the first of each to hold a player name, the second to hold contact information for that player. There may be any number of such pairs. For example:<br />
+<p>The first line of the file names the fields in the file. The first field name must be '##Teamname' (without the quotes).
+After that, up to two optional fields, named '#Seeded' and/or '#Tellall' (again, no quotes).
+Further fieldnames, if they exist, can have any names but must be in pairs - the first of each
+to hold a player name, the second to hold contact information for that player.
+There may be any number of such pairs. For example:<br />
 <code>##Teamname,Player,Contact</code> or<br />
 <code>##Teamname,#Seeded,#Tellall,Captain,Contact1,Player2,Contact2</code></p>
 <h4>Other Lines</h4>
-<p>The data in each line must conform to the header columns, of course. Any field, or entire line, may be empty. The tellall field will be treated as TRUE if it contains something other than \'0\' or \'no\' or \'NO\' (no quotes, untranslated).</p>
+<p>The data in each line must conform to the header columns, of course. Any field, or entire line, may be empty.
+The tellall field will be treated as TRUE if it contains something other than '0' or 'no' or 'NO' (no quotes, untranslated).</p>
 <h3>Problems</h3>
 <p>The import process will fail if:<ul>
-<li>the first one, two or three \'#\'-prefixed field names are are not as expected</li>
+<li>the first one, two or three '#'-prefixed field names are are not as expected</li>
 <li>the number of player-specific fields is an odd number</li>
 <li>there are fewer fields in any line of data than there are fieldnames in the header line</li>
 </ul></p>
 <h3>You Decide What to Keep</h3>
-<p>Imported data are <strong>not automatically stored</strong> in the database. After review and any modification, you should save the tournament data in the normal manner.';
+<p>Imported data are <strong>not automatically stored</strong> in the database.
+After review and any modification, you should save the tournament data in the normal manner.;
+EOS;
 
 //settings
 
@@ -318,6 +331,7 @@ $lang['desc_recipient']='the person to receive the message';
 $lang['desc_toall']='whether the message will be sent to all team members individually';
 $lang['desc_report']='the reported information';
 
+$lang['help_use_smarty'] = 'Plugins and smarty variables are valid in this field.';
 $lang['help_mailout_template']='If left blank, the default template will be used.';
 $lang['help_mailin_template']='At a minimum, include {$report}.<br />Or if left blank, the default template will be used.';
 $lang['help_tweetout_template']='If left blank, the default template will be used.';
@@ -338,11 +352,32 @@ $lang['title_weeks']='Week(s)';
 $lang['title_calendar']='Calendar identifier';
 $lang['help_calendar']='Schedule matches in accordance with reservations under this name, and if necessary, revert to days/times specified below.';
 $lang['title_match_on']='Matches may be scheduled on';
+$lang['help_match_days']= <<< EOS
+One or more (in which case, comma-separated) day descriptors, like<br />
+&#8226; for day(s)-of-month: 1 or -2 or 1..10 or 2..-1 or -3..-1<br />
+&#8226; for day(s)-of-month: 1(Sunday) or -1(Wednesday..Friday) or 1..3(Friday,Saturday)<br />
+&#8226; for day(s)-of-week: Monday or Wednesday..Friday<br />
+Day-names are not abbreviated.
+EOS;
+$lang['help_daysend']= <<< EOS
+{$lang['help_use_smarty']}<br />
+If multiple conditions are specified, it will be sufficient for any of them to be satisfied.
+If blank, all days are available.
+EOS;
 $lang['title_anyday']='Any day';
-$lang['title_weekdays']='Selected days of any week';
-$lang['title_monthdays']='Selected days of any month';
-$lang['title_monthweeks']='Selected weeks of any month';
-$lang['title_match_hours']='On any match day, suitable hours are';
+//$lang['title_weekdays']='Selected days of any week';
+//$lang['title_monthdays']='Selected days of any month';
+//$lang['title_monthweeks']='Selected weeks of any month';
+$lang['title_match_times']='On any match day, suitable times are';
+$lang['help_match_times']= <<< EOS
+One or more (in which case, comma-separated) time descriptors, like<br />
+&#8226; 9 or 12..23 or 6:30..15:30 or sunrise..16 or 9..sunset-3:30
+EOS;
+$lang['help_timesend']= <<< EOS
+{$lang['help_use_smarty']}<br />
+If multiple conditions are specified, it will be sufficient for any of them to be satisfied.
+If blank, all times are available.
+EOS;
 $lang['help_same_time']='Blank means no limit';
 $lang['help_selection']='No selection means no restriction';
 $lang['sunday']='Sunday';
@@ -486,47 +521,55 @@ $lang['event_help_OnTourneyMatchChange']='<p>Event triggered before a match reco
 */
 
 //with parameter replacement, any literal '%' char must be doubled
-$lang['help'] = '<h3>What Does This Do?</h3>
+$lang['help']=<<<EOS
+<h3>What Does This Do?</h3>
 <p>This module allows you to manage competitions of several sorts, by scheduling matches, recording results, and enabling participants and others to keep abreast of progress.</p>
 <h3>How Do I Use It?</h3>
-<p>In the CMSMS admin Content Menu, you should see a menu item called \'Tournaments\'. Click on that. On the displayed page, there are (to the extent that you\'re suitably authorised) links and inputs by which you can add or change a tournament, or change module settings.</p>
+<p>In the CMSMS admin Content Menu, you should see a menu item called 'Tournaments'.
+Click on that. On the displayed page, there are (to the extent that you're suitably authorised)
+links and inputs by which you can add or change a tournament, or change module settings.</p>
 <h3>Adding a Tournament to a Page</h3>
-<p>Suitably authorised users will see, on the module\'s admin page, the tag used to display each tournament. Each tag looks
-something like <pre>{cms_module module=\'Tourney\' alias=\'sample_comp\'}</pre></p>
+<p>Suitably authorised users will see, on the module's admin page, the tag used to display each tournament.
+Each tag looks something like <pre>{cms_module module='Tourney' alias='sample_comp'}</pre></p>
 <p>Put such a tag into the content of a page or into a template, optionally with extra parameters as described below.
 <h3>Tournament Charts</h3>
 <p>These are PDF files, created using a UTF-8-capable <a href="http://www.fpdf.org/en/script/script92.php">variant</a> of the <a href="http://www.fpdf.org">FPDF</a> library.
-The PHP extension \'mbstring\' must be available if UTF-8-encoded text is to be displayed.</p>
+The PHP extension 'mbstring' must be available if UTF-8-encoded text is to be displayed.</p>
 <h3>Chart Styling</h3>
 <p>Styling is managed using css-like information. Recognised classes are<ul>
 <li>.chart</li>
-<li>.box, and related pseudo-classes \':nonfirm\', \':firm\', \':played\' and \':winner\'</li>
+<li>.box, and related pseudo-classes ':nonfirm', ':firm', ':played' and ':winner'</li>
 <li>.line</li>
 </ul></p>
-<p>Styling is applied at the server end, using a very-basic mechanism. Box-side-specific styling is not supported, apart from horizontal and vertical margins. Chart can have a pseudo-property \'gapwidth\', representing extra horizontal distance between boxes\' margins. Background images and rare properties like \'letter-spacing\' are not supported. Relative values like \'small\', \'%%\' or \'em\' have no meaning.</p>
+<p>Styling is applied at the server end, using a very-basic mechanism.
+Box-side-specific styling is not supported, apart from horizontal and vertical margins.
+Chart can have a pseudo-property 'gapwidth', representing extra horizontal distance between boxes' margins.
+Background images and rare properties like 'letter-spacing' are not supported.
+Relative values like 'small', '%%' or 'em' have no meaning.</p>
 <p>For example, the following represents the default settings:
 <pre>%s</pre><br />
-You can specify the name of a stylesheet file as one of the parameters for the tournament, either in the tournament settings or the relevant page tag. The file is expected to be located in the website\'s uploads directory or, depending on the relevant module preference, a descendant of that directory. The file does not need to be unique to a specific tournament. Absent such file, the defaults are applied.</p>
+You can specify the name of a stylesheet file as one of the parameters for the tournament, either in the tournament settings or the relevant page tag. The file is expected to be located in the website's uploads directory or, depending on the relevant module preference, a descendant of that directory.
+The file does not need to be unique to a specific tournament. Absent such file, the defaults are applied.</p>
 <p>The module ships with various Type1 fonts, which can be seen in the .../lib/font folder. Extra fonts can be <a href="http://www.fpdf.org/en/tutorial/tuto7.htm">manually installed</a>.<br />
-Truetype fonts can be used, and would typically result in smaller-sized chart files, as only the used-characters are embedded in the file. The module ships with serif, sans, condensed and mono font-families (thanks to URW). Other .ttf files may be installed as-is in the uploads sub-directory specified in the module settings, or in the module sub-directory ".../lib/font/ttf". Several \'standard\' truetype fonts (courier etc) are simulated. These can be seen in ".../lib/font/unifont".</p>
+Truetype fonts can be used, and would typically result in smaller-sized chart files, as only the used-characters are embedded in the file. The module ships with serif, sans, condensed and mono font-families (thanks to URW). Other .ttf files may be installed as-is in the uploads sub-directory specified in the module settings, or in the module sub-directory ".../lib/font/ttf". Several 'standard' truetype fonts (courier etc) are simulated. These can be seen in ".../lib/font/unifont".</p>
 <h3>Communication by Tweet</h3>
-<p>A twitter application \'CMSMS TourneyModule\' is used to channel tweets to participants and/or the responsible person, where those persons\' contact is a twitter handle.</p>
+<p>A twitter application 'CMSMS TourneyModule' is used to channel tweets to participants and/or the responsible person, where those persons' contact is a twitter handle.</p>
 <p>One twitter account (@CMSMSTourney) has authorised that app, and any other account may likewise do so. To send from a different account, either<ul>
 <li>a module user needs to authorise i.e. supply the account password, or</li>
 <li>the website needs a mechanism which enables the account holder to independently authorise</li>
 </ul>
 before the account is used.</p>
-<p>For the latter, you can create, and at least temporarily enable, a page with tag like<pre>{cms_module module=\'Tourney\' alias=\'sample_comp\' tweetauth=1}</pre>or just<br />{cms_module module=\'Tourney\' tweetauth=1}</pre><br /><br />and refer the account holder there.</p>
+<p>For the latter, you can create, and at least temporarily enable, a page with tag like<pre>{cms_module module='Tourney' alias='sample_comp' tweetauth=1}</pre>or just<br />{cms_module module='Tourney' tweetauth=1}</pre><br /><br />and refer the account holder there.</p>
 <h3>Support</h3>
 <p>This module is provided as-is. Please read the text of the license for the full disclaimer.</p>
 <p>For help:<ul>
 <li>discussion may be found in the <a href="http://forum.cmsmadesimple.org">CMS Made Simple Forums</a>; or</li>
 <li>you may have some success emailing the author directly.</li>
 </ul></p>
-<p>For the latest version of the module, or to report a bug, visit the module\'s <a href="http://dev.cmsmadesimple.org/projects/tourney">forge-page</a>.</p>
+<p>For the latest version of the module, or to report a bug, visit the module's <a href="http://dev.cmsmadesimple.org/projects/tourney">forge-page</a>.</p>
 <h3>Copyright and License</h3>
-<p>Copyright &copy; 2014 Tom Phane. All rights reserved.</p>
+<p>Copyright &copy; 2014-2015 Tom Phane. All rights reserved.</p>
 <p>This module has been released under version 3 of the <a href="http://www.gnu.org/licenses/agpl.html">GNU Affero General Public License</a>, and may be used only in accordance with the terms of that licence, or any later version of that license which is applied to the module.<br />
 The included fonts have been licensed by <a href="http://www.urwpp.de/english/home.html">URW</a> under the GPL.</p>
-';
+EOS;
 ?>
