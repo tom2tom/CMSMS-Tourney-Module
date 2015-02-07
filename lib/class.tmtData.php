@@ -350,6 +350,7 @@ class tmtData
 			$data->resultview = 'future';
 			break;
 
+		 case 'view':
 		 case 'apply':
 		 case 'edit':
 		 case 'result_view':
