@@ -12,8 +12,9 @@
   <th>{$title_tag}</th>
 {/if}
   <th>{$title_status}</th>
-{if $canconfig == 1}
   <th class="pageicon"></th>
+  <th class="pageicon"></th>
+{if $canconfig == 1}
   <th class="pageicon"></th>
   <th class="pageicon"></th>
 {/if}
@@ -28,8 +29,9 @@
   <td>{ldelim}{$modname} alias='{$entry->alias}'{rdelim}</td>
 {/if}
   <td>{$entry->status}</td>
-{if $canconfig}
+  <td>{$entry->viewlink}</td>
   <td>{$entry->editlink}</td>
+{if $canconfig}
   <td>{$entry->copylink}</td>
   <td>{$entry->deletelink}</td>
 {/if}
@@ -76,3 +78,24 @@
 {/if}
 
 {$tab_footers}
+
+{if $canconfig}
+<div id="confirm" class="modal-overlay">
+<div class="confirm-container">
+<p style="text-align:center;font-weight:bold;"></p>
+<br />
+<p style="text-align:center;">{$yes}&nbsp;&nbsp;{$no}</p>
+</div>
+</div>
+{/if}
+
+{if isset($jsfuncs)}
+{foreach from=$jsincs item=file}{$file}
+{/foreach}
+<script type="text/javascript">
+//<![CDATA[
+{foreach from=$jsfuncs item=func}{$func}
+{/foreach}
+//]]>
+</script>
+{/if}
