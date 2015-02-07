@@ -112,11 +112,20 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$gCms = cmsms();
 		$config = $gCms->GetConfig();
 
-		$canmod = $mod->CheckAccess('admod');
-		$canscore = $canmod || $mod->CheckAccess('score');
+		if (isset($data->readonly))
+		{
+			unset($data->readonly);
+			$pmod = FALSE;
+			$pscore = FALSE;
+		}
+		else
+		{
+			$pmod = $mod->CheckAccess('admod');
+			$pscore = $pmod || $mod->CheckAccess('score');
+		}
 
-		$smarty->assign('canmod',$canmod ? 1:0);
-//		$smarty->assign('canscore',$canscore ? 1:0);
+		$smarty->assign('canmod',$pmod ? 1:0);
+//		$smarty->assign('canscore',$pscore ? 1:0);
 
 		if(!empty($message)) $smarty->assign('message',$message);
 
@@ -159,13 +168,13 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$jsloads = array();
 
 		$smarty->assign('incpath',$mod->GetModuleURLPath().'/include/');
-		if($canmod)
+		if($pmod)
 		{
 			//setup some ajax-parameters - partial data for tableDnD::onDrop
 			$url = $mod->CreateLink($id,'move_team',NULL,NULL,array('bracket_id'=>$data->bracket_id,'neworders'=>''),NULL,TRUE);
 			$offs = strpos($url,'?mact=');
 			$ajfirst = str_replace('amp;','',substr($url,$offs+1));
-			$jsfuncs[] = <<< EOF
+			$jsfuncs[] = <<< EOS
 function ajaxData(droprow,dropcount) {
  var orders = [];
  $(droprow.parentNode).find('tr td.ord').each(function(){
@@ -192,8 +201,8 @@ function dropresponse(data,status) {
  }
 }
 
-EOF;
-			$onsort = <<< EOF
+EOS;
+			$onsort = <<< EOS
 function () {
  var orders = [];
  $(this).find('tbody tr td.ord').each(function(){
@@ -217,13 +226,12 @@ function () {
   }
  });
 }
-EOF;
+EOS;
 		}
 		else
 			$onsort = 'null'; //no sort-processing if no mods allowed
 
-		$dtype = $mod->GetZoneDateType($data->timezone);
-		$jsloads[] = <<< EOF
+		$jsloads[] = <<< EOS
  $.SSsort.addParser({
   id: 'numberinput',
   is: function(s,node) {
@@ -288,7 +296,7 @@ EOF;
   evenClass: 'row2',
   oddsortClass: 'row1s',
   evensortClass: 'row2s',
-  onSorted: $onsort
+  onSorted: {$onsort}
  };
  $('#tmt_players').addClass('table_drag').addClass('table_sort').SSsort(opts);
  delete opts.onSorted;
@@ -298,8 +306,8 @@ EOF;
   \$(this).closest('table').trigger('update');
  });
 
-EOF;
-	$jsfuncs[] = <<< EOF
+EOS;
+	$jsfuncs[] = <<< EOS
 function eventCancel(ev) {
  if(!ev) {
   if(window.event) ev = window.event;
@@ -323,7 +331,7 @@ function set_params(btn) {
  set_tab();
 }
 
-EOF;
+EOS;
 
 		$this->MatchExists($data->bracket_id);
 		$funcs = new tmtData();
@@ -332,19 +340,19 @@ EOF;
 		$main = array();
 		$main[] = array(
 			$mod->Lang('title_title'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateInputText($id,'tmt_name',$data->name,50) :
 			(($data->name) ? $data->name : '&nbsp;')
 		);
 		$main[] = array(
 			$mod->Lang('title_desc'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateTextArea(TRUE,$id,$data->description,'tmt_description','','','','',65,10,'','','style="height:100px;"') :
 			(($data->description) ? $data->description : '&nbsp;')
 		);
 		$main[] = array(
 			$mod->Lang('title_alias'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateInputText($id,'tmt_alias',$data->alias,30) :
 			(($data->alias) ? $data->alias : '&nbsp;'),
 			$mod->Lang('help_alias')
@@ -352,20 +360,20 @@ EOF;
 		$options = $funcs->GetTypeNames($mod);
 		$main[] = array(
 			$mod->Lang('title_type'),
-			($canmod && !$this->committed) ?
+			($pmod && !$this->committed) ?
 			$mod->CreateInputDropdown($id,'tmt_type',$options,'',$data->type) :
-			array_search($data->type,$options,TRUE).(($canmod)?$mod->CreateInputHidden($id,'tmt_type',$data->type):'')
+			array_search($data->type,$options,TRUE).(($pmod)?$mod->CreateInputHidden($id,'tmt_type',$data->type):'')
 		);
 		$main[] = array(
 			$mod->Lang('title_zone'),
-			($canmod && !$this->committed) ?
+			($pmod && !$this->committed) ?
 			$mod->CreateInputDropdown($id,'tmt_timezone',$mod->GetTimeZones(),'',$data->timezone) :
-			$data->timezone.(($canmod)?$mod->CreateInputHidden($id,'tmt_timezone',$data->timezone):''),
+			$data->timezone.(($pmod)?$mod->CreateInputHidden($id,'tmt_timezone',$data->timezone):''),
 			$mod->Lang('help_zone2')
 		);
 		$main[] = array(
 			$mod->Lang('title_teamsize'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateInputText($id,'tmt_teamsize',$data->teamsize,2,2) : $data->teamsize
 		);
 		$options = array(
@@ -376,48 +384,42 @@ EOF;
 		);
 		$main[] = array(
 			$mod->Lang('title_seedtype'),
-			($canmod && !$this->committed) ?
+			($pmod && !$this->committed) ?
 			$mod->CreateInputDropdown($id,'tmt_seedtype',$options,'',$data->seedtype):
-			array_search($data->seedtype,$options).(($canmod)?$mod->CreateInputHidden($id,'tmt_seedtype',$data->seedtype):''),
+			array_search($data->seedtype,$options).(($pmod)?$mod->CreateInputHidden($id,'tmt_seedtype',$data->seedtype):''),
 			$mod->Lang('help_seedtype')
 		);
 		$main[] = array(
 			$mod->Lang('title_owner'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_owner',$data->owner,50) : $data->owner,
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_owner',$data->owner,50) : (($data->owner)?$data->owner:'&nbsp;'),
 			$mod->Lang('help_owner')
 		);
 		$main[] = array(
 			$mod->Lang('title_contact'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_contact',$data->contact,50) : $data->contact,
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_contact',$data->contact,50) : (($data->contact)?$data->contact:'&nbsp;'),
 			$mod->Lang('help_contact')
 		);
-//		$tweet = class_exists('Twitter',FALSE);
-		if(1)//$tweet)
+		$help = $mod->Lang('help_twt1');
+		if($pmod)
 		{
-			$help = $mod->Lang('help_twt1');
-			if($canmod)
-			{
-				$twt = new tmtTweet();
-				if($twt->GetTokens($data->bracket_id,TRUE,TRUE))
-					$help .= $mod->Lang('help_twt2',$data->twtfrom);
-				else
-					$help .= $mod->Lang('help_twt3');
-				$help .= ' '.$mod->Lang('help_twt4').'<br /><br />'.
-					$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
-						'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"');
-			}
-			$main[] = array(
-				$mod->Lang('title_twtfrom'),
-				($canmod) ?
-				$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16) : $data->twtfrom,
-				$help
-			);
+			$twt = new tmtTweet();
+			if($twt->GetTokens($data->bracket_id,TRUE,TRUE))
+				$help .= $mod->Lang('help_twt2',$data->twtfrom);
+			else
+				$help .= $mod->Lang('help_twt3');
+			$help .= ' '.$mod->Lang('help_twt4').'<br /><br />'.
+				$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
+					'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"');
 		}
-
-/*
-		if($canmod)
+		$main[] = array(
+			$mod->Lang('title_twtfrom'),
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16) : (($data->twtfrom)?$data->twtfrom:'&nbsp;'),
+			$help
+		);
+/*		if($pmod)
 		{
 			include(cms_join_path($config['root_path'],'lib','classes','class.groupoperations.inc.php'));
 			$ob = new GroupOperations();
@@ -438,20 +440,21 @@ EOF;
 		}
 		$main[] = array(
 			$mod->Lang('title_admin_eds'),
-			($canmod) ?
-			$mod->CreateInputDropdown($id,'tmt_admin_editgroup',$grpnames,'',$data->admin_editgroup) : $data->admin_editgroup,
+			($pmod) ?
+			$mod->CreateInputDropdown($id,'tmt_admin_editgroup',$grpnames,'',$data->admin_editgroup) : (($data->admin_editgroup)?$data->:'&nbsp;'),
 			$mod->Lang('help_login')
 		);
 */
 		$ob =& $mod->GetModuleInstance('FrontEndUsers');
 		if($ob)
 		{
-			if($canmod)
+			//TODO filter on permitted groups only c.f. MBVFaq
+			if($pmod)
 				$grpnames = $ob->GetGroupList();
 			unset($ob);
 			$main[] = array(
 				$mod->Lang('title_feu_eds'),
-				($canmod) ?
+				($pmod) ?
 				$mod->CreateInputDropdown($id,'tmt_feu_editgroup',array(
 					$mod->Lang('no_groups')=>'none',
 					$mod->Lang('all_groups')=>'any')+$grpnames,'',$data->feu_editgroup) : $data->feu_editgroup,
@@ -465,98 +468,85 @@ EOF;
 
 		$adv = array();
 		$mail = class_exists('CMSMailer',FALSE);
-		if(1)//$mail || $tweet)
-		{
-			$tplhelp = array();
-			$tplhelp[] = $mod->Lang('help_template');
-			foreach(array(
-			'title',
-			'description',
-			'owner',
-			'contact',
-			'where',
-			'when',
-			'date',
-			'time',
-			'opponent',
-			'teams',
-			'recipient',
-			'toall'
-			) as $varname) $tplhelp[] = '&nbsp;$'.$varname.': '.$mod->Lang('desc_'.$varname);
-			$tplhelp[] = $mod->Lang('help_mailout_template');
-			$help = implode('<br />',$tplhelp);
-		}
+		$tplhelp = array();
+		$tplhelp[] = $mod->Lang('help_template');
+		foreach(array(
+		'title',
+		'description',
+		'owner',
+		'contact',
+		'where',
+		'when',
+		'date',
+		'time',
+		'opponent',
+		'teams',
+		'recipient',
+		'toall'
+		) as $varname) $tplhelp[] = '&nbsp;$'.$varname.': '.$mod->Lang('desc_'.$varname);
+		$tplhelp[] = $mod->Lang('help_mailout_template');
+		$help = implode('<br />',$tplhelp);
 		if($mail)
 		{
-			if($canmod)
+			if($pmod)
 				$hidden .= $mod->CreateInputHidden($id,'tmt_html',0);
 			$adv[] = array(
 				$mod->Lang('title_emailhtml'),
-				($canmod) ?
+				($pmod) ?
 				$mod->CreateInputCheckbox($id,'tmt_html','1',$data->html) :
 				(($data->html) ?  $mod->Lang('yes') : $mod->Lang('no'))
 			);
 
 			$adv[] = array(
 				$mod->Lang('title_mailouttemplate'),
-				($canmod) ?
+				($pmod) ?
 				$mod->CreateTextArea(FALSE,$id,$data->motemplate,'tmt_motemplate','','','','',65,10,'','','style="height:8em"') :
 				(($data->motemplate) ? $data->motemplate : '&nbsp;'),
 				 $help
 			);
 		}
-		if(1)//$tweet)
-		{
-			$adv[] = array(
-				$mod->Lang('title_tweetouttemplate'),
-				($canmod) ?
-				$mod->CreateTextArea(FALSE,$id,$data->totemplate,'tmt_totemplate','','','','',65,3,'','','style="height:3em"') :
-				(($data->totemplate) ? $data->totemplate : '&nbsp;'),
-				(($mail)?$mod->Lang('seeabove'):$help)
-			);  //TODO maybe specific $tplhelp[]
-		}
-
-		if(1)//$mail || $tweet)
-		{
-			$tplhelp = array();
-			$tplhelp[] = $mod->Lang('help_template');
-			foreach(array(
-			'title',
-			'description',
-			'where',
-			'when',
-			'date',
-			'time',
-			'report'
-			) as $varname) $tplhelp[] = '&nbsp;$'.$varname.': '.$mod->Lang('desc_'.$varname);
-			$tplhelp[] = $mod->Lang('help_mailin_template');
-			$help = implode('<br />',$tplhelp);
-		}
+		$adv[] = array(
+			$mod->Lang('title_tweetouttemplate'),
+			($pmod) ?
+			$mod->CreateTextArea(FALSE,$id,$data->totemplate,'tmt_totemplate','','','','',65,3,'','','style="height:3em"') :
+			(($data->totemplate) ? $data->totemplate : '&nbsp;'),
+			(($mail)?$mod->Lang('seeabove'):$help)
+		);  //TODO maybe specific $tplhelp[]
+		$tplhelp = array();
+		$tplhelp[] = $mod->Lang('help_template');
+		foreach(array(
+		'title',
+		'description',
+		'where',
+		'when',
+		'date',
+		'time',
+		'report'
+		) as $varname) $tplhelp[] = '&nbsp;$'.$varname.': '.$mod->Lang('desc_'.$varname);
+		$tplhelp[] = $mod->Lang('help_mailin_template');
+		$help = implode('<br />',$tplhelp);
 
 		if($mail)
 		{
 			$adv[] = array(
 				$mod->Lang('title_mailintemplate'),
-				($canmod) ?
+				($pmod) ?
 				$mod->CreateTextArea(FALSE,$id,$data->mitemplate,'tmt_mitemplate','','','','',65,10,'','','style="height:8em"') :
 				(($data->mitemplate) ? $data->mitemplate : '&nbsp;'),
 				 $help
 			);
 		}
-		if(1)//$tweet)
-		{
-			$adv[] = array(
-				$mod->Lang('title_tweetintemplate'),
-				($canmod) ?
-				$mod->CreateTextArea(FALSE,$id,$data->titemplate,'tmt_titemplate','','','','',65,3,'','','style="height:3em"') :
-				(($data->titemplate) ? $data->titemplate : '&nbsp;'),
-				(($mail)?$mod->Lang('seeabove'):$help)
-			);  //TODO maybe specific $tplhelp[]
-		}
+		$adv[] = array(
+			$mod->Lang('title_tweetintemplate'),
+			($pmod) ?
+			$mod->CreateTextArea(FALSE,$id,$data->titemplate,'tmt_titemplate','','','','',65,3,'','','style="height:3em"') :
+			(($data->titemplate) ? $data->titemplate : '&nbsp;'),
+			(($mail)?$mod->Lang('seeabove'):$help)
+		);  //TODO maybe specific $tplhelp[]
 
 		$adv[] = array(
 			$mod->Lang('title_logic'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->logic,'tmt_logic','','','','',65,15,'','','style="height:8em"') :
 			(($data->logic) ? $data->logic : '&nbsp;'),
 			$mod->Lang('help_logic')
@@ -567,16 +557,27 @@ EOF;
 //========= SCHEDULE ==========
 
 		$sched = array();
+		if($pmod)
+		{
+			if(!$this->committed)
+				$i = $mod->CreateInputText($id,'tmt_startdate',$data->startdate,30);
+			elseif ($data->startdate)
+				$i = $data->startdate.$mod->CreateInputHidden($id,'tmt_startdate',$data->startdate);
+			else
+				$i = '&nbsp'.$mod->CreateInputHidden($id,'tmt_startdate','');
+		}
+		elseif($data->startdate)
+			$i = $data->startdate;
+		else
+			$i = '&nbsp';
 		$sched[] = array(
 			$mod->Lang('title_start_date'),
-			($canmod && !$this->committed) ?
-			$mod->CreateInputText($id,'tmt_startdate',$data->startdate,30) :
-			(($data->startdate) ? $data->startdate : '&nbsp').($canmod)?$mod->CreateInputHidden($id,'tmt_startdate',$data->startdate):'',
+			$i,
 			$mod->Lang('help_date')
 		);
 		$sched[] = array(
 			$mod->Lang('title_end_date'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateInputText($id,'tmt_enddate',$data->enddate,30) :
 			(($data->enddate) ? $data->enddate : '&nbsp'),
 			$mod->Lang('help_date')
@@ -584,52 +585,25 @@ EOF;
 
 		$sched[] = array(
 			$mod->Lang('title_calendar').' (NOT YET WORKING)',
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_calendarid',$data->calendarid,15,20) : $data->calendarid,
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_calendarid',$data->calendarid,15,20) : (($data->calendarid)?$data->calendarid:'&nbsp;'),
 			$mod->Lang('help_calendar')
 		);
-
-		if($canmod)
-		{
-			$options = array(
-				$mod->Lang('satday')=>7,
-				$mod->Lang('sunday')=>1,
-				$mod->Lang('monday')=>2,
-				$mod->Lang('tueday')=>3,
-				$mod->Lang('wedday')=>4,
-				$mod->Lang('thuday')=>5,
-				$mod->Lang('friday')=>6
-			);
-			if(is_array($data->match_days))
-				$choices = $data->match_days;
-			else
-				$choices = explode(';',$data->match_days);
-			$hidden .= $mod->CreateInputHidden($id,'tmt_match_days','any'); //in case nothing is selected
-		}
 		$sched[] = array(
-			$mod->Lang('title_match_on'),
-			($canmod) ?
-			$mod->CreateInputSelectList($id,'tmt_match_days[]',$options,$choices,'5') : $data->match_days,
-			$mod->Lang('help_selection')
+			$mod->Lang('title_match_on').' (NOT YET WORKING)',
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_match_days',$data->match_days,50,128) : (($data->match_days)?$data->match_days:'&nbsp;'),
+			$mod->Lang('help_match_days').'<br />'.$mod->Lang('help_daysend')
 		);
-		
-		if($canmod)
-		{
-			$options = array();
-			foreach(range(0,24) as $fullhour)
-			   $options[$fullhour] = $fullhour;
-			$choices = (is_array($data->match_hours))?$data->match_hours:explode(';',$data->match_hours);
-			$hidden .= $mod->CreateInputHidden($id,'tmt_match_hours','any');
-		}
 		$sched[] = array(
-			$mod->Lang('title_match_hours'),
-			($canmod) ?
-			$mod->CreateInputSelectList($id,'tmt_match_hours[]',$options,$choices,'5') : $data->match_hours,
-			$mod->Lang('help_selection')
+			$mod->Lang('title_match_times').' (NOT YET WORKING)',
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_match_hours',$data->match_hours,50,128) : (($data->match_hours)?$data->match_hours:'&nbsp;'),
+			$mod->Lang('help_match_times').'<br />'.$mod->Lang('help_timesend')
 		);
 		$sched[] = array(
 			$mod->Lang('title_same_time'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateInputText($id,'tmt_sametime',$data->sametime,3,3) :
 			(($data->sametime) ? $data->sametime : '&nbsp;'),
 			$mod->Lang('help_same_time'),
@@ -660,7 +634,7 @@ EOF;
 		}
 		$sched[] = array(
 			$mod->Lang('title_place_gap'),
-			($canmod) ?
+			($pmod) ?
 			$parts[0].
 			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_placegaphours',$vh,2,4).$parts[1].
 			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_placegapdays',$vd,2,2).$parts[2] :
@@ -702,7 +676,7 @@ EOF;
 		}
 		$sched[] = array(
 			$mod->Lang('title_play_gap'),
-			($canmod) ?
+			($pmod) ?
 			$parts[0].
 			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_playgapmins',$vm,2,2).$parts[1].
 			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_playgaphours',$vh,2,4).$parts[2].
@@ -719,69 +693,69 @@ EOF;
 
 		$names[] = array(
 			$mod->Lang('title_final'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_final',$data->final,30) : $data->final
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_final',$data->final,30) : (($data->final)?$data->final:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_semi'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_semi',$data->semi,30) : $data->semi
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_semi',$data->semi,30) : (($data->semi)?$data->semi:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_quarter'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_quarter',$data->quarter,30) : $data->quarter
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_quarter',$data->quarter,30) : (($data->quarter)?$data->quarter:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_eighth'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_eighth',$data->eighth,30) : $data->eighth
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_eighth',$data->eighth,30) : (($data->eighth)?$data->eighth:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_roundname'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_roundname',$data->roundname,30) : $data->roundname,
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_roundname',$data->roundname,30) : (($data->roundname)?$data->roundname:'&nbsp;'),
 			$mod->Lang('help_match_names')
 		);
 		$names[] = array(
 			$mod->Lang('title_against'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_versus',$data->versus,30) : $data->versus
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_versus',$data->versus,30) : (($data->versus)?$data->versus:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_defeated'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_defeated',$data->defeated,30) : $data->defeated
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_defeated',$data->defeated,30) : (($data->defeated)?$data->defeated:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_cantie'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateInputCheckbox($id,'tmt_cantie',1,$data->cantie,'class="pagecheckbox"') :
 				($data->cantie?$mod->Lang('yesties'):$mod->Lang('noties'))
 		);
 		$names[] = array(
 			$mod->Lang('title_tied'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_tied',$data->tied,30) : $data->tied
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_tied',$data->tied,30) : (($data->tied)?$data->tied:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_noop'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_bye',$data->bye,30) : $data->bye
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_bye',$data->bye,30) : (($data->bye)?$data->bye:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_forfeit'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_forfeit',$data->forfeit,30) : $data->forfeit
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_forfeit',$data->forfeit,30) : (($data->forfeit)?$data->forfeit:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_abandoned'),
-			($canmod) ?
-			$mod->CreateInputText($id,'tmt_nomatch',$data->nomatch,30) : $data->nomatch
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_nomatch',$data->nomatch,30) : (($data->nomatch)?$data->nomatch:'&nbsp;')
 		);
 		$names[] = array(
 			$mod->Lang('title_cssfile'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateInputText($id,'tmt_chartcss',$data->chartcss,20,128).
 			' '.$mod->CreateInputSubmit($id,'upload_css',$mod->Lang('upload'),
 				'title="'.$mod->Lang('upload_tip').'" onclick="set_params(this);"') :
@@ -805,7 +779,7 @@ EOF;
 
 		$names[] = array(
 			$mod->Lang('title_chttemplate'),
-			($canmod) ?
+			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->chttemplate,'tmt_chttemplate','','','','',65,20,'','','style="height:10em"') :
 			(($data->chttemplate) ? $data->chttemplate : '&nbsp;'),
 			$help
@@ -822,10 +796,10 @@ EOF;
 		$smarty->assign('seedtitle',$mod->Lang('title_seed'));
 		$smarty->assign('contacttitle',$mod->Lang('title_contact'));
 		$smarty->assign('movetitle',$mod->Lang('title_move'));
-		$teamtitle = (intval($data->teamsize) == 1) ?
-				$mod->Lang('title_player') : $mod->Lang('title_team');
+		$isteam = ((int)$data->teamsize > 1); 
+		$teamtitle = ($isteam) ? $mod->Lang('title_team') : $mod->Lang('title_player');
 		$smarty->assign('teamtitle',$teamtitle);
-		$s = array('/class="(.*)"/','/id=.*\[\]" /'); //for xhtml string cleanup
+		$finds = array('/class="(.*)"/','/id=.*\[\]" /'); //for xhtml string cleanup
 
 		if($data->teams)
 		{
@@ -834,41 +808,48 @@ EOF;
 			$indx = 1;
 			$rowclass = 'row1'; //used to alternate row colors
 			$theme = $gCms->variables['admintheme'];
-			$r = array('class="tem_name $1"',''); //fails if backref first!
+			if($pmod)
+			{
+				$iconup = $theme->DisplayImage('icons/system/arrow-u.gif',$mod->Lang('up'),'','','systemicon');
+				$icondn = $theme->DisplayImage('icons/system/arrow-d.gif',$mod->Lang('down'),'','','systemicon');
+				$tmp = ($isteam) ? $mod->Lang('team') : $mod->Lang('player');
+			}
 
 			foreach($data->teams as $tid=>$tdata)
 			{
 				$one = new stdClass();
 				$one->rowclass = $rowclass;
-				if($canmod)
+				if($pmod)
 				{
 					$one->hidden = $mod->CreateInputHidden($id,'tem_teamid[]',$tid).
 						$mod->CreateInputHidden($id,'tem_contactall[]',$tdata['contactall']);
 					$one->order = $tdata['displayorder'];
 					$tmp = $mod->CreateInputText($id,'tem_name[]',$tdata['name'],20,64);
-					$one->name = preg_replace($s,$r,$tmp);
+					$repls = array('class="tem_name $1"',''); //fails if backref first!
+					$one->name = preg_replace($finds,$repls,$tmp);
 					$tmp = $mod->CreateInputText($id,'tem_seed[]',$tdata['seeding'],3,3);
-					$r = array('class="tem_seed $1"','');
-					$one->seed = preg_replace($s,$r,$tmp);
+					$repls = array('class="tem_seed $1"','');
+					$one->seed = preg_replace($finds,$repls,$tmp);
 					$tmp = $mod->CreateInputText($id,'tem_contact[]',$tdata['contact'],30,64);
-					$r = array('class="tem_contact $1"','');
-					$one->contact = preg_replace($s,$r,$tmp);
+					$repls = array('class="tem_contact $1"','');
+					$one->contact = preg_replace($finds,$repls,$tmp);
 					if($indx > 1)
 						$one->uplink = $mod->CreateLink($id,'order_team',$returnid,
-							$theme->DisplayImage('icons/system/arrow-u.gif',$mod->Lang('up'),'','','systemicon'),
+							$iconup,
 							array('tem_teamid'=>$tid,'tem_order'=>intval($tdata['displayorder'])-1));
 					else
 						$one->uplink = '';
 					if($indx < $count)
 						$one->downlink = $mod->CreateLink($id,'order_team',$returnid,
-							$theme->DisplayImage('icons/system/arrow-d.gif',$mod->Lang('down'),'','','systemicon'),
+							$icondn,
 							array('tem_teamid'=>$tid,'tem_order'=>intval($tdata['displayorder'])+1));
 					else
 						$one->downlink = '';
 					$indx++;
-					$one->editlink = $mod->CreateInputLinks($id,'edit['.$tid.']','edit.gif',FALSE,$mod->Lang('edit'),
-						'onclick="set_params(this);"');
-					$one->deletelink = $mod->CreateInputLinks($id,'delete_team['.$tid.']','delete.gif',FALSE,$mod->Lang('delete'));
+					$one->editlink = $mod->CreateInputLinks($id,'edit['.$tid.']','edit.gif',FALSE,
+						$mod->Lang('edit'),'onclick="set_params(this);"');
+					$one->deletelink = $mod->CreateInputLinks($id,'delete_team['.$tid.']','delete.gif',FALSE,
+						$mod->Lang('delete')); //confirmation via modal dialog
 					$one->selected = $mod->CreateInputCheckbox($id,'tsel[]',$tid,-1,'class="pagecheckbox"');
 				}
 				else
@@ -884,16 +865,14 @@ EOF;
 			}
 			$smarty->assign('teams',$teams);
 
-			if($canmod)
+			if($pmod)
 			{
-				$jsloads[] = <<< EOF
+				$jsloads[] = <<< EOS
  $('#tmt_players').find('.tem_delete').children().modalconfirm({
-  preShow: function(){
+  preShow: function(d){
 	var teamname = \$(this).closest('tr').find('.tem_name').attr('value');
-	var tpl = '{$mod->Lang('confirm_delete','/^/')}';
-	var exp = tpl.replace('/^/',teamname);
-	var para = this.children('p:first')[0];
-	para.innerHTML = exp;
+	var para = d.children('p:first')[0];
+	para.innerHTML = '{$mod->Lang('confirm_delete','%s')}'.replace('%s',teamname);
   },
   onConfirm: function(){
 	set_tab();
@@ -902,7 +881,7 @@ EOF;
   }
  });
 
-EOF;
+EOS;
 			}
 		}
 		else //no team-data
@@ -912,7 +891,7 @@ EOF;
 		}
 		$smarty->assign('teamcount',$count);
 
-		if($canmod)
+		if($pmod)
 		{
 			$this->SpareSlot($data->bracket_id,($data->type != RRTYPE));
 			if($this->spare)
@@ -928,18 +907,18 @@ EOF;
 		{
 			if($count > 1)
 			{
-				$jsfuncs[] = <<< EOF
+				$jsfuncs[] = <<< EOS
 function select_all_teams() {
  var st = $('#teamsel').attr('checked');
  if(!st) st = false;
  $('#tmt_players > tbody').find('input[type="checkbox"]').attr('checked',st);
 }
 
-EOF;
+EOS;
 				$smarty->assign('selteams',$mod->CreateInputCheckbox($id,'t',FALSE,-1,
 					'id="teamsel" onclick="select_all_teams();"'));
 			}
-			$jsfuncs[] = <<< EOF
+			$jsfuncs[] = <<< EOS
 function team_count() {
  var cb = $('#tmt_players > tbody').find('input:checked');
  return cb.length;
@@ -954,24 +933,25 @@ function teams_selected(ev,btn) {
  }
 }
 
-EOF;
+EOS;
 
-			if($canmod)
+			if($pmod)
 			{
 				$smarty->assign('dndhelp',$mod->Lang('help_dnd'));
 				$smarty->assign('update1',$mod->CreateInputSubmit($id,'update['.$id.'teams]',$mod->Lang('update'),
 					'title="'.$mod->Lang('update_tip').'" onclick="return teams_selected(event,this);"'));
 				$smarty->assign('delete',$mod->CreateInputSubmit($id,'delteams',$mod->Lang('delete'),
-					'title="'.$mod->Lang('delete_tip')));
-
-				$jsloads[] = <<< EOF
+					'title="'.$mod->Lang('delete_tip').'"'));
+				$t = ($isteam) ? $mod->Lang('sel_teams') : $mod->Lang('sel_players');
+				$t = $mod->Lang('confirm_delete',$t);
+				$jsloads[] = <<< EOS
  $('#{$id}delteams').modalconfirm({
   doCheck: function(){
 	return (team_count() > 0);
   },
-  preShow: function(){
-	var para = this.children('p:first')[0];
-	para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('sel_teams'))}';
+  preShow: function(d){
+	var para = d.children('p:first')[0];
+	para.innerHTML = '{$t}';
   },
   onConfirm: function(){
 	set_tab();
@@ -980,7 +960,7 @@ EOF;
   }
  });
 
-EOF;
+EOS;
 			}
 			$smarty->assign('export',$mod->CreateInputSubmit($id,'export',$mod->Lang('export'),
 				'title="'.$mod->Lang('export_tip').'" onclick="return teams_selected(event,this);"'));
@@ -1021,7 +1001,7 @@ EOF;
 				 	break;
 				}
 			}
-			if($canmod)
+			if($pmod)
 			{
 				$items = array(
 					$mod->Lang('notyet')=>NOTYET,
@@ -1117,14 +1097,14 @@ EOF;
 					$one->teamB = $mod->TeamName($mdata['teamB']);
 				}
 
-				if($canmod)
+				if($pmod)
 				{
 					$tmp = $mod->CreateInputText($id,'mat_playwhen[]',$mdata['playwhen'],20,48);
-					$r = array('class="mat_playwhen $1"','');
-					$one->schedule = preg_replace($s,$r,$tmp);
+					$repls = array('class="mat_playwhen $1"','');
+					$one->schedule = preg_replace($finds,$repls,$tmp);
 					$tmp = $mod->CreateInputText($id,'mat_playwhere[]',$mdata['place'],20,64);
-					$r = array('class="mat_playwhere $1"','');
-					$one->place = preg_replace($s,$r,$tmp);
+					$repls = array('class="mat_playwhere $1"','');
+					$one->place = preg_replace($finds,$repls,$tmp);
 					$one->hidden = $mod->CreateInputHidden($id,'mat_teamA[]',$mdata['teamA']).
 						$mod->CreateInputHidden($id,'mat_teamB[]',$mdata['teamB']);
 					if($mdata['status'] >= MRES)
@@ -1195,22 +1175,22 @@ EOF;
 			}
 			$smarty->assign('matches',$matches);
 
-			if($canmod && count($matches) > 1)
+			if($pmod && count($matches) > 1)
 			{
-				$jsfuncs[] = <<< EOF
+				$jsfuncs[] = <<< EOS
 function select_all_matches() {
  var st = $('#matchsel').attr('checked');
  if(!st) st = false;
  $('#tmt_matches > tbody').find('input[type="checkbox"]').attr('checked',st);
 }
 
-EOF;
+EOS;
 
 				$smarty->assign('selmatches',$mod->CreateInputCheckbox($id,'m',FALSE,-1,
 					'id="matchsel" onclick="select_all_matches();"'));
 			}
 
-			$jsfuncs[] = <<< EOF
+			$jsfuncs[] = <<< EOS
 function match_count() {
  var cb = $('#tmt_matches > tbody').find('input:checked');
  return cb.length;
@@ -1225,11 +1205,11 @@ function matches_selected(ev,btn) {
  }
 }
 
-EOF;
+EOS;
 			$smarty->assign('scheduledtitle',$mod->Lang('scheduled'));
 			$smarty->assign('placetitle',$mod->Lang('title_venue'));
 			$smarty->assign('statustitle',$mod->Lang('title_status'));
-			if($canmod)
+			if($pmod)
 			{
 				$smarty->assign('update2',$mod->CreateInputSubmit($id,'update['.$id.'matches]',$mod->Lang('update'),
 					'title="'.$mod->Lang('update_tip').'" onclick="return matches_selected(event,this);"'));
@@ -1237,10 +1217,10 @@ EOF;
 				{
 					$smarty->assign('reset',$mod->CreateInputSubmit($id,'reset',$mod->Lang('reset'),
 						'title="'.$mod->Lang('reset_tip').'"'));
-					$jsloads[] = <<< EOF
+					$jsloads[] = <<< EOS
  $('#{$id}reset').modalconfirm({
-  preShow: function(){
-	var para = this.children('p:first')[0];
+  preShow: function(d){
+	var para = d.children('p:first')[0];
 	para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
   },
   onConfirm: function(){
@@ -1250,17 +1230,17 @@ EOF;
   }
  });
 
-EOF;
+EOS;
 				}
 			}
 
-			$jsloads[] = <<< EOF
+			$jsloads[] = <<< EOS
  $('#{$id}notify').modalconfirm({
   doCheck: function(){
 	return (match_count() > 0);
   },
-  preShow: function(){
-	var para = this.children('p:first')[0];
+  preShow: function(d){
+	var para = d.children('p:first')[0];
 	para.innerHTML = '{$mod->Lang('allsaved')}';
   },
   onConfirm: function(){
@@ -1270,7 +1250,7 @@ EOF;
   }
  });
 
-EOF;
+EOS;
 			$smarty->assign('notify',$mod->CreateInputSubmit($id,'notify',$mod->Lang('notify'),
 				'title="'.$mod->Lang('notify_tip').'"')); // onclick="matches_notify(event,this);"'));
 			if($plan)
@@ -1321,13 +1301,14 @@ EOF;
 		{
 			$smarty->assign('malldone',0);
 			$smarty->assign('nomatches',$mod->Lang('info_nomatch'));
-			$smarty->assign('schedule',$mod->CreateInputSubmit($id,'schedule',$mod->Lang('schedule'),
-				'onclick="set_params(this);"'));
+			if($pmod)
+				$smarty->assign('schedule',$mod->CreateInputSubmit($id,'schedule',$mod->Lang('schedule'),
+					'onclick="set_params(this);"'));
 		}
 
 		$hidden .= $mod->CreateInputHidden($id,'matchview',$data->matchview);
 
-		$jsfuncs[] = <<< EOF
+		$jsfuncs[] = <<< EOS
 function matches_view(btn) {
  set_tab();
  $('#{$id}real_action').val('match_view');
@@ -1335,7 +1316,7 @@ function matches_view(btn) {
  $('#{$id}matchview').val(newmode);
 }
 
-EOF;
+EOS;
 		if($plan)
 		{
 			$smarty->assign('plan',1);
@@ -1376,14 +1357,14 @@ EOF;
 					$one = new stdClass();
 					$one->rowclass = $rowclass;
 					$one->schedule = $mdata['playwhen'];
-					if($canmod)
+					if($pmod)
 					{
 						$one->hidden = $mod->CreateInputHidden($id,'res_matchid[]',$mid).
 							$mod->CreateInputHidden($id,'res_teamA[]',$mdata['teamA']).
 							$mod->CreateInputHidden($id,'res_teamB[]',$mdata['teamB']);
 						$tmp = $mod->CreateInputText($id,'res_playwhen[]',$one->schedule,15,30);
-						$r = array('class="res_playwhen $1"','');
-						$one->actual = preg_replace($s,$r,$tmp);
+						$repls = array('class="res_playwhen $1"','');
+						$one->actual = preg_replace($finds,$repls,$tmp);
 						$one->teamA = $mod->TeamName($mdata['teamA']);
 						$one->teamB = $mod->TeamName($mdata['teamB']);
 						$choices = array(
@@ -1404,8 +1385,8 @@ EOF;
 							$sel = intval($mdata['status']);
 						$one->result = $mod->CreateInputDropdown($id,'res_status['.$mid.']',$choices,'',$sel);
 						$tmp = $mod->CreateInputText($id,'res_score[]',$mdata['score'],15,30);
-						$r = array('class="res_score $1"','');
-						$one->score = preg_replace($s,$r,$tmp);
+						$repls = array('class="res_score $1"','');
+						$one->score = preg_replace($finds,$repls,$tmp);
 						$one->selected = $mod->CreateInputCheckbox($id,'rsel[]',$mid,-1,'class="pagecheckbox"');
 					}
 					else //no changes
@@ -1451,14 +1432,14 @@ EOF;
 				$smarty->assign('results',$results);
 				if(count($results) > 1)
 				{
-					$jsfuncs[] = <<< EOF
+					$jsfuncs[] = <<< EOS
 function select_all_results() {
  var st = $('#resultsel').attr('checked');
  if(!st) st = false;
  $('#tmt_results > tbody').find('input[type="checkbox"]).attr('checked',st);
 }
 
-EOF;
+EOS;
 					$smarty->assign('selresults',$mod->CreateInputCheckbox($id,'r',FALSE,-1,
 						'id="resultsel" onclick="select_all_results();"'));
 				}
@@ -1467,7 +1448,7 @@ EOF;
 				$smarty->assign('resulttitle',$mod->Lang('title_result'));
 				$smarty->assign('scoretitle',$mod->Lang('score'));
 
-				$jsfuncs[] = <<< EOF
+				$jsfuncs[] = <<< EOS
 function result_count() {
  var cb = $('#tmt_results > tbody').find('input:checked');
  return cb.length;
@@ -1482,7 +1463,7 @@ function results_selected(ev,btn) {
  }
 }
 
-EOF;
+EOS;
 				$smarty->assign('update3',$mod->CreateInputSubmit($id,'update['.$id.'results]',$mod->Lang('update'),
 					'title="'.$mod->Lang('update_tip').'" onclick="return results_selected(event,this);"'));
 			}
@@ -1506,7 +1487,7 @@ EOF;
 
 		$hidden .= $mod->CreateInputHidden($id,'resultview',$data->resultview);
 
-		$jsfuncs[] = <<< EOF
+		$jsfuncs[] = <<< EOS
 function results_view(btn) {
  set_tab();
  $('#{$id}real_action').val('result_view');
@@ -1514,7 +1495,7 @@ function results_view(btn) {
  $('#{$id}resultview').val(newmode);
 }
 
-EOF;
+EOS;
 		if($future)
 			$smarty->assign('altrview',$mod->CreateInputSubmit($id,'past',$mod->Lang('history'),
 				'title="'.$mod->Lang('history_tip').'" onclick="results_view(this);"'));
@@ -1538,7 +1519,7 @@ EOF;
 			$url = $mod->CreateLink($id,'check_data',NULL,NULL,array('bracket_id'=>$data->bracket_id),NULL,TRUE);
 			$offs = strpos($url,'?mact=');
 			$ajaxdata = str_replace('amp;','',substr($url,$offs+1));
-			$test = <<< EOF
+			$test = <<< EOS
 function(){
 	 var check = false;
 	 $.ajax({
@@ -1555,17 +1536,17 @@ function(){
 	 });
 	 return check;
 	}
-EOF;
+EOS;
 		}
 
 		$smarty->assign('cancel',$mod->CreateInputSubmit($id,'cancel',$mod->Lang('cancel')));
 
 		//onCheckFail: true means onConfirm() if no check needed
-		$jsloads[] = <<< EOF
+		$jsloads[] = <<< EOS
  $('#{$id}cancel').modalconfirm({
   doCheck: $test,
-  preShow: function(){
-	var para = this.children('p:first')[0];
+  preShow: function(d){
+	var para = d.children('p:first')[0];
 	para.innerHTML = '{$mod->Lang('abandon')}';
   },
   onCheckFail: true,
@@ -1575,7 +1556,7 @@ EOF;
   }
  });
 
-EOF;
+EOS;
 		$btn = '<input id="%s" class="cms_submit" type="submit" value="%s" />';
 		$ident = $id.'no';
 		$smarty->assign('no',sprintf($btn,$ident,$mod->Lang('no')));
@@ -1587,7 +1568,7 @@ EOF;
 		if($jsloads)
 		{
 			$jsfuncs[] = '
-$(function() {
+$(document).ready(function() {
 ';
 			$jsfuncs = array_merge($jsfuncs,$jsloads);
 			$jsfuncs[] = '});
