@@ -908,6 +908,19 @@ Europe/Vilnius'
 					$name = 'save_comp';
 				elseif(substr($task,0,11) == 'delete_team')
 					$name = 'delete_team';
+				elseif(substr($task,0,8) == 'movedown'
+					  || substr($task,0,6) == 'moveup')
+					$name = 'move_team2';
+			}
+			break;
+		 case 'addedit_team':
+			if (!empty($params['real_action']))
+			{
+				//'real_action' will be correctly set only if js is enabled
+				$task = substr($params['real_action'], strlen($id));
+				if(substr($task,0,8) == 'movedown'
+				|| substr($task,0,6) == 'moveup')
+					$name = 'order_team2';
 			}
 			break;
 		 case 'default':
