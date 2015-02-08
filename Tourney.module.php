@@ -689,16 +689,39 @@ Europe/Vilnius'
 		return $ret;
 	}
 
-	//generate xhtml for input-button(s) which can be styled like icon and/or link
-	//specifically: class fakeicon for the image, fakelink for the link
+	/**
+	CreateInputLinks:
+	@id: system-id to be passed to the module
+	@name: name of action to be performed when (either of) the object(s) is clicked
+	@iconfile: optional name of theme icon, or module-relative or absolute URL
+	  of some other icon for image input, default FALSE i.e. no image
+	@link: optional whether to (also) create a submit input, default FALSE
+	@text: optional title and tip for an image, or mandatory displayed text for a link, default ''
+	@extra: optional additional text that should be added into the object, default ''
+	Generate xhtml for image and/or submit input(s) which can be styled like an icon
+	and/or link, using class "fakeicon" for an image, "fakelink" for a standard link
+
+	Such object(s) is(are) needed where the handler/action requires all form data,
+	instead of just the data for the oject itself (which happens for a normal link)
+	*/
 	function CreateInputLinks($id, $name, $iconfile=FALSE, $link=FALSE, $text='', $extra='')
 	{
 		if ($iconfile)
 		{
-			$theme = cmsms()->get_variable('admintheme');
-			$imgstr = $theme->DisplayImage('icons/system/'.$iconfile,$text,'','','fakeicon systemicon');
-			//trim string like <img src="..." class="fakeicon systemicon" alt="$text" title="$text" />
-			$imgstr = str_replace(array('<img','/>'),array('',''),$imgstr);
+			$p = strpos($iconfile,'/'); 
+			if ($p === FALSE)
+			{
+				$theme = cmsms()->get_variable('admintheme');
+				$imgstr = $theme->DisplayImage('icons/system/'.$iconfile,$text,'','','fakeicon systemicon');
+				//trim string like <img src="..." class="fakeicon systemicon" alt="$text" title="$text" />
+				$imgstr = str_replace(array('<img','/>'),array('',''),$imgstr);
+			}
+			elseif ($p == 0)
+				$imgstr = $this->GetModuleURLPath().$iconfile;
+			elseif (strpos($iconfile,'://',$p-1) === $p-1)
+				$imgstr = $iconfile;
+			else
+				$imgstr = $this->GetModuleURLPath().'/'.$iconfile;
 			$ret = '<input type="image" '.$imgstr.' name="'.$id.$name.'"'; //conservative assumption about spaces
 			if ($extra)
 				$ret .= ' '.$extra;
