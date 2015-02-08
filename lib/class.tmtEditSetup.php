@@ -825,22 +825,19 @@ EOS;
 						$mod->CreateInputHidden($id,'tem_contactall[]',$tdata['contactall']);
 					$one->order = $tdata['displayorder'];
 					$tmp = $mod->CreateInputText($id,'tem_name[]',$tdata['name'],20,64);
-					$repls = array('class="tem_name $1"',''); //fails if backref first!
-					$one->name = preg_replace($finds,$repls,$tmp);
+					$one->name = preg_replace($finds,array('class="tem_name $1"',''),$tmp);//fails if backref first!
 					$tmp = $mod->CreateInputText($id,'tem_seed[]',$tdata['seeding'],3,3);
-					$repls = array('class="tem_seed $1"','');
-					$one->seed = preg_replace($finds,$repls,$tmp);
+					$one->seed = preg_replace($finds,array('class="tem_seed $1"',''),$tmp);
 					$tmp = $mod->CreateInputText($id,'tem_contact[]',$tdata['contact'],30,64);
-					$repls = array('class="tem_contact $1"','');
-					$one->contact = preg_replace($finds,$repls,$tmp);
+					$one->contact = preg_replace($finds,array('class="tem_contact $1"',''),$tmp);
 					//need input-objects that look like page-link, to get all form parameters upon activation
 					if($indx > 1)
-						$one->uplink = $mod->CreateInputLinks($id,'moveup['.$tid.','.(int)$tdata['displayorder']-1.']','arrow-u.gif',FALSE,
+						$one->uplink = $mod->CreateInputLinks($id,'moveup['.$tid.']','arrow-u.gif',FALSE,
 							$uptext,'onclick="set_params(this);"');
 					else
 						$one->uplink = '';
 					if($indx < $count)
-						$one->downlink = $mod->CreateInputLinks($id,'movedown['.$tid.','.(int)$tdata['displayorder']+1.']','arrow-d.gif',FALSE,
+						$one->downlink = $mod->CreateInputLinks($id,'movedown['.$tid.']','arrow-d.gif',FALSE,
 							$downtext,'onclick="set_params(this);"');
 					else
 						$one->downlink = '';
