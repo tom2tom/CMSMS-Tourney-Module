@@ -50,6 +50,7 @@ $lang['clone']='Clone';
 $lang['copy']='Copy';
 $lang['delete']='Delete';
 $lang['export']='Export';
+$lang['exportxml']='Export XML';
 $lang['chart']='Chart';
 $lang['submit']='Submit';
 $lang['submit2']='Submit Result';
@@ -60,6 +61,7 @@ $lang['plan']='Plan';
 $lang['plan_tip']='Show all matches';
 $lang['actual']='Actual';
 $lang['actual_tip']='Show pending matches';
+
 $lang['confirm_delete']='Are you sure you want to delete %s?';
 $lang['confirm_deletethis']='Are you sure you want to delete this %s?';
 //these are for inclusion in the above template to create delete-confirmation prompts
@@ -110,6 +112,7 @@ $lang['err_notime']='You must report finish time, or date and time, for complete
 //$lang['forfeited']='Forfeited';
 $lang['notyet']='Not yet';
 $lang['none']='None';
+
 //templates for displaying match results. %s('s) become(s) teamname(s), %r becomes a bracket-specific relation like 'defeated'
 //any ' ' or ',' in the following will be replaced by '\n' for in-box wrapping in bracketcharts
 $lang['versus_fmt']='%s %r %s';
@@ -472,8 +475,6 @@ $lang['title_tnmt_oldname']='Cloned Tournament';
 $lang['save']='Submit';
 $lang['saved']='Saved';
 
-$lang['no']='No';
-$lang['yes']='Yes';
 //any ' in these prompts must be double-escaped for js inclusion
 $lang['allsaved']='Are all matches\\\' data saved ?';
 $lang['abandon']='Abandon changes ?';
