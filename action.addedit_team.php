@@ -441,7 +441,12 @@ if($rows)
 	$indx = 1;
 	$finds = array('/class="(.*)"/','/id=.*\[\]" /'); //for xhtml string cleanup
 	$repls = array('class="plr_name $1"',''); //fails if backref first!
-	
+	if ($pmod)
+	{
+		$downtext = $mod->Lang('down');
+		$uptext = $mod->Lang('up');
+	}
+
 	foreach($rows as $row)
 	{
 		$one = new stdClass();
@@ -451,16 +456,19 @@ if($rows)
 			$tmp = $this->CreateInputText($id,'plr_name[]',$row['name'],25,64);
 			$one->input_name = preg_replace($finds,$repls,$tmp);
 			$one->input_contact = $this->CreateInputText($id,'plr_contact[]',$row['contact'],30,80);
+			//need input-objects that look like page-links here, to get all form parameters upon activation
 			if($indx > 1)
-				$one->uplink = $this->CreateInputLinks($id,'moveup['.$row['displayorder'].']','arrow-u.gif');
+				$one->uplink = $this->CreateInputLinks($id,'moveup['.(int)$row['id'].','.(int)$row['displayorder']-1.']','arrow-u.gif',FALSE,
+					$uptext,'onclick="set_params(this);"');
 			else
 				$one->uplink = '';
 			if($indx < $pc)
-				$one->downlink = $this->CreateInputLinks($id,'movedown['.$row['displayorder'].']','arrow-d.gif');
+				$one->downlink = $this->CreateInputLinks($id,'movedown['.(int)$row['id'].','.(int)$row['displayorder']+1.']','arrow-d.gif',FALSE,
+					$downtext,'onclick="set_params(this);"');
 			else
 				$one->downlink = '';
-			$one->deletelink = $this->CreateInputLinks($id,'delete['.$row['displayorder'].']','delete.gif',
-				FALSE,$this->Lang('deleteplayer')); //confirm via modal dialog
+			$one->deletelink = $this->CreateInputLinks($id,'delete['.$row['displayorder'].']','delete.gif',FALSE,
+				$this->Lang('deleteplayer')); //confirm via modal dialog
 			$ord = ($row['displayorder']) ? (int)$row['displayorder'] : $newo++;
 			//hiddens in table-row to support re-ordering and ajax manipulation
 			$one->hidden = $this->CreateInputHidden($id,'plr_order[]',$ord,'class="ord"').
@@ -482,10 +490,11 @@ if($rows)
 	{
 		$jsloads[] = <<< EOS
  $('#team').find('.plr_delete').children().modalconfirm({
+  overlayID: 'confirm',
   preShow: function(d){
-	var name = \$(this).closest('tr').find('.plr_name').attr('value');
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+   var name = \$(this).closest('tr').find('.plr_name').attr('value');
+   var para = d.children('p:first')[0];
+   para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
   }
  });
 
@@ -607,6 +616,10 @@ EOS;
 
 if($pmod)
 {
+	//for popup confirmation
+	$smarty->assign('no',$this->Lang('no'));
+	$smarty->assign('yes',$this->Lang('yes'));
+
 	if($pc > 1)
 	{
 		$smarty->assign('dndhelp',$this->Lang('help_dnd'));
@@ -616,10 +629,11 @@ if($pmod)
 		$t = $this->Lang('confirm_delete',$t);
 		$jsloads[] = <<< EOS
  $('#{$id}delete').modalconfirm({
+  overlayID: 'confirm',
   doCheck: player_selected,
   preShow: function(d){
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$t}';
+   var para = d.children('p:first')[0];
+   para.innerHTML = '{$t}';
   }
  });
 
@@ -627,6 +641,7 @@ EOS;
 	}
 	if($isteam || $pc == 0)
 	{
+		//need input-object that looks like page-link, to get all form parameters upon activation
 		$smarty->assign('add',$this->CreateInputLinks($id,'addplayer','newobject.gif',TRUE,
 			$this->Lang('title_add',strtolower($this->Lang('title_player')))));
 	}
@@ -646,10 +661,11 @@ EOS;
 	//onCheckFail: true; means submit form if no check needed
 	$jsloads[] = <<< EOS
  $('#{$id}cancel').modalconfirm({
-  doCheck: $test,
+  overlayID: 'confirm',
+  doCheck: {$test},
   preShow: function(d){
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$this->Lang('abandon')}';
+   var para = d.children('p:first')[0];
+   para.innerHTML = '{$this->Lang('abandon')}';
   },
   onCheckFail: true
  });
@@ -664,12 +680,6 @@ if($pc > 0)
 		'title="'.$this->Lang('export_tip').'" onclick="return player_selected();"'));
 
 $smarty->assign('hidden',$hidden);
-
-$btn = '<input id="%s" class="cms_submit" type="submit" value="%s" />';
-$ident = $id.'no';
-$smarty->assign('no',sprintf($btn,$ident,$this->Lang('no')));
-$ident = $id.'yes';
-$smarty->assign('yes',sprintf($btn,$ident,$this->Lang('yes')));
 
 $smarty->assign('incpath',$this->GetModuleURLPath().'/include/');
 
