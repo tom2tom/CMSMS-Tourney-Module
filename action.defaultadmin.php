@@ -85,10 +85,9 @@ if ($rows)
 	}
 	if ($pmod || $padm)
 	{
-		$alt = $this->Lang('export');
+		$alt = $this->Lang('exportxml');
 		$iconexport =
 		'<img src="'.$this->GetModuleURLPath().'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />';
-//	'<img src="../modules/'.$this->GetName().'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />';
 	}
 	
 	foreach ($rows as $bdata)
@@ -170,20 +169,20 @@ if ($comps)
 	$smarty->assign('candev',$pdev);
 	if ($pmod)
 	{
-		$btn = '<input id="%s" class="cms_submit" type="submit" value="%s" />';
-		$smarty->assign('no',sprintf($btn,$id.'no',$this->Lang('no')));
-		$smarty->assign('yes',sprintf($btn,$id.'yes',$this->Lang('yes')));
-		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.min.js"></script>';
+		//for popup confirmation
+		$smarty->assign('no',$this->Lang('no'));
+		$smarty->assign('yes',$this->Lang('yes'));
+		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.js"></script>';
 		$jsfuncs[] = <<< EOS
 $(document).ready(function() {
- $('.{$id}delete_comp')/*.click(function(e) {return false;})*/
- .modalconfirm({
+ $('.{$id}delete_comp').modalconfirm({
+  overlayID: 'confirm',
   preShow: function(d){
-	var name = \$('td:first > a', $(this).closest('tr')).text();
-	if (name.search(' ') > -1)
-	 name = '"'+name+'"';
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+   var name = \$('td:first > a', $(this).closest('tr')).text();
+   if (name.search(' ') > -1)
+    name = '"'+name+'"';
+   var para = d.children('p:first')[0];
+   para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
   }
  });
 });
