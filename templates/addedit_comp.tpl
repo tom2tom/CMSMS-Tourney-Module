@@ -166,7 +166,8 @@
 <div class="confirm-container">
 <p style="text-align:center;font-weight:bold;"></p>
 <br />
-<p style="text-align:center;">{$yes}&nbsp;&nbsp;{$no}</p>
+<p style="text-align:center;"><input id="mc_conf" class="cms_submit pop_btn" type="submit" value="{$yes}" />
+&nbsp;&nbsp;<input id="mc_deny" class="cms_submit pop_btn" type="submit" value="{$no}" /></p>
 </div>
 </div>
 {$form_end}
