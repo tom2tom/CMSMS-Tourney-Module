@@ -78,7 +78,7 @@ input.fakelink:hover
 	text-decoration:none;
 	background:url("");
 }
-
+/* for popup-modal confirmation */
 div.modal-overlay
 {
 	display:none;
@@ -93,7 +93,7 @@ div.modal-overlay
 div.confirm-container
 {
 	display:none;
-	position: absolute;
+	position:absolute;
 	top:50%;
 	left:50%;
 	border:2px solid #FDEAD0;
@@ -101,7 +101,17 @@ div.confirm-container
 	-webkit-border-radius:5px 5px 5px 5px;
 	border-radius:5px 5px 5px 5px;
 	padding:10px 40px;
+	z-index:1002;
 	background:#FEF4E7 url(../images/warning.gif) no-repeat 5px 10px;
-  	z-index:1002;
 }
-
+input.pop_btn
+{
+	font-weight:bold;
+	color:#000;
+	background:#C4A636;
+}
+input.pop_btn:hover
+{
+	color:#FFF;
+	background:#F00;
+}
