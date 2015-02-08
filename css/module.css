@@ -1,12 +1,23 @@
 .dndhelp { display:none; } /* changed at runtime if js is available */
 
-table.table_sort thead tr th, table.table_sort tfoot tr th
+table.table_sort thead tr th
 {
-	padding: 5px 0 5px 10px;
-    color: #000;
+	margin: 0 20px;
+	padding: 5px 5px 5px 10px;
+	color: #000;
  	background: #E5B400; /*gold*/
 	text-align: left;
-    cursor: default;
+	cursor: default;
+}
+table.table_sort thead tr th.ord, table.table_sort thead tr th.\{sss\:false\}
+{
+	margin-left: 0;
+	padding-left: 2px;
+}
+table.table_sort thead tr th.checkbox
+{
+	margin-left: 20px;
+	padding-left: 10px;
 }
 
 table.table_sort thead tr .SortAble

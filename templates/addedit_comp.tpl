@@ -46,10 +46,10 @@
 
 {$playertab_start}
 {if $teamcount > 0}
-	<div style="overflow:auto;">
-	<table id="tmt_players" style="margin:0 auto 0 auto; border-collapse:collapse">
+	<div style="padding-right:10px; padding-bottom:10px; overflow:auto;">
+	<table id="tmt_players" style="margin:0 auto; border-collapse:collapse">
 	 <thead><tr>
-	  <th{if $canmod} class="{ldelim}sss:false{rdelim}"{/if}>{$ordertitle}</th>
+	  <th class="ord{if $canmod} {ldelim}sss:false{rdelim}{/if}">{$ordertitle}</th>
 	  <th class="{ldelim}sss:'textinput'{rdelim}">{$teamtitle}</th>
 	  <th class="{ldelim}sss:'numberinput'{rdelim}">{$seedtitle}</th>
 	  <th class="{ldelim}sss:false{rdelim}">{$contacttitle}</th>
@@ -88,8 +88,8 @@
 
 {$matchtab_start}
 {if isset($matches)}
-<div style="overflow:auto;">
-<table id="tmt_matches" cellpadding="2" style="margin:0 auto 0 auto; border-collapse:collapse">
+<div style="padding-right:10px; padding-bottom:10px; overflow:auto;">
+<table id="tmt_matches" style="margin:0 auto; border-collapse:collapse">
  <thead><tr>
 {if $plan}<th>{$idtitle}</th>{/if}
   <th class="{ldelim}sorter:'isoinput'{rdelim}">{$scheduledtitle}</th>
@@ -124,8 +124,8 @@
 
 {$resultstab_start}
 {if isset($results)}
-<div style="overflow:auto;">
-<table id="tmt_results" cellpadding="2" style="margin:0 auto 0 auto; border-collapse:collapse">
+<div style="padding-right:10px; padding-bottom:10px; overflow:auto;">
+<table id="tmt_results" style="margin:0 auto; border-collapse:collapse">
  <thead><tr>
   <th class="{ldelim}sorter:false{rdelim}">{$scheduledtitle}</th>
   <th class="{ldelim}sorter:'isoinput'{rdelim}">{$playedtitle}</th>
