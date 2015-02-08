@@ -8,8 +8,8 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
 action for adjusting a bracket's team-order after a down- or up-button click
  (i.e. when js disabled, and so no DnD)
 $params[] includes all standard data for the bracket, and also
- 'real_action' => 'm1_down_team[N]' or 'm1_up_team[N]'
- 'down_team' or 'up_team' => array (N => string 'X')
+ 'real_action' => 'm1_movedown[N]' or 'm1_moveup[N]'
+ 'movedown' or 'moveup' => array (N => string 'X')
  where N = team id, X is what/irrelevant? 
 */
 if (!$this->CheckAccess('admod'))
@@ -19,30 +19,31 @@ if (!$this->CheckAccess('admod'))
 //TODO save/cache other data?
 
 $pref = cms_db_prefix();
-$sql1 = "SELECT displayorder FROM ".$pref."module_tmt_teams WHERE team_id=? AND flags!=2";
-$sql2 = "SELECT team_id FROM ".$pref."module_tmt_teams WHERE bracket_id=? AND displayorder=? AND flags!=2";
-$sql3 = "UPDATE ".$pref."module_tmt_teams SET displayorder=? WHERE team_id=?";
-if(isset($params['down_team']))
+$sql = "UPDATE ".$pref."module_tmt_teams SET displayorder=? WHERE team_id=?";
+if(isset($params['movedown']))
 {
-	reset($params['down_team']);
-	$tid = key($params['down_team']);
-	$o1 = $db->GetOne($sql1,array($tid));
-	$t2 = $db->GetOne($sql2,array($params['bracket_id'],$o1+1));
-	if ($t2 !== FALSE)
-		$db->Execute($sql3,array($o1,$t2));
-	$db->Execute($sql3,array($o1+1,$tid));
-}
-elseif(isset($params['up_team']))
-{
-	reset($params['up_team']);
-	$tid = key($params['up_team']);
-	$o1 = $db->GetOne($sql1,array($tid));
-	if($o1 > 1)
+	reset($params['movedown']);
+	$tid = key($params['movedown']);
+	$k = array_search($tid,$params['tem_teamid']);
+	if(isset($params['tem_teamid'][$k+1]))
 	{
-		$t2 = $db->GetOne($sql2,array($params['bracket_id'],$o1-1));
-		if ($t2 !== FALSE)
-			$db->Execute($sql3,array($o1,$t2));
-		$db->Execute($sql3,array($o1-1,$tid));
+		$o2 = $k+1; //1-based order numbers
+		$t2 = $params['tem_teamid'][$o2];
+		$db->Execute($sql,array($o2,$t2));
+		$db->Execute($sql,array($o2+1,$tid));
+	}
+}
+elseif(isset($params['moveup']))
+{
+	reset($params['moveup']);
+	$tid = key($params['moveup']);
+	$k = array_search($tid,$params['tem_teamid']);
+	if($k > 0)
+	{
+		$o2 = $k+1; //1-based order numbers
+		$t2 = $params['tem_teamid'][$k-1];
+		$db->Execute($sql,array($o2,$t2));
+		$db->Execute($sql,array($k,$tid));
 	}
 }
 

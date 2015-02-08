@@ -203,7 +203,8 @@ $smarty->assign('canmod',($pmod)?1:0);
 $smarty->assign('form_start',$this->CreateFormStart($id,'addedit_team',$returnid));
 $smarty->assign('form_end',$this->CreateFormEnd());
 //accumulator for hidden stuff
-$hidden = $this->GetHiddenParms($id,$params,'playerstab');
+$hidden = $this->GetHiddenParms($id,$params,'playerstab').
+	$this->CreateInputHidden($id,'real_action');
 
 if(!empty($params['newteam_id']))
 {
@@ -336,7 +337,7 @@ switch($op)
  case 4://remove player from team
  	reset($params['delete']);
 	$order = key($params['delete']);
-	$sql = 'UPDATE '.$pref.'module_tmt_people SET flags=2 WHERE id=? AND flags!=2 AND displayorder=?';
+	$sql = 'UPDATE '.$pref.'module_tmt_people SET flags=2 WHERE id=? AND displayorder=? AND flags!=2';
 	$res = $db->Execute($sql,array($thistid,$order));
 	$keeps = array_diff($params['plr_order'],array($order));
 	if($keeps)
@@ -357,6 +358,7 @@ switch($op)
 	else
 		$rows = array();
 	break;
+/* these now handled in separate action.order_team2.php
  case 5://change member's displayorder
  	$tmp = array_keys($params['moveup']);
 	$order = $tmp[0];
@@ -387,6 +389,7 @@ switch($op)
 		$indx++;
 	}
  	break;
+*/
  case 11://remove selected member(s)
 	$args = $params['psel'];
  	$num = count($args);
@@ -443,8 +446,8 @@ if($rows)
 	$repls = array('class="plr_name $1"',''); //fails if backref first!
 	if ($pmod)
 	{
-		$downtext = $mod->Lang('down');
-		$uptext = $mod->Lang('up');
+		$downtext = $this->Lang('down');
+		$uptext = $this->Lang('up');
 	}
 
 	foreach($rows as $row)
@@ -456,20 +459,20 @@ if($rows)
 			$tmp = $this->CreateInputText($id,'plr_name[]',$row['name'],25,64);
 			$one->input_name = preg_replace($finds,$repls,$tmp);
 			$one->input_contact = $this->CreateInputText($id,'plr_contact[]',$row['contact'],30,80);
+			$ord = ($row['displayorder']) ? (int)$row['displayorder'] : $newo++;
 			//need input-objects that look like page-links here, to get all form parameters upon activation
 			if($indx > 1)
-				$one->uplink = $this->CreateInputLinks($id,'moveup['.(int)$row['id'].','.(int)$row['displayorder']-1.']','arrow-u.gif',FALSE,
+				$one->uplink = $this->CreateInputLinks($id,'moveup['.$ord.']','arrow-u.gif',FALSE,
 					$uptext,'onclick="set_params(this);"');
 			else
 				$one->uplink = '';
 			if($indx < $pc)
-				$one->downlink = $this->CreateInputLinks($id,'movedown['.(int)$row['id'].','.(int)$row['displayorder']+1.']','arrow-d.gif',FALSE,
+				$one->downlink = $this->CreateInputLinks($id,'movedown['.$ord.']','arrow-d.gif',FALSE,
 					$downtext,'onclick="set_params(this);"');
 			else
 				$one->downlink = '';
-			$one->deletelink = $this->CreateInputLinks($id,'delete['.$row['displayorder'].']','delete.gif',FALSE,
+			$one->deletelink = $this->CreateInputLinks($id,'delete['.$ord.']','delete.gif',FALSE,
 				$this->Lang('deleteplayer')); //confirm via modal dialog
-			$ord = ($row['displayorder']) ? (int)$row['displayorder'] : $newo++;
 			//hiddens in table-row to support re-ordering and ajax manipulation
 			$one->hidden = $this->CreateInputHidden($id,'plr_order[]',$ord,'class="ord"').
 				$this->CreateInputHidden($id,'plr_flags[]',$row['flags']);
@@ -515,6 +518,9 @@ if($pc > 1)
 		$offs = strpos($url,'?mact=');
 		$ajfirst = str_replace('amp;','',substr($url,$offs+1));
 		$jsfuncs[] = <<< EOS
+function set_params(btn) {
+ $('#{$id}real_action').val(btn.name);
+}
 function ajaxData(droprow,dropcount) {
  var orders = [];
  $(droprow.parentNode).find('.ord').each(function(){
