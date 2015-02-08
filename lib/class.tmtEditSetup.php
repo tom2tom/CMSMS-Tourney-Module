@@ -810,8 +810,8 @@ EOS;
 			$theme = $gCms->variables['admintheme'];
 			if($pmod)
 			{
-				$iconup = $theme->DisplayImage('icons/system/arrow-u.gif',$mod->Lang('up'),'','','systemicon');
-				$icondn = $theme->DisplayImage('icons/system/arrow-d.gif',$mod->Lang('down'),'','','systemicon');
+				$downtext = $mod->Lang('down');
+				$uptext = $mod->Lang('up');
 				$tmp = ($isteam) ? $mod->Lang('team') : $mod->Lang('player');
 			}
 
@@ -833,16 +833,15 @@ EOS;
 					$tmp = $mod->CreateInputText($id,'tem_contact[]',$tdata['contact'],30,64);
 					$repls = array('class="tem_contact $1"','');
 					$one->contact = preg_replace($finds,$repls,$tmp);
+					//need input-objects that look like page-link, to get all form parameters upon activation
 					if($indx > 1)
-						$one->uplink = $mod->CreateLink($id,'order_team',$returnid,
-							$iconup,
-							array('tem_teamid'=>$tid,'tem_order'=>intval($tdata['displayorder'])-1));
+						$one->uplink = $mod->CreateInputLinks($id,'moveup['.$tid.','.(int)$tdata['displayorder']-1.']','arrow-u.gif',FALSE,
+							$uptext,'onclick="set_params(this);"');
 					else
 						$one->uplink = '';
 					if($indx < $count)
-						$one->downlink = $mod->CreateLink($id,'order_team',$returnid,
-							$icondn,
-							array('tem_teamid'=>$tid,'tem_order'=>intval($tdata['displayorder'])+1));
+						$one->downlink = $mod->CreateInputLinks($id,'movedown['.$tid.','.(int)$tdata['displayorder']+1.']','arrow-d.gif',FALSE,
+							$downtext,'onclick="set_params(this);"');
 					else
 						$one->downlink = '';
 					$indx++;
@@ -869,15 +868,16 @@ EOS;
 			{
 				$jsloads[] = <<< EOS
  $('#tmt_players').find('.tem_delete').children().modalconfirm({
+  overlayID: 'confirm',
   preShow: function(d){
-	var teamname = \$(this).closest('tr').find('.tem_name').attr('value');
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$mod->Lang('confirm_delete','%s')}'.replace('%s',teamname);
+	 var teamname = \$(this).closest('tr').find('.tem_name').attr('value');
+	 var para = d.children('p:first')[0];
+	 para.innerHTML = '{$mod->Lang('confirm_delete','%s')}'.replace('%s',teamname);
   },
   onConfirm: function(){
-	set_tab();
-	$('#{$id}real_action').val(this.name);
-	return true;
+	 set_tab();
+	 $('#{$id}real_action').val(this.name);
+	 return true;
   }
  });
 
@@ -896,10 +896,10 @@ EOS;
 			$this->SpareSlot($data->bracket_id,($data->type != RRTYPE));
 			if($this->spare)
 			{
-				//need buttons to get all form parameters,but make them look like main-page links
 				$linktext = $mod->Lang('title_add',strtolower($teamtitle));
-				$smarty->assign('addteam',
-					$mod->CreateInputLinks($id,'addteam','newobject.gif',TRUE,$linktext,'onclick="set_params(this);"'));
+				//need input-object that looks like page-link, to get all form parameters upon activation
+				$smarty->assign('addteam',$mod->CreateInputLinks($id,'addteam','newobject.gif',TRUE,
+					$linktext,'onclick="set_params(this);"'));
 			}
 		}
 
@@ -946,17 +946,18 @@ EOS;
 				$t = $mod->Lang('confirm_delete',$t);
 				$jsloads[] = <<< EOS
  $('#{$id}delteams').modalconfirm({
+  overlayID: 'confirm',
   doCheck: function(){
-	return (team_count() > 0);
+	 return (team_count() > 0);
   },
   preShow: function(d){
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$t}';
+	 var para = d.children('p:first')[0];
+	 para.innerHTML = '{$t}';
   },
   onConfirm: function(){
-	set_tab();
-	$('#{$id}real_action').val(this.name);
-	return true;
+	 set_tab();
+	 $('#{$id}real_action').val(this.name);
+	 return true;
   }
  });
 
@@ -1219,14 +1220,15 @@ EOS;
 						'title="'.$mod->Lang('reset_tip').'"'));
 					$jsloads[] = <<< EOS
  $('#{$id}reset').modalconfirm({
+  overlayID: 'confirm',
   preShow: function(d){
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
+	 var para = d.children('p:first')[0];
+	 para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
   },
   onConfirm: function(){
-	set_tab();
-	$('#{$id}real_action').val(this.name);
-	return true;
+	 set_tab();
+	 $('#{$id}real_action').val(this.name);
+	 return true;
   }
  });
 
@@ -1236,17 +1238,18 @@ EOS;
 
 			$jsloads[] = <<< EOS
  $('#{$id}notify').modalconfirm({
+  overlayID: 'confirm',
   doCheck: function(){
-	return (match_count() > 0);
+	 return (match_count() > 0);
   },
   preShow: function(d){
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$mod->Lang('allsaved')}';
+	 var para = d.children('p:first')[0];
+	 para.innerHTML = '{$mod->Lang('allsaved')}';
   },
   onConfirm: function(){
-	set_tab();
-	$('#{$id}real_action').val(this.name);
-	return true;
+	 set_tab();
+	 $('#{$id}real_action').val(this.name);
+	 return true;
   }
  });
 
@@ -1541,28 +1544,26 @@ EOS;
 
 		$smarty->assign('cancel',$mod->CreateInputSubmit($id,'cancel',$mod->Lang('cancel')));
 
+		//for popup confirmation
+		$smarty->assign('no',$mod->Lang('no'));
+		$smarty->assign('yes',$mod->Lang('yes'));
 		//onCheckFail: true means onConfirm() if no check needed
 		$jsloads[] = <<< EOS
  $('#{$id}cancel').modalconfirm({
-  doCheck: $test,
+  overlayID: 'confirm',
+  doCheck: {$test},
   preShow: function(d){
-	var para = d.children('p:first')[0];
-	para.innerHTML = '{$mod->Lang('abandon')}';
+	 var para = d.children('p:first')[0];
+	 para.innerHTML = '{$mod->Lang('abandon')}';
   },
   onCheckFail: true,
   onConfirm: function(){
-	$('#{$id}real_action').val(this.name);
-	return true;
+	 $('#{$id}real_action').val(this.name);
+	 return true;
   }
  });
 
 EOS;
-		$btn = '<input id="%s" class="cms_submit" type="submit" value="%s" />';
-		$ident = $id.'no';
-		$smarty->assign('no',sprintf($btn,$ident,$mod->Lang('no')));
-		$ident = $id.'yes';
-		$smarty->assign('yes',sprintf($btn,$ident,$mod->Lang('yes')));
-
 		$smarty->assign('hidden',$hidden);
 
 		if($jsloads)
