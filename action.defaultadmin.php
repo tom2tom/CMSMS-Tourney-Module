@@ -81,7 +81,7 @@ if ($rows)
 	if($pmod)
 	{
 		$iconclone = $theme->DisplayImage('icons/system/copy.gif',$this->Lang('clone'),'','','systemicon');
-		$icondel = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon');
+		$icondel = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon '.$id.'delete_comp'); //extra class for confirm-dialog usage
 	}
 	if ($pmod || $padm)
 	{
@@ -111,22 +111,18 @@ if ($rows)
 		}
 		if ($pmod || $pscore)
 		{
-			$oneset->name = $this->CreateLink($id, 'addedit_comp', '',
-				$bdata['name'], array('bracket_id'=>$bdata['bracket_id']));
-			$oneset->editlink = $this->CreateLink($id, 'addedit_comp', '',
-				$iconedit,
-					array('bracket_id'=>$bdata['bracket_id']));
+			$oneset->name = $this->CreateLink($id,'addedit_comp','',
+				$bdata['name'],array('bracket_id'=>$bdata['bracket_id']));
+			$oneset->editlink = $this->CreateLink($id,'addedit_comp','',
+				$iconedit,array('bracket_id'=>$bdata['bracket_id']));
 			if ($pdev)
 				$oneset->alias = $bdata['alias']; //info for site-content developers
 			if ($pmod)
 			{
-			$oneset->copylink = $this->CreateLink($id, 'clone_comp', '',
-				$iconclone,
-					array('bracket_id'=>$bdata['bracket_id']));
-			$oneset->deletelink = $this->CreateLink($id, 'delete_comp', '',
-				$icondel,
-					array('bracket_id'=>$bdata['bracket_id']),'',false,false,
-					'class="'.$id.'delete_comp"'); //confirmation by modalconfirm dialog
+				$oneset->copylink = $this->CreateLink($id,'clone_comp','',
+					$iconclone,array('bracket_id'=>$bdata['bracket_id']));
+				$oneset->deletelink = $this->CreateLink($id,'delete_comp','',
+					$icondel,array('bracket_id'=>$bdata['bracket_id'])); //confirmation by modalconfirm dialog
 			}
 		}
 		else //no mod allowed
@@ -134,10 +130,8 @@ if ($rows)
 			$oneset->name = $bdata['name'];
 		}
 		if ($pview || $pscore)
-				$oneset->viewlink = $this->CreateLink($id, 'addedit_comp', '',
-					$iconview,
-						array('bracket_id'=>$bdata['bracket_id'],
-						'real_action'=>'view'));
+			$oneset->viewlink = $this->CreateLink($id,'addedit_comp','',
+				$iconview,array('bracket_id'=>$bdata['bracket_id'],'real_action'=>'view'));
 		else
 			$oneset->viewlink = '';
 
@@ -172,7 +166,7 @@ if ($comps)
 		//for popup confirmation
 		$smarty->assign('no',$this->Lang('no'));
 		$smarty->assign('yes',$this->Lang('yes'));
-		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.js"></script>';
+		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.min.js"></script>';
 		$jsfuncs[] = <<< EOS
 $(document).ready(function() {
  $('.{$id}delete_comp').modalconfirm({
