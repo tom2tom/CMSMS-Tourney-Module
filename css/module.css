@@ -115,13 +115,13 @@ div.confirm\-container
 	z-index:1002;
 	background:#FEF4E7 url(../images/warning.gif) no-repeat 5px 10px;
 }
-input#mc_accept
+input#mc_conf
 {
 	font-weight:bold;
 	color:#000;
-	background:##66D166;
+	background:#C4A636; //:#66D166;
 }
-input#mc_accept:hover
+input#mc_conf:hover
 {
 	color:#FFF;
 	background:#00B200;

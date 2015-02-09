@@ -1,2 +1,3 @@
-<h3 style="color:#F00">{$title_error}</h3>
-{if isset($tmt_message) && !empty($tmt_message)}<p style="color:#F00">{$tmt_message}</p>{/if}
+{if !empty($title)}<h3 style="color:#F00">{$title}</h3>{/if}
+{if !empty($name)}<p style="color:#F00">{$name}</p>{/if}
+<p style="color:#F00">{$message}</p>
