@@ -34,7 +34,7 @@ class tmtMail
 			if($this->mlr)
 				$this->mlr->_load();
 			else
-				return array(FALSE,$mod->Lang('error')); //system error
+				return array(FALSE,$mod->Lang('err_system'));
 		}
 
 		$subject = $mod->Lang('tournament').' - '.$bdata['name'];

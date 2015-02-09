@@ -145,7 +145,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 			$this->twt = new TTwitter($codes['api_key'],$codes['api_secret'],
 				$codes['access_token'],$codes['access_secret']);
 			if(!$this->twt)
-				return array(FALSE,$mod->Lang('error')); //system error
+				return array(FALSE,$mod->Lang('err_system'));
 		 }
 
 		$err = '';
