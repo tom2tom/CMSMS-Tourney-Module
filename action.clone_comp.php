@@ -34,7 +34,18 @@ $sdt = new DateTime ($bdata['enddate']);
 $sstamp = $sdt->getTimestamp();
 if ($stamp >= $sstamp)
 	$bdata['enddate'] = null;
+if($bdata['chartcss'])
+{
+	$updir = $this->GetPreference('uploads_dir');
+	if ($updir)
+		$csspath = cms_join_path($config['uploads_path'],$updir,$bdata['chartcss']);
+	else
+		$csspath = cms_join_path($config['uploads_path'],$bdata['chartcss']);
+	if(!file_exists($csspath))
+		$bdata['chartcss'] = '';
+}
 $bdata['chartbuild'] = 1;
+
 $values = array_values($bdata);
 $fc = count($values);
 $fillers = str_repeat('?,',$fc-1);
