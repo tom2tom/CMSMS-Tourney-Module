@@ -739,15 +739,6 @@ Europe/Vilnius'
 		return $ret;
 	}
 
-	function DisplayErrorPage($id, &$params, $returnid, $message='')
-	{
-		$smarty = cmsms()->GetSmarty();
-		$smarty->assign('title_error', $this->Lang('error'));
-		if ($message != '')
-			$smarty->assign('message', $message);
-		echo $this->ProcessTemplate('error.tpl');
-	}
-
 	//for admin-display only
 	function PrettyMessage($text, $success=TRUE, $faillink=FALSE, $key = TRUE)
 	{
@@ -863,6 +854,7 @@ Europe/Vilnius'
 		switch ($name)
 		{
 		 case 'addedit_comp':
+$this->DoNothing();
 			if (!empty($params['real_action']))
 			{
 				//'real_action' will be correctly set only if js is enabled
@@ -908,9 +900,6 @@ Europe/Vilnius'
 					$name = 'save_comp';
 				elseif(substr($task,0,11) == 'delete_team')
 					$name = 'delete_team';
-				elseif(substr($task,0,8) == 'movedown'
-					  || substr($task,0,6) == 'moveup')
-					$name = 'move_team2';
 			}
 			break;
 		 case 'default':
