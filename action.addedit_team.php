@@ -22,10 +22,32 @@ if(!function_exists('OrderTeamMembers'))
 			$db->Execute($sql,array($tmporder,$tid,$row['displayorder']));
 			$row['displayorder'] = -$tmporder;
 			$tmporder--;
+			$row['id'] = (int)$row['id']; //cleanups
+			$row['flags'] = (int)$row['flags'];
 		}
 		unset($row);
 		$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=-displayorder WHERE id=?';
 		$db->Execute($sql,array($tid));
+	}
+	return $rows;
+ }
+}
+
+if(!function_exists('OrderTeamData'))
+{
+ function OrderTeamData(&$db,$thistid,$before,$after,&$params)
+ {
+	$rows = OrderTeamMembers($db,$thistid);
+	$indx = 0;
+	foreach($params['plr_order'] as $k=>$oldorder)
+	{
+		if($oldorder == $before)
+			$k = $after-1;
+		elseif($oldorder == $after)
+			$k = $before-1;
+		$rows[$indx]['name']=$params['plr_name'][$k];
+		$rows[$indx]['contact']=$params['plr_contact'][$k];
+		$indx++;
 	}
 	return $rows;
  }
@@ -120,14 +142,14 @@ $op = FALSE;
 foreach(array(
  1 => 'add',//comp add-button clicked
  3 => 'addplayer',//team add-button clicked
- 5 => 'moveup',//move team up 1
- 6 => 'movedown',//move down 1
+ 5 => 'movedown',//inc player displayorder
+ 6 => 'moveup',//dec player displayorder
 ) as $i => $name)
 {
 	if(isset($params[$name]))
 	{
 		$op = $i;
-		unset($params[$name]);
+//		unset($params[$name]); needed for moveup/down, at least
 		break;
 	}
 }
@@ -173,6 +195,7 @@ if($op == 1)
 {
 	$newtid = $db->GenID($pref.'module_tmt_teams_seq');
 	$params['newteam_id'] = $newtid;
+//CHECKME unset($params['add']);
 }
 
 $bracket_id = (int)$params['bracket_id'];
@@ -203,8 +226,7 @@ $smarty->assign('canmod',($pmod)?1:0);
 $smarty->assign('form_start',$this->CreateFormStart($id,'addedit_team',$returnid));
 $smarty->assign('form_end',$this->CreateFormEnd());
 //accumulator for hidden stuff
-$hidden = $this->GetHiddenParms($id,$params,'playerstab').
-	$this->CreateInputHidden($id,'real_action');
+$hidden = $this->GetHiddenParms($id,$params,'playerstab');
 
 if(!empty($params['newteam_id']))
 {
@@ -306,6 +328,7 @@ switch($op)
 	$rows = $db->GetAll($sql,array($thistid));
 	break;
  case 3://add player to team
+//CHECKME unset($params['addplayer]);
  	$rows = array();
  	if(isset($params['plr_order']))
 	{
@@ -358,38 +381,52 @@ switch($op)
 	else
 		$rows = array();
 	break;
-/* these now handled in separate action.order_team2.php
- case 5://change member's displayorder
- 	$tmp = array_keys($params['moveup']);
+ case 5://bump member's displayorder
+/*$tmp = array_keys($params['movedown']);
 	$order = $tmp[0];
-	$neworder = $order-1;
-	//no break here
- case 6:
-	if($op == 6)
-	{
-	 	$tmp = array_keys($params['movedown']);
-		$order = $tmp[0];
-		$neworder = $order+1;
-	}
+	$neworder = $order+1;
 	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=? WHERE id=? AND flags!=2 AND displayorder=?';
 	$db->Execute($sql,array(-$neworder,$thistid,$order));
 	$db->Execute($sql,array($order,$thistid,$neworder));
 	$db->Execute($sql,array($neworder,$thistid,-$neworder));
-	//get values for display
-	$rows = OrderTeamMembers($db,$thistid);
-	$indx = 0;
-	foreach($params['plr_order'] as $key=>$oldorder)
-	{
-		if($oldorder == $order)
-			$key = $neworder-1;
-		elseif($oldorder == $neworder)
-			$key = $order-1;
-		$rows[$indx]['name']=$params['plr_name'][$key];
-		$rows[$indx]['contact']=$params['plr_contact'][$key];
-		$indx++;
-	}
- 	break;
 */
+	reset($params['movedown']);
+	$o1 = key($params['movedown']);
+	$k = array_search($o1,$params['plr_order']);
+	if(isset($params['plr_order'][$k+1]))
+	{
+		$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=? WHERE id=? AND name=?';
+		if($params['plr_order'][$k+1] < $o1+2)
+			$db->Execute($sql,array($o1,$thistid,$params['plr_name'][$k+1]));
+		$db->Execute($sql,array($o1+1,$thistid,$params['plr_name'][$k]));
+		$rows = OrderTeamData($db,$thistid,$k+1,$k+2,$params);
+	}
+	else
+		$rows = array(); //TODO
+	break;
+ case 6: //dec member's displayorder
+/*$tmp = array_keys($params['moveup']);
+	$order = $tmp[0];
+	$neworder = $order-1;
+	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=? WHERE id=? AND flags!=2 AND displayorder=?';
+	$db->Execute($sql,array(-$neworder,$thistid,$order));
+	$db->Execute($sql,array($order,$thistid,$neworder));
+	$db->Execute($sql,array($neworder,$thistid,-$neworder));
+*/
+	reset($params['moveup']);
+	$o1 = key($params['moveup']);
+	$k = array_search($o1,$params['plr_order']);
+	if($k > 0)
+	{
+		$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=? WHERE id=? AND name=?';
+		if($params['plr_order'][$k-1] > $o1-2)
+			$db->Execute($sql,array($o1,$thistid,$params['plr_name'][$k-1]));
+		$db->Execute($sql,array($o1-1,$thistid,$params['plr_name'][$k]));
+		$rows = OrderTeamData($db,$thistid,$k+1,$k,$params);
+	}
+	else
+		$rows = array(); //TODO
+	break;
  case 11://remove selected member(s)
 	$args = $params['psel'];
  	$num = count($args);
@@ -460,15 +497,15 @@ if($rows)
 			$one->input_name = preg_replace($finds,$repls,$tmp);
 			$one->input_contact = $this->CreateInputText($id,'plr_contact[]',$row['contact'],30,80);
 			$ord = ($row['displayorder']) ? (int)$row['displayorder'] : $newo++;
-			//need input-objects that look like page-links here, to get all form parameters upon activation
+			//need input-objects that look like page-links here, to get all form parameters upon their activation
 			if($indx > 1)
 				$one->uplink = $this->CreateInputLinks($id,'moveup['.$ord.']','arrow-u.gif',FALSE,
-					$uptext,'onclick="set_params(this);"');
+					$uptext);
 			else
 				$one->uplink = '';
 			if($indx < $pc)
 				$one->downlink = $this->CreateInputLinks($id,'movedown['.$ord.']','arrow-d.gif',FALSE,
-					$downtext,'onclick="set_params(this);"');
+					$downtext);
 			else
 				$one->downlink = '';
 			$one->deletelink = $this->CreateInputLinks($id,'delete['.$ord.']','delete.gif',FALSE,
@@ -518,9 +555,6 @@ if($pc > 1)
 		$offs = strpos($url,'?mact=');
 		$ajfirst = str_replace('amp;','',substr($url,$offs+1));
 		$jsfuncs[] = <<< EOS
-function set_params(btn) {
- $('#{$id}real_action').val(btn.name);
-}
 function ajaxData(droprow,dropcount) {
  var orders = [];
  $(droprow.parentNode).find('.ord').each(function(){
