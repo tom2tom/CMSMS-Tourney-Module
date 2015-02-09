@@ -8,6 +8,39 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
 Action to display chart or list of a tournament in front end
 */
 
+if(!function_exists('DisplayErrorPage'))
+{
+ function DisplayErrorPage(&$mod,&$smarty,&$db,&$params,$err=TRUE,$message='')
+ {
+ 	if($err)
+		$smarty->assign('title', $mod->Lang('err_system'));
+	if(!empty($params['bracket_id']))
+	{
+		$sql = "SELECT name FROM ".cms_db_prefix()."module_tmt_brackets WHERE bracket_id=?";
+		$name = $db->GetOne($sql,array($params['alias']));
+	}
+	elseif(!empty($params['alias']))
+	{
+		$sql = "SELECT name FROM ".cms_db_prefix()."module_tmt_brackets WHERE alias=?";
+		$name = $db->GetOne($sql,array($params['alias']));
+	}
+	else
+		$name = false;
+	if($name)
+		$smarty->assign('name', $mod->Lang('tournament').': '.$name);
+	if($message)
+	{
+		$detail = $message;
+		if($err)
+			$detail .= '<br /><br />'.$mod->Lang('telladmin');
+	}
+	else
+		$detail = '';
+	$smarty->assign('message', $detail);
+	echo $mod->ProcessTemplate('error.tpl');
+ }
+}
+
 $pref = cms_db_prefix();
 if(isset($params['nosend'])) //fronted user cancelled result sumbission
 {
@@ -44,13 +77,13 @@ elseif(!empty($params['alias']))
 }
 else
 {
-	$this->DisplayErrorPage($id,$params,$returnid);
+	DisplayErrorPage($this,$smarty,$db,$params,TRUE,$this->Lang('err_tag'));
 	return;
 }
 $bdata = $db->GetRow($sql,array($match));
 if(!$bdata)
 {
-	$this->DisplayErrorPage($id,$params,$returnid,$this->Lang('err_missing'));
+	DisplayErrorPage($this,$smarty,$db,$params,TRUE,$this->Lang('err_missing'));
 	return;
 }
 
@@ -77,7 +110,7 @@ $lyt = new tmtLayout();
 if(empty($params['view']) || $params['view'] == 'chart')
 {
 	$styles =(isset($params['cssfile'])) ? $params['cssfile'] : FALSE;
-	$chartfile = $lyt->GetChart($this,$bdata,$styles);
+	list($chartfile,$errkey) = $lyt->GetChart($this,$bdata,$styles);
 	if($chartfile)
 	{
 		$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=0 WHERE bracket_id=?';
@@ -109,14 +142,27 @@ if(empty($params['view']) || $params['view'] == 'chart')
 	{
 		$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=? WHERE bracket_id=?';
 		$db->Execute($sql,array((int)$bdata['chartbuild'],$bracket_id));
-		$this->DisplayErrorPage($id,$params,$returnid,$this->Lang('err_chart'));
+		if($errkey)
+		{
+			$err = (strpos($errkey,'err') === 0);
+			if($err)
+				$message = $this->Lang('err_chart').'<br /><br />'.$this->Lang($errkey);
+			else
+				$message = $this->Lang($errkey);
+		}
+		else
+		{
+			$err = TRUE;
+			$message = $this->Lang('err_chart');
+		}
+		DisplayErrorPage($this,$smarty,$db,$params,$err,$message);
 		return;
 	}
 }
 else
 {
-	$listrows = $lyt->GetList($this,$bdata);
-	if($listrows !== FALSE)
+	list($listrows,$errkey) = $lyt->GetList($this,$bdata);
+	if($listrows[0] !== FALSE)
 	{
 		$smarty->assign('items',$listrows);
 		$smarty->assign('chart',$this->CreateInputSubmit($id,'chart',$this->Lang('chart')));
@@ -126,7 +172,20 @@ else
 	}
 	else
 	{
-		$this->DisplayErrorPage($id,$params,$returnid,$this->Lang('error'));
+		if($errkey)
+		{
+			$err = (strpos($errkey,'err') === 0);
+			if($err)
+				$message = $this->Lang('err_list').'<br /><br />'.$this->Lang($errkey);
+			else
+				$message = $this->Lang($errkey);
+		}
+		else
+		{
+			$err = TRUE;
+			$message = $this->Lang('err_list');
+		}
+		DisplayErrorPage($this,$smarty,$db,$params,$err,$message);
 		return;
 	}
 }
