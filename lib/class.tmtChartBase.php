@@ -32,16 +32,18 @@ class tmtChartBase
 	 0 for(printer-ready) no labels in unplayed matches
  	 1 for normal labels in all boxes (default)
 	 2 for including match numbers in 'plan' mode
-	Returns: TRUE on success, or FALSE if: bad no. of teams, css parsing failed
+	Returns: TRUE on success, or lang-key for error message if: bad no. of teams, css parsing failed
 	*/
 	public function MakeChart(&$mod,&$bdata,$chartfile,$stylefile=FALSE,$titles=1)
 	{
-		list($minteams,$maxteams) = $mod->GetLimits($bdata['type']);
 		$db = cmsms()->GetDb();
 		$sql = 'SELECT COUNT(1) AS count FROM '.cms_db_prefix().'module_tmt_teams WHERE bracket_id=? AND flags!=2';
-		$teamscount = intval($db->GetOne($sql,array($bdata['bracket_id'])));
+		$teamscount = (int)$db->GetOne($sql,array($bdata['bracket_id']));
+		if($teamscount == 0)
+			return 'info_nomatch'; //if no team, then no match
+		list($minteams,$maxteams) = $mod->GetLimits($bdata['type']);
 		if($teamscount > $maxteams || $teamscount < $minteams)
-			return FALSE;
+			return 'err_value';
 		$css = new tmtStyler();
 		if(!$stylefile && $bdata['chartcss'])
 			$stylefile = $bdata['chartcss'];
@@ -53,7 +55,7 @@ class tmtChartBase
 			if(file_exists($csspath))
 			{
 				if(!$css->Parse($csspath))
-					return FALSE;
+					return 'err_styles';
 			}
 		}
 		$this->mod = $mod;

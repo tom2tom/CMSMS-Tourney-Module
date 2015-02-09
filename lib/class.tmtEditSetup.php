@@ -1276,7 +1276,7 @@ EOS;
 				 'chartbuild'=>TRUE
 				);
 				$lyt = new tmtLayout();
-				$chartfile = $lyt->GetChart($mod,$bdata,$data->chartcss,2);
+				list($chartfile,$errkey) = $lyt->GetChart($mod,$bdata,$data->chartcss,2);
 				if ($chartfile)
 				{
 					//nobody else should see this chart
@@ -1288,7 +1288,12 @@ EOS;
 					$smarty->assign('image',$mod->CreateImageObject($config['root_url'].'/tmp/'.$basename,(int)$height+30));
 				}
 				else
-					$smarty->assign('image',$mod->Lang('err_chart'));
+				{
+					$message = $mod->Lang('err_chart');
+						if($errkey)
+							$message .= '<br /><br />'.$mod->Lang($errkey);
+					$smarty->assign('image',$message);
+				}
 			}
 			$smarty->assign('malldone',0);
 		}

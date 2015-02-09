@@ -22,7 +22,7 @@ class tmtLayout
 	 2 for including match numbers in 'plan' mode
 	Construct bracket match status data in chart format.
 	If needed, the file containing the bracket chart is created or refreshed, and saved
-	Returns: path of chart file, or FALSE
+	Returns: array (path of chart file,'') or array(FALSE,lang key for error message)
 	*/
 	function GetChart(&$mod,&$bdata,$stylefile=FALSE,$titles=1)
 	{
@@ -46,14 +46,18 @@ class tmtLayout
 				break;
 			}
 
-			if (!$cht->MakeChart($mod,$bdata,$chartfile,$stylefile,$titles))
-				return FALSE;
-			//record sizes for upstream usage
-			$this->chartsize = $cht->ChartSize();
-			//no rebuilds until further notice
-		 	$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=0 WHERE bracket_id=?';
-			$db->Execute($sql,array($bdata['bracket_id']));
-			$bdata['chartbuild'] = 0;
+			$res = $cht->MakeChart($mod,$bdata,$chartfile,$stylefile,$titles);
+			if($res === TRUE)
+			{
+				//record sizes for upstream usage
+				$this->chartsize = $cht->ChartSize();
+				//no rebuilds until further notice
+				$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=0 WHERE bracket_id=?';
+				$db->Execute($sql,array($bdata['bracket_id']));
+				$bdata['chartbuild'] = 0;
+			}
+			else
+				return array(FALSE,$res); //send back the error-key
 		}
 		else
 		{
@@ -80,7 +84,7 @@ class tmtLayout
 			//TODO get actual dimensions of saved $chartfile
 			$this->chartsize = array('height'=>$ht+30,'width'=>$wd+30);
 		}
-		return $chartfile;
+		return array($chartfile,'');
 	}
 
 	/**
@@ -101,7 +105,8 @@ class tmtLayout
 	@mod reference to module object
 	@bdata reference to array of brackets-table data
 	Get bracket match status data in list format
-	Returns: array of match descriptor strings, or FALSE if error or nothing to report
+	Returns: array of match descriptor strings,
+	 	or array(FALSE,lang key) if error or nothing to report
 	*/
 	function GetList(&$mod,&$bdata)
 	{
@@ -113,7 +118,7 @@ class tmtLayout
 			'module_tmt_matches WHERE bracket_id=? ORDER BY match_id ASC';
 		$matches = $db->GetAssoc($sql,array($bracket_id));
 		if ($matches == FALSE)
-			return FALSE;
+			return array(FALSE,'nomatch');
 		if($bdata['type'] != RRTYPE)
 		{
 			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.
@@ -126,11 +131,13 @@ class tmtLayout
 			$anon = $mod->Lang('anonother');
 		 	break;
 		 case DETYPE:
-			if ($tc < DEMIN || $tc > DEMAX) return FALSE;
+			if ($tc < DEMIN || $tc > DEMAX)
+				return array(FALSE,'err_value');
 			$rnd = new tmtRoundsDE();
 			break;
 		 default:
-			if ($tc < KOMIN || $tc > KOMAX) return FALSE;
+			if ($tc < KOMIN || $tc > KOMAX)
+				return array(FALSE,'err_value');
 			$rnd = new tmtRoundsKO();
 			$levelmax = $rnd->LevelMax($tc);
 		 	break;
@@ -237,7 +244,7 @@ class tmtLayout
 							$prev = $anon;
 							break;
 						 default:
-							return FALSE;
+							return array(FALSE,'err_value');
 						}
 						if($tA)
 							$str = sprintf($relations['vs'],$tA,$prev);
