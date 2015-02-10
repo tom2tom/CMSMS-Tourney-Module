@@ -112,16 +112,16 @@ class tmtChartKO extends tmtChartBase
 		$allmids = array_keys($matches); //don't assume contiguous
 		$mid = reset($allmids);
 		//process all boxes
-		foreach($this->layout as $lvl=>&$boxes)
+		foreach($this->layout as $lvl=>&$column)
 		{
-			foreach($boxes as &$item)
+			foreach($column as &$row)
 			{
 				$mdata = &$matches[$mid]; //reference, content may be changed
 				$tA = $mdata['teamA'];
 				$tB = $mdata['teamB'];
 				if($titles != 2) //not 'plan' mode
 				{
-					if($tA != NULL && $tB != NULL)
+					if($tA != FALSE && $tB != FALSE)
 					{
 						$nameA = (!empty($names[$tA])) ? $names[$tA] : FALSE;
 						$nameB = (!empty($names[$tB])) ? $names[$tB] : FALSE;
@@ -248,16 +248,16 @@ class tmtChartKO extends tmtChartBase
 						$type = 'done';
 					$rel = $this->mod->Lang('matchnum',$mid)."\n";
 					$anon = TRUE;
-					if($tA != NULL && $tA != -1)
+					if($tA != FALSE && $tA != -1)
 					{
 						$anon = FALSE;
 						$rel .= $names[$tA]."\n";
-						if($tB != NULL)
+						if($tB != FALSE)
 							$rel .= (($tB != -1)?$names[$tB]:$bdata['bye']);
 						else
 							$rel .= $this->rnd->MatchTeamID_Team($this->mod,$matches,$mid,$tA);
 					}
-					elseif($tB != NULL && $tB != -1)
+					elseif($tB != FALSE && $tB != -1)
 					{
 						$anon = FALSE;
 						if ($tA == -1)
@@ -281,13 +281,13 @@ class tmtChartKO extends tmtChartBase
 					$text = $rel."\n".trim($at);
 				}
 				unset($mdata);
-				$item['type'] = $type;
-				$item['text'] = $text;
+				$row['type'] = $type;
+				$row['text'] = $text;
 				$mid = next($allmids);
 			}
-			unset($item);
+			unset($row);
 		}
-		unset($boxes);
+		unset($column);
 		return TRUE;
 	}
 
@@ -323,21 +323,21 @@ class tmtChartKO extends tmtChartBase
 			break;
 		}
 
-		foreach($this->layout as $lvl=>&$boxes)
+		foreach($this->layout as $lvl=>&$column)
 		{
-			$first = reset($boxes);
+			$first = reset($column);
 			$x = floatval($first['bl']); //inside margin
 			if($dojoins)
 			{
 				//draw joins first
 				$nx = $x + $bw + $blw;
 				$joins = array();
-				foreach($boxes as &$item)
+				foreach($column as &$row)
 				{
-					if (empty($item['type']) || $item['type'] != 'hide')
-						$joins[] = array($nx,floatval($item['bt'])+$bh/2); //['bt'] inside margin
+					if (empty($row['type']) || $row['type'] != 'hide')
+						$joins[] = array($nx,floatval($row['bt'])+$bh/2); //['bt'] inside margin
 				}
-				unset($item);
+				unset($row);
 
 				$pdf->SetLineWidth($lw);
 				$pdf->SetDrawColor($lc[0],$lc[1],$lc[2]);
@@ -372,7 +372,7 @@ class tmtChartKO extends tmtChartBase
 				{
 					$x1 = floatval($first['bl']+$bw+($gw-$lw)/2);
 					$y1 = floatval($first['bt']+$bh/2);
-					$last = end($boxes);
+					$last = end($column);
 					$y2 = floatval($last['bt']+$bh/2);
 					$x2 = $x1-($gw-$lw)/2 + $blw;;
 					$pdf->Line($x2,$y1,$x1,$y1);
@@ -391,9 +391,9 @@ class tmtChartKO extends tmtChartBase
 					$pdf->SetLineDash(FALSE);
 			}
 
-			foreach($boxes as &$item)
+			foreach($column as &$row)
 			{
-				$type = (!empty($item['type'])) ? $item['type'] : 'deflt';
+				$type = (!empty($row['type'])) ? $row['type'] : 'deflt';
 				if($type == 'hide')
 					continue;
 				$style = $boxstyles[$type];
@@ -433,22 +433,22 @@ class tmtChartKO extends tmtChartBase
 					$c = $style['bc'];
 					$pdf->SetDrawColor($c[0],$c[1],$c[2]);
 				}
-				$y = floatval($item['bt']); //inside margin
+				$y = floatval($row['bt']); //inside margin
 				$pdf->Rect($x,$y,$bw,$bh,$mode);
 				if($dashed)
 					$pdf->SetLineDash(FALSE);
-				if(!empty($item['text']))
+				if(!empty($row['text']))
 				{
 					$pdf->SetFont($style['font'],$style['attr'],$style['size']);
 					$c = $style['color'];
 					$pdf->SetTextColor($c[0],$c[1],$c[2]);
 					$pdf->SetXY($x+$offs,$y+$offs);
-					$pdf->MultiCell($tcw,$tch,$item['text'],0,'C',FALSE);
+					$pdf->MultiCell($tcw,$tch,$row['text'],0,'C',FALSE);
 				}
 			}
-			unset($item);
+			unset($row);
 		}
-		unset($boxes);
+		unset($column);
 	}
 }
 
