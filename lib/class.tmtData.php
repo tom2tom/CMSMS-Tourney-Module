@@ -336,7 +336,7 @@ class tmtData
 			$data->calendarid = '';
 			$data->playgap = 1;
 			$data->playgaptype = 'days';
-			$data->match_days = '7;1'; //default to selected weekends
+			$data->match_days = '';
 			$data->match_hours = '';
 			$data->placegap = 1;
 			$data->placegaptype = 'hours';
