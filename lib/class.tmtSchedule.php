@@ -909,10 +909,10 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		$allteams = $db->GetCol($sql,array($bracket_id));
 		if($allteams == FALSE)
 			return 'info_nomatch';
+		$numteams = count($allteams);
 		list($min,$max) = $mod->GetLimits(RRTYPE);
-		if($allteams > $max || $allteams < $min)
+		if($numteams > $max || $numteams < $min)
 			return 'err_value';
-
 		shuffle($allteams);
 		$played = array();
 		foreach($allteams as $mdata)
