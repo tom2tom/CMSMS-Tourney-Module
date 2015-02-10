@@ -1441,7 +1441,7 @@ EOS;
 function select_all_results() {
  var st = $('#resultsel').attr('checked');
  if(!st) st = false;
- $('#tmt_results > tbody').find('input[type="checkbox"]).attr('checked',st);
+ $('#tmt_results > tbody').find('input[type="checkbox"]').attr('checked',st);
 }
 
 EOS;
