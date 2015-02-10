@@ -44,6 +44,6 @@ if ($type !== FALSE)
 }
 
 $this->Redirect($id, 'defaultadmin', '',
-	array('tmt_message'=>$this->PrettyMessage('err_missing',FALSE));
+	array('tmt_message'=>$this->PrettyMessage('err_missing',FALSE)));
 
 ?>
