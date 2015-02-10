@@ -803,7 +803,7 @@ EOS;
 
 		if($data->teams)
 		{
-			$count = count($data->teams);
+			$tcount = count($data->teams);
 			$teams = array();
 			$indx = 1;
 			$rowclass = 'row1'; //used to alternate row colors
@@ -836,7 +836,7 @@ EOS;
 							$uptext,'onclick="set_params(this);"');
 					else
 						$one->uplink = '';
-					if($indx < $count)
+					if($indx < $tcount)
 						$one->downlink = $mod->CreateInputLinks($id,'movedown['.$tid.']','arrow-d.gif',FALSE,
 							$downtext,'onclick="set_params(this);"');
 					else
@@ -883,10 +883,10 @@ EOS;
 		}
 		else //no team-data
 		{
-			$count = 0;
+			$tcount = 0;
 			$smarty->assign('noteams',$mod->Lang('info_noteam'));
 		}
-		$smarty->assign('teamcount',$count);
+		$smarty->assign('teamcount',$tcount);
 
 		if($pmod)
 		{
@@ -900,9 +900,9 @@ EOS;
 			}
 		}
 
-		if($count)
+		if($tcount)
 		{
-			if($count > 1)
+			if($tcount > 1)
 			{
 				$jsfuncs[] = <<< EOS
 function select_all_teams() {
@@ -1306,7 +1306,7 @@ EOS;
 		{
 			$smarty->assign('malldone',0);
 			$smarty->assign('nomatches',$mod->Lang('info_nomatch'));
-			if($pmod)
+			if($pmod && $tcount > 1)
 				$smarty->assign('schedule',$mod->CreateInputSubmit($id,'schedule',$mod->Lang('schedule'),
 					'onclick="set_params(this);"'));
 		}
