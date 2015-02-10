@@ -64,7 +64,7 @@ elseif(isset($params['oauth_verifier'])) //authorisation completed
 				$token['oauth_token_secret'],$token['screen_name'],$bracket_id))
 				$message = $this->Lang('status_complete');
 			else
-				$message = $this->Lang('err_data');
+				$message = $this->Lang('err_data_type',$this->Lang('err_token'));
 		}
 		else
 			$message = $token;

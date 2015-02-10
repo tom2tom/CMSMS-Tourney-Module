@@ -56,23 +56,27 @@ $lyt = new tmtLayout();
 if (!$list)
 {
 	$bdata['chartbuild'] = 1; //tell downstream that rebuild is needed
-	$chartfile = $lyt->GetChart($this,$bdata,FALSE,$titles);
+	list($chartfile,$errkey) = $lyt->GetChart($this,$bdata,FALSE,$titles);
 	if ($chartfile)
 	{
 		$basename = basename($chartfile);
 		list($height,$width) = $lyt->GetChartSize();
 		$smarty->assign('image',$this->CreateImageObject($config['root_url'].'/tmp/'.$basename,(int)$height+30));
+		$tpl = 'admin_chart.tpl';
 	}
 	else
 	{
-		$smarty->assign('image',$this->PrettyMessage('err_chart',FALSE));
+		$message = $this->PrettyMessage('err_chart',FALSE);
+		if($errkey)
+			$message .= '<br /><br />'.$mod->Lang($errkey);
+		$newparms = $this->GetEditParms($params,'charttab',$message);
+		$this->Redirect($id,'addedit_comp',$returnid,$newparms);
 	}
-	$tpl = 'admin_chart.tpl';
 }
 else
 {
-	$listrows = $lyt->GetList($this,$bdata);
-	if ($listrows)
+	list($listrows,$errkey) = $lyt->GetList($this,$bdata);
+	if ($listrows[0] !== FALSE)
 	{
 		$smarty->assign('pagetitle',$bdata['name']);
 		if (!empty($bdata['description']))
@@ -84,8 +88,11 @@ else
 	}
 	else
 	{
-		$this->DisplayErrorPage($id, $params, $returnid, $this->PrettyMessage('error',FALSE));
-		return;
+		$message = $this->Lang('err_list');
+		if($errkey)
+			$message .= '<br /><br />'.$this->Lang($errkey);
+		$newparms = $this->GetEditParms($params,'charttab',$message);
+		$this->Redirect($id,'addedit_comp',$returnid,$newparms);
 	}
 }
 unset($lyt);

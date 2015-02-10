@@ -15,15 +15,21 @@ $lang['perm_view']='View Tournament Brackets';
 $lang['admindescription']='Administer, edit, configure tournaments';
 $lang['lackpermission']='You are not authorised to do that.';
 
+$lang['telladmin'] = 'Please advise your site administrator.';
+
 $lang['err_ajax']='Server Communication Error';
 $lang['err_chart']='Chart creation failed';
 $lang['err_data']='Data processing error';
 $lang['err_export']='A problem occurred during the export process'; //too vague!
+$lang['err_list']='List creation failed';
 $lang['err_match']='team/match data error';
-$lang['err_missing']='Cannot find a requested tournament. Please advise your site administrator.';
+$lang['err_missing']='Cannot find a requested tournament';
 $lang['err_notice']='A problem occurred during the communication process';
+$lang['err_styles']='Cannot find specified styling file';
 $lang['err_system']='System error!';
+$lang['err_tag']='Invalid page definition';
 $lang['err_template']='Display-template error';
+$lang['err_value']='Invalid parameter value'; 
 $lang['noname']='name missing';
 
 $lang['tab_items']='Tournaments';

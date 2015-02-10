@@ -36,7 +36,7 @@ elseif(isset($params['action']))
 		$params['real_action'] = 'edit';
 }
 else
-	$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$this->PrettyMessage('error',FALSE)));
+	$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$this->PrettyMessage('err_system',FALSE)));
 
 $tab = $this->GetActiveTab($params);
 $message = (!empty($params['tmt_message'])) ? $params['tmt_message'] : FALSE;
@@ -132,7 +132,7 @@ else
 				{
 					if(!$twt->SaveTokens($token['oauth_token'],
 						$token['oauth_token_secret'],$token['screen_name'],$bid))
-							$message = $this->Lang('err_data');
+							$message = $this->Lang('err_data_type',$this->Lang('err_token'));
 				}
 				else
 					$message = $token;
@@ -198,6 +198,12 @@ if ($data)
 	echo $this->ProcessTemplate('addedit_comp.tpl');
 }
 else
-	$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$this->PrettyMessage('err_data',FALSE)));
+{
+	if (!empty($message))
+		$message .= '<br />/<br />'.$this->Lang('err_missing');
+	else
+		$message = $this->PrettyMessage('err_missing',FALSE);
+	$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$message));
+}
 
 ?>
