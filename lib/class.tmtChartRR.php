@@ -64,7 +64,7 @@ class tmtChartRR extends tmtChartBase
 	@titles optional, mode enum for type of titles to include in boxes:
 	 0 for (printer-ready) no labels in unplayed matches
  	 1 for normal labels in all boxes (default)
-	 2 for including match numbers in 'plan' mode
+	 2 for including (real and fake) match numbers in 'plan' mode
 	Setup parent::layout[] parameters 'type' and 'text' for all chart boxes
 	Returns: TRUE,or FALSE if no teams in the bracket
 	*/
@@ -74,7 +74,8 @@ class tmtChartRR extends tmtChartBase
 		//grab all team identifiers (including flagged deletions maybe needed for prior-match status)
 		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? ORDER BY displayorder ASC';
 		$teams = $db->GetCol($sql,array($bdata['bracket_id']));
-		if($teams == FALSE) return FALSE;
+		if($teams == FALSE)
+			return FALSE;
 		$tc = count($teams);
 		$order = 1;
 		$names = array();
@@ -86,15 +87,14 @@ class tmtChartRR extends tmtChartBase
 		$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
 		$relations = $this->mod->ResultTemplates($bdata['bracket_id']);
 		$anon = $this->mod->Lang('anonother');
-		//process 'non-default' matches
+		//process all recorded matches
 		$sql = 'SELECT M.*,T1.displayorder AS tAorder,T2.displayorder AS tBorder FROM '
 .$pref.'module_tmt_matches M JOIN '
 .$pref.'module_tmt_teams T1 ON M.teamA = T1.team_id JOIN '
 .$pref.'module_tmt_teams T2 ON M.teamB = T2.team_id
-WHERE M.bracket_id=? AND M.status != 0 AND T1.flags!=2 AND T2.flags!=2
+WHERE M.bracket_id=? AND T1.flags!=2 AND T2.flags!=2
 ORDER BY T1.displayorder ASC';
 		$matches = $db->GetAll($sql,array($bdata['bracket_id']));
-
 		foreach($matches as &$mdata)
 		{
 			$OA = (int)$mdata['tAorder'];
@@ -111,6 +111,9 @@ ORDER BY T1.displayorder ASC';
 			{
 				switch($mdata['status'])
 				{
+				case 0:
+					$type = 'deflt';
+					//no break here
 				case SOFT:
 					$type = 'nonf';
 					//no break here
@@ -178,6 +181,9 @@ ORDER BY T1.displayorder ASC';
 			{
 				switch($mdata['status'])
 				{
+				 case 0:
+					$type = 'deflt';
+					break;
 				 case SOFT:
 				 case ASOFT:
 					$type = 'nonf';
@@ -187,50 +193,56 @@ ORDER BY T1.displayorder ASC';
 					$type = 'firm';
 					break;
 				 default:
-					$type = ($tA != NULL && $tB != NULL) ? 'done':'deflt';
+					$type = ($tA != FALSE && $tB != FALSE) ? 'done':'deflt';
 					break;
 				}
-				$rel = $this->mod->Lang('matchnum',(int)$mdata['match_id'])."\n";
-				if($tA != null)
-					$rel .= $tA."\n";
-				if($tB != null)
-					$rel .= $tB."\n";
-				if($tA == NULL || $tB == NULL)
-					$rel .= $anon."\n";
 				$at = ($mdata['place']) ? $mdata['place'] : '';
 				if($mdata['playwhen'])
 					$at .= ' '.date($fmt,strtotime($mdata['playwhen']));
-				$text = $rel.trim($at);
+				if($at)
+				{
+					$rel = ''; //$this->mod->Lang('matchnum',(int)$mdata['match_id'])."\n";
+					if($tA != FALSE)
+						$rel .= $tA."\n";
+					if($tB != FALSE)
+						$rel .= $tB."\n";
+					if($tA == FALSE || $tB == FALSE)
+						$rel .= $anon."\n";
+					$text = $rel.trim($at);
+				}
+				else
+				{
+					if($tA == FALSE)
+						$tA = $anon;
+					if($tB == FALSE)
+						$tB = $anon;
+					$text = sprintf($relations['vs'],$tA,$tB);
+				}
 			}
 			$this->layout[$OA][$OB]['type'] = $type;
 			$this->layout[$OA][$OB]['text'] = $text;
 		}
 		unset($mdata);
-		//process 'default' matches
-		$indx = count($matches); //TODO no valid match number applies, want count $matches::processed above + 1
-		foreach($this->layout as $OA=>&$boxes)
+		//process 'not-yet-created' matches
+		foreach($this->layout as $OA=>&$column)
 		{
-			foreach($boxes as $OB=>&$item)
+			foreach($column as $OB=>&$row)
 			{
-				if(!isset($item['type']))
+				if(!isset($row['type']))
 				{
-					$item['type'] = 'deflt';
-					if ($titles != 2)
-						$item['text'] = sprintf($relations['vs'],$names[$OA],$names[$OB]);
-					else
-					{
-						$id = $this->mod->Lang('matchnum',$indx);
-						$at = ($mdata['place']) ? $mdata['place'] : '';
-						if($mdata['playwhen'])
-							$at .= ' '.date($fmt,strtotime($mdata['playwhen']));
-						$item['text'] = $id."\n".$names[$OA]."\n".$names[$OB]."\n".trim($at);
-					}
+					$row['type'] = 'deflt';
+					$tA = $names[$OA];
+					if($tA == FALSE)
+						$tA = $anon;
+					$tB = $names[$OB];
+					if($tB == FALSE)
+						$tB = $anon;
+					$row['text'] = sprintf($relations['vs'],$tA,$tB);
 				}
-				$indx++; //CRAPOLA!!
 			}
-			unset($item);
+			unset($row);
 		}
-		unset($boxes);
+		unset($column);
 		return TRUE;
 	}
 
@@ -265,11 +277,11 @@ ORDER BY T1.displayorder ASC';
 			break;
 		}
 
-		foreach($this->layout as &$boxes)
+		foreach($this->layout as &$column)
 		{
-			$first = reset($boxes);
+			$first = reset($column);
 			$x = floatval($first['bl']); //inside margin
-			if(count($boxes) > 1 && $dojoins)
+			if(count($column) > 1 && $dojoins)
 			{
 				//draw joins first
 				$pdf->SetLineWidth($lw);
@@ -285,27 +297,27 @@ ORDER BY T1.displayorder ASC';
 					break;
 				}
 				$y = floatval($first['bt'] + $bh/2);
-				$last = end($boxes);
+				$last = end($column);
 				$y2 = floatval($last['bt'] + $bh/2);
 				$m = $x - $gw/2;
 				if($y2 != $y)
 					$pdf->Line($m,$y,$m,$y2);
-				foreach($boxes as &$item)
+				foreach($column as &$row)
 				{
-					if(empty($item['type']) || $item['type'] != 'hide')
+					if(empty($row['type']) || $row['type'] != 'hide')
 					{
-						$y = floatval($item['bt']) + $bh/2;
+						$y = floatval($row['bt']) + $bh/2;
 						$pdf->Line($x,$y,$m,$y);
 					}
 				}
-				unset($item);
+				unset($row);
 				if($dashjoins)
 					$pdf->SetLineDash(FALSE);
 			}
 
-			foreach($boxes as &$item)
+			foreach($column as &$row)
 			{
-				$type = (!empty($item['type'])) ? $item['type'] : 'deflt';
+				$type = (!empty($row['type'])) ? $row['type'] : 'deflt';
 				if($type == 'hide')
 					continue;
 				$style = $boxstyles[$type];
@@ -345,22 +357,22 @@ ORDER BY T1.displayorder ASC';
 					$c = $style['bc'];
 					$pdf->SetDrawColor($c[0],$c[1],$c[2]);
 				}
-				$y = floatval($item['bt']); //inside margin
+				$y = floatval($row['bt']); //inside margin
 				$pdf->Rect($x,$y,$bw,$bh,$mode);
 				if($dashed)
 					$pdf->SetLineDash(FALSE);
-				if(!empty($item['text']))
+				if(!empty($row['text']))
 				{
 					$pdf->SetFont($style['font'],$style['attr'],$style['size']);
 					$c = $style['color'];
 					$pdf->SetTextColor($c[0],$c[1],$c[2]);
 					$pdf->SetXY($x+$offs,$y+$offs);
-					$pdf->MultiCell($tcw,$tch,$item['text'],0,'C',FALSE);
+					$pdf->MultiCell($tcw,$tch,$row['text'],0,'C',FALSE);
 				}
 			}
-			unset($item);
+			unset($row);
 		}
-		unset($boxes);
+		unset($column);
 	}
 }
 
