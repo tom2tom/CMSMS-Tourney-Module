@@ -30,23 +30,20 @@ if ($type !== FALSE)
 		break;
 	}
 	unset($sch);
-	if ($res)
+	$newparms = $this->GetEditParms($params,'matchestab');
+	if ($res === TRUE)
 	{
 		$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=1 WHERE bracket_id=?';
 		$db->Execute($sql,array($bid));
-	}
-
-	$newparms = $this->GetEditParms($params,'matchestab');
-	if ($res)
 		$newparms['matchview'] = 'plan';
+	}
 	else
-		$newparms['tmt_message'] = $this->PrettyMessage('err_data',FALSE);
+		$newparms['tmt_message'] = $this->PrettyMessage($res,FALSE);
 
 	$this->Redirect($id,'addedit_comp',$returnid,$newparms);
-
 }
 
 $this->Redirect($id, 'defaultadmin', '',
-	array('tmt_message'=>$this->PrettyMessage('err_data',FALSE)));
+	array('tmt_message'=>$this->PrettyMessage('err_missing',FALSE));
 
 ?>

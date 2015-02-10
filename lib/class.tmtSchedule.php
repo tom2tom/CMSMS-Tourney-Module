@@ -491,7 +491,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 	Create a set of match records, in the matches table, for the bracket
 	Clears any existing matches for the bracket
 	Stores status for matches which have a bye
-	Returns: TRUE unless bad no. of teams in the bracket
+	Returns: TRUE on success, or lang-key for error message if bad no. of teams in the bracket
 	*/
 	function InitKOMatches(&$mod,$bracket_id)
 	{
@@ -501,11 +501,11 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 0 END),seeding ASC';
 		$allteams = $db->GetAssoc($sql,array($bracket_id));
 		if($allteams == FALSE)
-			return FALSE;
+			return 'info_nomatch'; //no teams means no matches
 		$numteams = count($allteams);
 		list($min,$max) = $mod->GetLimits(KOTYPE);
 		if($numteams > $max || $numteams < $min)
-			return FALSE;
+			return 'err_value';
 		$numseeds = count(array_filter($allteams));
 		if($numseeds > 1)
 		{
@@ -675,7 +675,7 @@ WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS N
 	Create a set of match records, in the matches table, for the bracket
 	Clears any existing matches for the bracket
 	Stores status for matches which have a bye
-	Returns: TRUE unless bad no. of teams in the bracket
+	Returns: TRUE on success, or lang-key for error message if bad no. of teams in the bracket
 	*/
 	function InitDEMatches(&$mod,$bracket_id)
 	{
@@ -685,11 +685,11 @@ WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS N
 WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 0 END),seeding ASC';
 		$allteams = $db->GetAssoc($sql,array($bracket_id));
 		if($allteams == FALSE)
-			return FALSE;
+			return 'info_nomatch';
 		$numteams = count($allteams);
 		list($min,$max) = $mod->GetLimits(DETYPE);
 		if($numteams < $min || $numteams > $max)
-			return FALSE;
+			return 'err_value';
 		$numseeds = count(array_filter($allteams));
 		if($numseeds > 1)
 		{
@@ -898,7 +898,8 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 	@bracket_id: the bracket identifier
 	Setup match entries for the first or next series of matches, if any.
 	The matches table is updated accordingly.
-	Returns: TRUE if update done, FALSE if not(including if error occurred)
+	Returns: TRUE on success, or lang-key for error message if bad no. of teams
+	 in the bracket, or update not done
 	*/
 	function NextRRMatches(&$mod,$bracket_id)
 	{
@@ -907,10 +908,10 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder ASC';
 		$allteams = $db->GetCol($sql,array($bracket_id));
 		if($allteams == FALSE)
-			return FALSE;
+			return 'info_nomatch';
 		list($min,$max) = $mod->GetLimits(RRTYPE);
 		if($allteams > $max || $allteams < $min)
-			return FALSE;
+			return 'err_value';
 
 		shuffle($allteams);
 		$played = array();
@@ -1003,7 +1004,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			return TRUE;
 		}
 		$this->ScheduleMatches($bracket_id);
-		return FALSE;
+		return 'info_nomatch';
 	}
 
 	/**
@@ -1077,7 +1078,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 						return FALSE;
 				}
 			}
-			elseif(!$this->NextRRMatches($mod,$bracket_id)) //TODO add & schedule a match for $team_id
+			elseif($this->NextRRMatches($mod,$bracket_id) !== TRUE) //TODO add & schedule a match for $team_id
 				return FALSE;
 		}
 		return TRUE;
@@ -1148,12 +1149,12 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			switch($type)
 			{
 			 case DETYPE:
-				return $this->InitDEMatches($mod,$bracket_id);
+				return ($this->InitDEMatches($mod,$bracket_id) === TRUE);
 			 case RRTYPE:
-				return $this->NextRRMatches($mod,$bracket_id);
+				return ($this->NextRRMatches($mod,$bracket_id) === TRUE);
 			 default:
 			 //case KOTYPE:
-				return $this->InitKOMatches($mod,$bracket_id);
+				return ($this->InitKOMatches($mod,$bracket_id) === TRUE);
 			}
 		}
 	}
