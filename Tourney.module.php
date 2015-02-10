@@ -29,18 +29,19 @@ const RRMIN = 2;
 const RRMAX = 20;
 //time interval (hours) before which new matches aren't scheduled and within which FIRM matches are considered 'committed'
 const LEADHOURS = 48;
-//schedule enum (<MRES,!=0)
+//match-status enum values
+// scheduled (<MRES,!=0)
 const NOTYET = -1; //runtime data sometimes, not stored
 const SOFT = 1;
 const FIRM = 2;
-//threshold for scheduled matches with NULL teamA and/or teamB, not stored
+// threshold for scheduled matches with NULL teamA and/or teamB, not stored
 const ANON = 6;
-//scheduled matches with unknown participant(s) >= ANON < MRES
+// scheduled matches with unknown participant(s) >= ANON < MRES
 const ASOFT = 6;
 const AFIRM = 7;
-//threshold between schedules and results, not stored
+// threshold between schedules and results, not stored
 const MRES = 11;
-//match result enum (>=MRES)
+// match result (>=MRES)
 const WONA = 11;
 const WONB = 12;
 const FORFA = 13;
