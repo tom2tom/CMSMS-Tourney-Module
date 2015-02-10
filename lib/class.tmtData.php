@@ -284,7 +284,7 @@ class tmtData
 	@id: id parameter supplied to action which called here
 	@bracket_id optional, bracket identifier, default FALSE
 	@params optional, parameters array supplied to action which called here, default FALSE
-	Returns: stdClass object, or FALSE
+	Returns: stdClass object, or FALSE if no tabled bracket-data for several types of $op
 	*/
 	function &GetBracketData(&$mod,$op,$id,$bracket_id=FALSE,$params=FALSE)
 	{
@@ -304,7 +304,7 @@ class tmtData
 			$data->owner = '';
 			$data->contact = '';
 			$data->twtfrom = '';
-//			$data->admin_editgroup = 'none';
+//		$data->admin_editgroup = 'none';
 			$data->feu_editgroup = 'none';
 
 			$data->motemplate = $mod->GetTemplate('mailout_default_template');
@@ -366,7 +366,7 @@ class tmtData
 			$data->bracket_id = $bracket_id;
 //TODO also allow picker for copy, allow edit ONLY before comp starts
 			$data->type = (int)$row['type'];
-//			$data->teamcount = $row['teamcount'];
+//		$data->teamcount = $row['teamcount'];
 			$data->name = $row['name'];
 			$data->description = $row['description'];
 			$data->alias = $row['alias'];
@@ -375,7 +375,7 @@ class tmtData
 			$data->owner = $row['owner'];
 			$data->contact = $row['contact'];
 			$data->twtfrom = $row['twtfrom'];
-//			$data->admin_editgroup = $row['admin_editgroup'];
+//		$data->admin_editgroup = $row['admin_editgroup'];
 			$data->feu_editgroup = $row['feu_editgroup'];
 
 			$data->motemplate = $mod->GetTemplate('mailout_'.$row['bracket_id'].'_template');
