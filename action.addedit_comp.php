@@ -23,6 +23,14 @@ if (isset($params['real_action']))
 		if (0) //TODO $params['real_action'] == ?)
 			$add = TRUE;
 	}
+	if (strpos($params['real_action'],'move') === 0)
+	{
+		//strip off the [teamid]
+		$tmp = $params['real_action'];
+		$pos = strpos($tmp,'[');
+		$movetid = substr($tmp,$pos+1,-1);
+		$params['real_action'] = substr($tmp,0,$pos);
+	}
 }
 elseif(isset($params['action']))
 {
@@ -152,6 +160,24 @@ else
 			$message = $this-Lang('TODO');
 		}
 */
+		$params['real_action'] = 'edit';
+		break;
+	 case 'movedown':
+	 case 'moveup':
+		$pref = cms_db_prefix();
+		$sql = 'SELECT displayorder FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND team_id=?';
+		$from = $db->GetOne($sql,array($bid,$movetid));
+		if($from)
+		{
+			$to = ($params['real_action']=='moveup') ? $from-1 : $from+1;
+			if($to > 0)
+			{
+				$sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder='.$from.' WHERE bracket_id=? AND displayorder='.$to;
+				$db->Execute($sql,array($bid));
+				$sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder='.$to.' WHERE bracket_id=? AND team_id=?';
+				$db->Execute($sql,array($bid,(int)$movetid));
+			}
+		}
 		$params['real_action'] = 'edit';
 		break;
 	 default:

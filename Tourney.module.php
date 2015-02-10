@@ -854,7 +854,6 @@ Europe/Vilnius'
 		switch ($name)
 		{
 		 case 'addedit_comp':
-$this->DoNothing();
 			if (!empty($params['real_action']))
 			{
 				//'real_action' will be correctly set only if js is enabled
@@ -900,6 +899,10 @@ $this->DoNothing();
 					$name = 'save_comp';
 				elseif(substr($task,0,11) == 'delete_team')
 					$name = 'delete_team';
+				elseif(substr($task,0,8) == 'movedown')
+					$params['real_action'] = $task;
+				elseif(substr($task,0,6) == 'moveup')
+					$params['real_action'] = $task;
 			}
 			break;
 		 case 'default':
