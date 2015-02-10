@@ -93,18 +93,18 @@ $sch = new tmtSchedule();
 switch($bdata['type'])
 {
  case DETYPE:
-	$fresh = $sch->UpdateDEMatches($bracket_id);
+	$res = $sch->UpdateDEMatches($bracket_id);
 	break;
  case RRTYPE:
-	$fresh = $sch->NextRRMatches($this,$bracket_id);
+	$res = $sch->NextRRMatches($this,$bracket_id);
 	break;
  default:
 // case KOTYPE:
-	$fresh = $sch->UpdateKOMatches($bracket_id);
+	$res = $sch->UpdateKOMatches($bracket_id);
 	break;
 }
 
-if($fresh)
+if($res === TRUE)
 	$bdata['chartbuild'] = 1; //tell downstream that rebuild is needed
 $lyt = new tmtLayout();
 if(empty($params['view']) || $params['view'] == 'chart')
