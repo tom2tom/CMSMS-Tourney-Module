@@ -161,24 +161,24 @@ if(empty($params['view']) || $params['view'] == 'chart')
 }
 else
 {
-	list($listrows,$errkey) = $lyt->GetList($this,$bdata);
-	if($listrows[0] !== FALSE)
+	$res = $lyt->GetList($this,$bdata);
+	if(is_array($res))
 	{
-		$smarty->assign('items',$listrows);
+		$smarty->assign('items',$res);
 		$smarty->assign('chart',$this->CreateInputSubmit($id,'chart',$this->Lang('chart')));
 		$fn = cms_join_path(dirname(__FILE__),'templates','list.tpl');
 		$tpl = @file_get_contents($fn);
 		$hidden = $this->CreateInputHidden($id,'view','list');
 	}
-	else
+	else //$res (if any) is error-message key
 	{
-		if($errkey)
+		if($res)
 		{
-			$err = (strpos($errkey,'err') === 0);
+			$err = (strpos($res,'err') === 0);
 			if($err)
-				$message = $this->Lang('err_list').'<br /><br />'.$this->Lang($errkey);
+				$message = $this->Lang('err_list').'<br /><br />'.$this->Lang($res);
 			else
-				$message = $this->Lang($errkey);
+				$message = $this->Lang($res);
 		}
 		else
 		{

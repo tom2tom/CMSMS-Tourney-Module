@@ -75,22 +75,22 @@ if (!$list)
 }
 else
 {
-	list($listrows,$errkey) = $lyt->GetList($this,$bdata);
-	if ($listrows[0] !== FALSE)
+	$res = $lyt->GetList($this,$bdata);
+	if (is_array($res))
 	{
 		$smarty->assign('pagetitle',$bdata['name']);
 		if (!empty($bdata['description']))
 			$smarty->assign('pagedesc',$bdata['description']);
 		else
 			$smarty->assign('pagedesc',null);
-		$smarty->assign('items',$listrows);
+		$smarty->assign('items',$res);
 		$tpl = 'admin_list.tpl';
 	}
-	else
+	else //$res (if any) is error-message key
 	{
 		$message = $this->Lang('err_list');
-		if($errkey)
-			$message .= '<br /><br />'.$this->Lang($errkey);
+		if($res)
+			$message .= ': '.strtolower($this->Lang($res));
 		$newparms = $this->GetEditParms($params,'charttab',$message);
 		$this->Redirect($id,'addedit_comp',$returnid,$newparms);
 	}

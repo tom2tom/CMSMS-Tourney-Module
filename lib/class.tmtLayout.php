@@ -105,8 +105,8 @@ class tmtLayout
 	@mod reference to module object
 	@bdata reference to array of brackets-table data
 	Get bracket match status data in list format
-	Returns: array of match descriptor strings,
-	 	or array(FALSE,lang key) if error or nothing to report
+	Returns: array of match descriptor strings, or message-string key
+		if nothing to report or error happens
 	*/
 	function GetList(&$mod,&$bdata)
 	{
@@ -118,7 +118,7 @@ class tmtLayout
 			'module_tmt_matches WHERE bracket_id=? ORDER BY match_id ASC';
 		$matches = $db->GetAssoc($sql,array($bracket_id));
 		if ($matches == FALSE)
-			return array(FALSE,'nomatch');
+			return 'nomatch';
 		if($bdata['type'] != RRTYPE)
 		{
 			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.
@@ -132,12 +132,12 @@ class tmtLayout
 		 	break;
 		 case DETYPE:
 			if ($tc < DEMIN || $tc > DEMAX)
-				return array(FALSE,'err_value');
+				return 'err_value';
 			$rnd = new tmtRoundsDE();
 			break;
 		 default:
 			if ($tc < KOMIN || $tc > KOMAX)
-				return array(FALSE,'err_value');
+				return 'err_value';
 			$rnd = new tmtRoundsKO();
 			$levelmax = $rnd->LevelMax($tc);
 		 	break;
@@ -244,7 +244,7 @@ class tmtLayout
 							$prev = $anon;
 							break;
 						 default:
-							return array(FALSE,'err_value');
+							return 'err_value';
 						}
 						if($tA)
 							$str = sprintf($relations['vs'],$tA,$prev);
@@ -279,7 +279,9 @@ class tmtLayout
 				}
 			}
 		}
-		return $showrows;
+		if($showrows)
+			return $showrows;
+		return 'nomatch';
 	}
 }
 
