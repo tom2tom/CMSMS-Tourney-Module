@@ -360,11 +360,11 @@ class tmtChartDE extends tmtChartBase
 
 		foreach($this->layout as $lvl=>&$boxes)
 		{
+			$first = reset($boxes);
+			$x = floatval($first['bl']); //inside margin
 			if($dojoins)
 			{
 				//box borders may be styled for any width, so draw the joins first
-				$first = reset($boxes);
-				$x = floatval($first['bl']); //inside margin
 				$joins = array();
 				foreach($boxes as &$item)
 				{

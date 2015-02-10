@@ -267,6 +267,8 @@ ORDER BY T1.displayorder ASC';
 
 		foreach($this->layout as &$boxes)
 		{
+			$first = reset($boxes);
+			$x = floatval($first['bl']); //inside margin
 			if(count($boxes) > 1 && $dojoins)
 			{
 				//draw joins first
@@ -282,8 +284,6 @@ ORDER BY T1.displayorder ASC';
 				 default:
 					break;
 				}
-				$first = reset($boxes);
-				$x = floatval($first['bl']); //inside margin
 				$y = floatval($first['bt'] + $bh/2);
 				$last = end($boxes);
 				$y2 = floatval($last['bt'] + $bh/2);

@@ -325,11 +325,11 @@ class tmtChartKO extends tmtChartBase
 
 		foreach($this->layout as $lvl=>&$boxes)
 		{
+			$first = reset($boxes);
+			$x = floatval($first['bl']); //inside margin
 			if($dojoins)
 			{
 				//draw joins first
-				$first = reset($boxes);
-				$x = floatval($first['bl']); //inside margin
 				$nx = $x + $bw + $blw;
 				$joins = array();
 				foreach($boxes as &$item)
