@@ -41,10 +41,25 @@ switch ($oldversion)
 		$this->SetPreference('uploads_dir',$this->GetName());
  case '0.1.2':
  	if (!$dict) $dict = NewDataDictionary($db);
-	$sql = $dict->AlterColumnSQL($pref.'module_tmt_brackets','match_days C(128),match_hours C(128)');
-	if(!$sql || !$db->ExecuteSQLArray($sql))
+	$flds = "
+	type I(1) DEFAULT ".KOTYPE.",
+	match_days C(128),
+	match_hours C(128),
+	playgaptype I(1) DEFAULT 2,
+	placegaptype I(1) DEFAULT 2
+";
+	$sql = $dict->AlterColumnSQL($pref.'module_tmt_brackets',$flds);
+	if(!$sql || !$dict->ExecuteSQLArray($sql))
 	{
-		//error message
+		//UI error message too?
+		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','change fields'));
+		return FALSE;
+	}
+	$sql = $dict->DropColumnSQL($pref.'module_tmt_brackets',"admin_editgroup");
+	if(!$sql || !$dict->ExecuteSQLArray($sql))
+	{
+		//UI error message too?
+		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','delete field \'admin_editgroup\''));
 		return FALSE;
 	}
 	break;
