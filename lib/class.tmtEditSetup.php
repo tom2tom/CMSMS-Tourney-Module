@@ -107,6 +107,53 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		}
 	}
 
+	//TODO migrate this to class
+	function IntervalNames(&$mod,$which,$plural=FALSE,$cap=FALSE)
+	{
+		if (!is_array($which))
+			$which = array($which);
+		$ret = array();
+		foreach($which as $period)
+		{
+			switch($period)
+			{
+			case 0:
+				$k = 'none';
+				break;
+			case 1:
+				$k = 'minute';
+				break;
+			case 2:
+				$k = 'hour';
+				break;
+			case 3:
+				$k = 'day';
+				break;
+			case 4:
+				$k = 'week';
+				break;
+			case 5:
+				$k = 'month';
+				break;
+			case 6:
+				$k = 'year';
+				break;
+			default:
+				continue;
+			}
+			if($plural && ($period > 0))
+				$k .= 's';
+			$v = $mod->Lang($k);
+			if($cap)
+				$ret[] = ucfirst($v); //for current locale
+			else
+				$ret[] = $v;
+		}
+		if (count($which) > 1)
+			return $ret;
+		return $ret[0];
+	}
+
 	function Setup(&$mod,&$smarty,&$data,$id,$returnid,$activetab='',$message='')
 	{
 		$gCms = cmsms();
@@ -609,81 +656,29 @@ EOS;
 			$mod->Lang('help_same_time'),
 		);
 
-		$btns = array(
-			$mod->Lang('none')=>'none',
-			$mod->Lang('hours')=>'hours',
-			$mod->Lang('days')=>'days');
+		$opts = $this->IntervalNames($mod,array(0,1,2,3),true);
+		if($pmod)
+			$opts = array_flip($opts); //selector needs other form of array
 
-		$grp = $mod->CreateInputRadioGroup($id,'tmt_placegaptype',$btns,$data->placegaptype,'','|R|');
-		$parts = explode('|R|',$grp);
-		array_pop($parts);
-		switch($data->placegaptype)
-		{
-		 case 'hours':
-			$vd = '';
-		 	$vh = (isset($data->placegaphours))?$data->placegaphours:$data->placegap;
-			break;
-		 case 'days':
-		 	$vd = (isset($data->placegapdays))?$data->placegapdays:$data->placegap;
-			$vh = '';
-			break;
-		 default:
-			$vd = '';
-			$vh = '';
-			break;
-		}
 		$sched[] = array(
 			$mod->Lang('title_place_gap'),
 			($pmod) ?
-			$parts[0].
-			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_placegaphours',$vh,2,4).$parts[1].
-			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_placegapdays',$vd,2,2).$parts[2] :
-			$data->placegap.' '.$mod->Lang($data->placegaptype),
+			$mod->CreateInputText($id,'tmt_placegap',$data->placegap,3,5).
+				'&nbsp'.
+				$mod->CreateInputDropdown($id,'tmt_placegaptype',$opts,-1,$data->placegaptype):
+			$data->placegap.' '.$opts[$data->placegaptype],
 			$mod->Lang('help_place_gap')
-		);
+			);
 
-		$btns = array(
-			$mod->Lang('none')=>'none',
-			$mod->Lang('minutes')=>'minutes',
-			$mod->Lang('hours')=>'hours',
-			$mod->Lang('days')=>'days');
-
-		$grp = $mod->CreateInputRadioGroup($id,'tmt_playgaptype',$btns,$data->playgaptype,'','|R|');
-		$parts = explode('|R|',$grp);
-		array_pop($parts);
-		switch($data->playgaptype)
-		{
-		 case 'minutes':
-			$vd = '';
-		 	$vh = '';
-			$vm = (isset($data->playgapmins))?$data->playgapmins:$data->playgap;
-			break;
-		 case 'hours':
-			$vd = '';
-		 	$vh = (isset($data->playgaphours))?$data->playgaphours:$data->playgap;
-			$vm = '';
-			break;
-		 case 'days':
-		 	$vd = (isset($data->playgapdays))?$data->playgapdays:$data->playgap;
-			$vh = '';
-			$vm = '';
-			break;
-		 default:
-			$vd = '';
-			$vh = '';
-			$vm = '';
-			break;
-		}
 		$sched[] = array(
 			$mod->Lang('title_play_gap'),
 			($pmod) ?
-			$parts[0].
-			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_playgapmins',$vm,2,2).$parts[1].
-			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_playgaphours',$vh,2,4).$parts[2].
-			'&nbsp;&nbsp;&nbsp;'.$mod->CreateInputText($id,'tmt_playgapdays',$vd,2,2).$parts[3] :
-			$data->playgap.' '.$mod->Lang($data->playgaptype),
+			$mod->CreateInputText($id,'tmt_playgap',$data->playgap,3,5).
+				'&nbsp;'.
+				$mod->CreateInputDropdown($id,'tmt_playgaptype',$opts,-1,$data->playgaptype):
+			$data->playgap.' '.$opts[$data->playgaptype],
 			$mod->Lang('help_play_gap')
-		);
+			);
 
 		$smarty->assign('schedulers',$sched);
 

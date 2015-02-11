@@ -76,7 +76,7 @@ class tmtData
 		$data->owner = $params['tmt_owner'];
 		$data->contact = $params['tmt_contact'];
 		$data->twtfrom = $params['tmt_twtfrom'];
-//		$data->admin_editgroup = $params['tmt_admin_editgroup'];
+//	$data->admin_editgroup = $params['tmt_admin_editgroup'];
 		if (isset ($params['tmt_feu_editgroup']))
 			$data->feu_editgroup = $params['tmt_feu_editgroup'];
 		$data->seedtype = intval($params['tmt_seedtype']);
@@ -90,39 +90,33 @@ class tmtData
 		$tmp = $params['tmt_playgaptype'];
 		switch ($tmp)
 		{
-		 case 'none':
+		 case 0: //none
 			$data->playgap = null;
 			break;
-		 case 'minutes':
-			$data->playgap = self::GetIntegerFor($params['tmt_playgapmins']);
+		 case 2: //hours
+		 case 3: //days
+			$data->playgap = self::GetFloatFor($params['tmt_playgap']);
 			break;
-		 case 'hours':
-			$data->playgap = self::GetFloatFor($params['tmt_playgaphours']);
-			break;
-		 case 'days':
-			$data->playgap = self::GetFloatFor($params['tmt_playgapdays']);
+		 default:
+			$data->playgap = self::GetIntegerFor($params['tmt_playgap']);
 			break;
 		}
 		$data->playgaptype = $tmp;
-		if (is_array($params['tmt_match_days']))
-			$data->match_days = implode(';',$params['tmt_match_days']);
-		else
-			$data->match_days = $params['tmt_match_days'];
-		if (is_array($params['tmt_match_hours']))
-			$data->match_hours = implode(';',$params['tmt_match_hours']);
-		else
-			$data->match_hours = $params['tmt_match_hours'];
+		$data->match_days = $params['tmt_match_days'];
+		$data->match_hours = $params['tmt_match_hours'];
+
 		$tmp = $params['tmt_placegaptype'];
 		switch ($tmp)
 		{
-		 case 'none':
+		 case 0: //none
 			$data->placegap = null;
 			break;
-		 case 'hours':
-			$data->placegap = self::GetFloatFor($params['tmt_placegaphours']);
+		 case 2: //hours
+		 case 3: //days
+			$data->placegap = self::GetFloatFor($params['tmt_placegap']);
 			break;
-		 case 'days':
-			$data->placegap = self::GetFloatFor($params['tmt_placegapdays']);
+		 default:
+			$data->placegap = self::GetIntegerFor($params['tmt_placegap']);
 			break;
 		}
 		$data->placegaptype = $tmp;
