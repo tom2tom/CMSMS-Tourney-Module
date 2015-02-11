@@ -76,7 +76,6 @@ class tmtData
 		$data->owner = $params['tmt_owner'];
 		$data->contact = $params['tmt_contact'];
 		$data->twtfrom = $params['tmt_twtfrom'];
-//	$data->admin_editgroup = $params['tmt_admin_editgroup'];
 		if (isset ($params['tmt_feu_editgroup']))
 			$data->feu_editgroup = $params['tmt_feu_editgroup'];
 		$data->seedtype = intval($params['tmt_seedtype']);
@@ -102,9 +101,14 @@ class tmtData
 			break;
 		}
 		$data->playgaptype = $tmp;
-		$data->match_days = $params['tmt_match_days'];
-		$data->match_hours = $params['tmt_match_hours'];
-
+		$tmp = $params['tmt_match_days'];
+		$data->match_days = str_replace(' ','',$tmp);
+		if($data->match_days == FALSE)
+			$data->match_days = NULL;
+		$tmp = $params['tmt_match_hours'];
+		$data->match_hours = str_replace(' ','',$tmp);
+		if($data->match_hours == FALSE)
+			$data->match_hours = NULL;
 		$tmp = $params['tmt_placegaptype'];
 		switch ($tmp)
 		{
