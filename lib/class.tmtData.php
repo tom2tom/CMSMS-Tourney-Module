@@ -444,12 +444,75 @@ class tmtData
 			$data->matches = $db->GetAssoc($sql,array($bracket_id));
 			if ($data->matches)
 			{
-				foreach ($data->matches as &$mdata)
+				foreach ($data->matches as $k=>&$mdata)
 				{
 					//strip seconds from the time
 					$mdata['playwhen'] = substr($mdata['playwhen'],0,-3);
 				}
 				unset($mdata);
+			}
+			if($data->type == RRTYPE && $data->matchview == 'plan')
+			{
+				$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? ORDER BY displayorder';
+				$allteams = $db->GetCol($sql,array($bracket_id));
+				if ($allteams)
+				{
+					//populate data->matches with fake 'not-yet-constructed' matches (match id < 0)
+					$fakes = array();
+					if ($data->matches)
+					{
+						end($data->matches);
+						$k = -key($data->matches)-1;
+					}
+					else
+						$k = -1;
+					foreach ($allteams as $tidA)
+					{
+						$otherteams = array_diff ($allteams, array($tidA));
+						if ($otherteams)
+						{
+							foreach ($otherteams as $tidB)
+							{
+								$m = FALSE;
+								foreach ($data->matches as &$mdata)
+								{
+									if ($mdata['teamA'] == $tidA)
+									{
+										if ($mdata['teamB'] == $tidB)
+										{
+											$m = TRUE;
+											break;
+										}
+									}
+									elseif($mdata['teamB'] == $tidA)
+									{
+										if ($mdata['teamA'] == $tidB)
+										{
+											$m = TRUE;
+											break;
+										}
+									}
+								}
+								unset ($mdata);
+								if (!$m) //match not recorded already
+								{
+									$fakes[$k--] = array (
+//									 'nextm' => null,
+//									 'nextlm' => null,
+									 'teamA' => $tidA,
+									 'teamB' => $tidB,
+									 'playwhen' => null,
+									 'place' => null,
+									 'status' => 0,
+									 'score' => null
+									);
+								}
+							}
+							$allteams = $otherteams;
+						}
+					}
+					$data->matches = $data->matches + $fakes;
+				}
 			}
 			$data->resultview = ($params && !empty($params['resultview']))?$params['resultview']:'future';
 			if ($data->resultview == 'future')

@@ -122,19 +122,24 @@ if(isset($params['apply']) || isset($params['submit']))
 				{
 					$sql = 'SELECT match_id FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
 					$current = $db->GetCol($sql,array($bracket_id));
-					if(!$current)
-						$this->Redirect($id,'defaultadmin','',
-							array('tmt_message'=>$this->PrettyMessage('err_match',FALSE)));
-					$sql = 'INSERT INTO '.$pref.'module_tmt_matches VALUES (?,?,?,?,?,?,?,?,?,?)';
+					if(!$current && $matches)
+					{
+						reset($matches);
+						if(key($matches) > 0)
+							$this->Redirect($id,'defaultadmin','',
+								array('tmt_message'=>$this->PrettyMessage('err_match',FALSE)));
+					}
 				}
 				//save match data 1st, lowest priority
 				if($matches)
 				{
-					$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?,place=?,status=? WHERE match_id=?';
+					$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?,place=?,status=? WHERE match_id=?';
+					//for new matches specified in RRTYPE plan view
+					$sql2 = 'INSERT INTO '.$pref.'module_tmt_matches (match_id,bracket_id,teamA,teamB,playwhen,place,status) VALUES (?,?,?,?,?,?,?)';
 					$ids = array_keys($params['mat_status']);
 					foreach($matches as $mid=>$row)
 					{
-						if(in_array($mid,$current))
+						if($mid < 0 || in_array($mid,$current))
 						{
 							$indx = array_search($mid,$ids);
 							$tA = $params['mat_teamA'][$indx];
@@ -149,11 +154,23 @@ if(isset($params['apply']) || isset($params['submit']))
 							if($at == FALSE) $at = NULL;
 							$stat = (int)$row['status'];
 							if($stat < 0) $stat = 0;
-							$db->Execute($sql2,array($on,$at,$stat,$mid));
+							if ($mid > 0)
+								$db->Execute($sql,array($on,$at,$stat,$mid));
+							else
+							{
+								//create RRTYPE match on-the-fly
+								$mid = $db->GenID($pref.'module_tmt_matches_seq');
+								$db->Execute($sql2,array(
+									$mid,$params['bracket_id'],
+									$params['mat_teamA'][$indx],
+									$params['mat_teamB'][$indx],
+									$on,$at,$stat));
+							}
 						}
 						else
 							$this->Redirect($id,'defaultadmin','',
 								array('tmt_message'=>$this->PrettyMessage('err_match',FALSE)));
+	
 					}
 				}
 				//results data next priority
@@ -319,6 +336,8 @@ elseif(isset($params['update']))
 		if(isset($params['msel']))
 		{
 			$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?,place=?,status=? WHERE match_id=?';
+			//for new matches specified in RRTYPE plan view
+			$sql2 = 'INSERT INTO '.$pref.'module_tmt_matches (match_id,bracket_id,teamA,teamB,playwhen,place,status) VALUES (?,?,?,?,?,?,?)';
 			$known = array_keys($params['mat_status']);
 			$funcs = new tmtData();
 			foreach($params['msel'] as $mid)
@@ -340,7 +359,17 @@ elseif(isset($params['update']))
 					$stat = 0;
 					$on = NULL;
 				}
-				$db->Execute($sql,array($on,$at,$stat,$mid));
+				if($mid > 0)
+					$db->Execute($sql,array($on,$at,$stat,$mid));
+				else
+				{
+					$mid = $db->GenID($pref.'module_tmt_matches_seq');
+					$db->Execute($sql2,array(
+						$mid,$params['bracket_id'],
+						$params['mat_teamA'][$indx],
+						$params['mat_teamB'][$indx],
+						$on,$at,$stat));
+				}
 			}
 			$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=1 WHERE bracket_id=?';
 			$db->Execute($sql,array($params['bracket_id']));
