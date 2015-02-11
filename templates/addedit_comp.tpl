@@ -102,7 +102,7 @@
  <tbody>
  {foreach from=$matches item=entry}
  <tr class="{$entry->rowclass}" onmouseover="this.className='{$entry->rowclass}hover';" onmouseout="this.className='{$entry->rowclass}';">
-{if $plan}<td>{$entry->mid}</td>{/if}
+{if $plan}<td>{if ($entry->mid < 0)}<span style="display:none;">{$entry->mid}</span>{else}{$entry->mid}{/if}</td>{/if}
  <td>{$entry->schedule}</td>
  <td>{$entry->place}</td>
  <td>{$entry->teamA}</td>
