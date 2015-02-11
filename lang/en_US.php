@@ -6,6 +6,7 @@ $lang['confirm_uninstall']='You\'re sure you want to uninstall the Tournament mo
 $lang['uninstalled']='Module uninstalled.';
 $lang['installed']='Module version %s installed.';
 $lang['upgraded']='Module upgraded to version %s.';
+$lang['upgradefail']='Module upgrade aborted, error when attempting to %s';
 
 $lang['perm_admin']='Modify Tournament-module Settings';
 $lang['perm_mod']='Modify Tournament Brackets';
@@ -119,7 +120,7 @@ $lang['err_notime']='You must report finish time, or date and time, for complete
 //$lang['won']='Won';
 //$lang['forfeited']='Forfeited';
 $lang['notyet']='Not yet';
-$lang['none']='None';
+$lang['none']='none';
 
 //templates for displaying match results. %s('s) become(s) teamname(s), %r becomes a bracket-specific relation like 'defeated'
 //any ' ' or ',' in the following will be replaced by '\n' for in-box wrapping in bracketcharts
@@ -271,9 +272,20 @@ $lang['name_abandoned']='Abandoned';
 //$lang['tab_user_comp']='Frontend View';
 //$lang['tab_admin_comp']='Admin View';
 
+//time intervals
+//NOTE for translators - these values are expected to be all lower-case, will be capitalised on demand
+$lang['minute']='minute';
 $lang['minutes']='minutes';
+$lang['hour']='hour';
 $lang['hours']='hours';
+$lang['day']='day';
 $lang['days']='days';
+$lang['week']='week';
+$lang['weeks']='weeks';
+$lang['month']='month';
+$lang['months']='months';
+$lang['year']='year';
+$lang['years']='years';
 
 //specific tournament
 
@@ -354,7 +366,7 @@ $lang['title_start_date']='Preferred start date';
 $lang['title_end_date']='Preferred finish date';
 $lang['help_date']='Enter date in a format that php\'s strtotime() will recognise. See <a href="http://www.php.net/manual/en/datetime.formats.date.php">the php documentation</a>.<br />Note assumption about separators in abbreviated dates: m/d/y or d-m-y or d.m.y';
 $lang['title_play_gap']='Minimum period between matches';
-$lang['help_play_gap']='Recovery time for competitors';
+$lang['help_play_gap']='Recovery time for competitors. The number need not be whole.';
 
 $lang['title_same_time']='Maximum number of contemporary matches';
 $lang['title_hours']='Hour(s)';
@@ -399,7 +411,7 @@ $lang['thuday']='Thursday';
 $lang['friday']='Friday';
 $lang['satday']='Saturday';
 $lang['title_place_gap']='Expected match duration';
-$lang['help_place_gap']='Minimum interval between matches at the same venue';
+$lang['help_place_gap']='Minimum interval between matches at the same venue. The number need not be whole.';
 
 $lang['title_seedtype']='Arrangement of seeded competitors';
 $lang['seed_none']='Random';
