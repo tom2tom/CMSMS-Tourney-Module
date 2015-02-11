@@ -107,7 +107,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		}
 	}
 
-	//TODO migrate this to class
+	//TODO migrate this to tmtCalendar class
 	function IntervalNames(&$mod,$which,$plural=FALSE,$cap=FALSE)
 	{
 		if (!is_array($which))
@@ -145,14 +145,15 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 				$k .= 's';
 			$v = $mod->Lang($k);
 			if($cap)
-				$ret[] = ucfirst($v); //for current locale
+				$ret[$k] = ucfirst($v); //for current locale
 			else
-				$ret[] = $v;
+				$ret[$k] = $v;
 		}
 		if (count($which) > 1)
 			return $ret;
-		return $ret[0];
+		return(reset($ret));
 	}
+
 
 	function Setup(&$mod,&$smarty,&$data,$id,$returnid,$activetab='',$message='')
 	{
@@ -656,7 +657,7 @@ EOS;
 			$mod->Lang('help_same_time'),
 		);
 
-		$opts = $this->IntervalNames($mod,array(0,1,2,3),true);
+		$opts = $this->IntervalNames($mod,array(0,1,2,3,4),TRUE); //choices up to weeks
 		if($pmod)
 			$opts = array_flip($opts); //selector needs other form of array
 
