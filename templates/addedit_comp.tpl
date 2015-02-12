@@ -89,6 +89,7 @@
 {$matchtab_start}
 {if isset($matches)}
 <div style="padding-right:10px; padding-bottom:10px; overflow:auto;">
+<div id="matchcalendar" style="margin:0 auto 10px 20%;"></div>
 <table id="tmt_matches" style="margin:0 auto; border-collapse:collapse">
  <thead><tr>
 {if $plan}<th>{$idtitle}</th>{/if}
@@ -175,6 +176,9 @@
 <script type="text/javascript" src="{$incpath}jquery.metadata.min.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.SSsort.min.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.tablednd.min.js"></script>
+<script type="text/javascript" src="{$incpath}moment.min.js"></script>
+<script type="text/javascript" src="{$incpath}pikaday.min.js"></script>
+<script type="text/javascript" src="{$incpath}jquery.pikaday.min.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.modalconfirm.min.js"></script>
 <script type="text/javascript">
 //<![CDATA[

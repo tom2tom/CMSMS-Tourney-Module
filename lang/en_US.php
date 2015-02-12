@@ -286,6 +286,11 @@ $lang['month']='month';
 $lang['months']='months';
 $lang['year']='year';
 $lang['years']='years';
+//popup calendar titles
+$lang['title_month']='Month';
+$lang['nextm']='Next Month';
+$lang['prevm']='Previous Month';
+$lang['title_year']='Year';
 
 //specific tournament
 
@@ -403,13 +408,36 @@ If blank, all times are available.
 EOS;
 $lang['help_same_time']='Blank means no limit';
 $lang['help_selection']='No selection means no restriction';
-$lang['sunday']='Sunday';
-$lang['monday']='Monday';
-$lang['tueday']='Tuesday';
-$lang['wedday']='Wednesday';
-$lang['thuday']='Thursday';
-$lang['friday']='Friday';
-$lang['satday']='Saturday';
+//longform daynames
+$lang['daysun']='Sunday';
+$lang['daymon']='Monday';
+$lang['daytue']='Tuesday';
+$lang['daywed']='Wednesday';
+$lang['daythu']='Thursday';
+$lang['dayfri']='Friday';
+$lang['daysat']='Saturday';
+//shortform daynames
+$lang['sdsun']='Sun';
+$lang['sdmon']='Mon';
+$lang['sdtue']='Tue';
+$lang['sdwed']='Wed';
+$lang['sdthu']='Thu';
+$lang['sdfri']='Fri';
+$lang['sdsat']='Sat';
+//month names
+$lang['mthjan']='January';
+$lang['mthfeb']='February';
+$lang['mthmar']='March';
+$lang['mthapr']='April';
+$lang['mthmay']='May';
+$lang['mthjun']='June';
+$lang['mthjul']='July';
+$lang['mthaug']='August';
+$lang['mthsep']='September';
+$lang['mthoct']='October';
+$lang['mthnov']='November';
+$lang['mthdec']='December';
+
 $lang['title_place_gap']='Expected match duration';
 $lang['help_place_gap']='Minimum interval between matches at the same venue. The number need not be whole.';
 

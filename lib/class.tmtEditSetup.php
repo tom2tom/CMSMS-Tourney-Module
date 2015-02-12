@@ -608,7 +608,10 @@ EOS;
 		if($pmod)
 		{
 			if(!$this->committed)
-				$i = $mod->CreateInputText($id,'tmt_startdate',$data->startdate,30);
+			{
+				$i = $mod->CreateInputText($id,'tmt_startdate',$data->startdate,15,20);
+				$i = str_replace('class="','class="pickdate ',$i);
+			}
 			elseif ($data->startdate)
 				$i = $data->startdate.$mod->CreateInputHidden($id,'tmt_startdate',$data->startdate);
 			else
@@ -623,13 +626,57 @@ EOS;
 			$i,
 			$mod->Lang('help_date')
 		);
+		if($pmod)
+		{
+			$i = $mod->CreateInputText($id,'tmt_enddate',$data->enddate,15,20);
+			$i = str_replace('class="','class="pickdate ',$i);
+		}
+		else
+			$i = ($data->enddate) ? $data->enddate : '&nbsp';
 		$sched[] = array(
 			$mod->Lang('title_end_date'),
-			($pmod) ?
-			$mod->CreateInputText($id,'tmt_enddate',$data->enddate,30) :
-			(($data->enddate) ? $data->enddate : '&nbsp'),
+			$i,
 			$mod->Lang('help_date')
 		);
+
+		if($pmod)
+		{
+			//for popup calendars
+			$yy = $mod->Lang('title_year');
+			$mm = $mod->Lang('title_month');
+			$nextm = $mod->Lang('nextm');
+			$prevm = $mod->Lang('prevm');
+			$mnames = <<< EOS
+'{$mod->Lang('mthjan')}','{$mod->Lang('mthfeb')}','{$mod->Lang('mthmar')}','{$mod->Lang('mthapr')}','{$mod->Lang('mthmay')}','{$mod->Lang('mthjun')}',
+'{$mod->Lang('mthjul')}','{$mod->Lang('mthaug')}','{$mod->Lang('mthsep')}','{$mod->Lang('mthoct')}','{$mod->Lang('mthnov')}','{$mod->Lang('mthdec')}'
+EOS;
+		$dnames = <<< EOS
+'{$mod->Lang('daysun')}','{$mod->Lang('daymon')}','{$mod->Lang('daytue')}','{$mod->Lang('daywed')}','{$mod->Lang('daythu')}','{$mod->Lang('dayfri')}','{$mod->Lang('daysat')}'
+EOS;
+		$sdnames = <<< EOS
+'{$mod->Lang('sdsun')}','{$mod->Lang('sdmon')}','{$mod->Lang('sdtue')}','{$mod->Lang('sdwed')}','{$mod->Lang('sdthu')}','{$mod->Lang('sdfri')}','{$mod->Lang('sdsat')}'
+EOS;
+		$jsloads[] = <<< EOS
+ $('.pickdate').each(function() {
+   $(this).Pikaday({
+    field: this,
+    container: this.parentNode,
+    format: 'YYYY-MM-DD',
+    i18n: {
+     Year: '{$yy}',
+     Month: '{$mm}',
+     previousMonth: '{$prevm}',
+     nextMonth: '{$nextm}',
+     months: [{$mnames}],
+     weekdays: [{$dnames}],
+     weekdaysShort: [{$sdnames}]
+    }
+   });
+ });
+
+EOS;
+		}
+
 
 		$sched[] = array(
 			$mod->Lang('title_calendar').' (NOT YET WORKING)',
@@ -1169,6 +1216,31 @@ EOS;
 			}
 			$smarty->assign('matches',$matches);
 
+			if($pmod && $matches)
+			{
+				//embedded vars were defined for start/end-date calendars
+				$jsloads[] = <<< EOS
+ var holder = $('#matchcalendar')[0];
+ $('.mat_playwhen').each(function() {
+   $(this).Pikaday({
+    field: this,
+    container: holder,
+    format: 'YYYY-MM-DD HH:MM',
+    i18n: {
+     Year: '{$yy}',
+     Month: '{$mm}',
+     previousMonth: '{$prevm}',
+     nextMonth: '{$nextm}',
+     months: [{$mnames}],
+     weekdays: [{$dnames}],
+     weekdaysShort: [{$sdnames}]
+    }
+   });
+ });
+
+EOS;
+			}
+
 			if($pmod && count($matches) > 1)
 			{
 				$jsfuncs[] = <<< EOS
@@ -1179,7 +1251,6 @@ function select_all_matches() {
 }
 
 EOS;
-
 				$smarty->assign('selmatches',$mod->CreateInputCheckbox($id,'m',FALSE,-1,
 					'id="matchsel" onclick="select_all_matches();"'));
 			}
@@ -1541,7 +1612,6 @@ EOS;
 		}
 
 		$smarty->assign('cancel',$mod->CreateInputSubmit($id,'cancel',$mod->Lang('cancel')));
-
 		//for popup confirmation
 		$smarty->assign('no',$mod->Lang('no'));
 		$smarty->assign('yes',$mod->Lang('yes'));
