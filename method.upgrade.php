@@ -15,11 +15,39 @@ switch ($oldversion)
 {
  case '0.1.0':
  case '0.1.1':
+	$rel = $this->GetPreference('uploads_dir');
+	if(!$rel)
+		$this->SetPreference('uploads_dir',$this->GetName());
 	$dict = NewDataDictionary($db);
-	$sql = $dict->AddColumnSQL($pref.'module_tmt_brackets','calendarid C(24)');
+
+	$flds = "
+	type I(1) DEFAULT ".KOTYPE.",
+	match_days C(128),
+	match_hours C(128),
+	playgaptype I(1) DEFAULT 2,
+	placegaptype I(1) DEFAULT 2
+";
+	$sql = $dict->AlterColumnSQL($pref.'module_tmt_brackets',$flds);
+	if(!$dict->ExecuteSQLArray($sql))
+	{
+		//UI error message too?
+		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','change fields'));
+		return FALSE;
+	}
+	$sql = $dict->DropColumnSQL($pref.'module_tmt_brackets','admin_editgroup');
+	if(!$dict->ExecuteSQLArray($sql))
+	{
+		//UI error message too?
+		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','delete field \'admin_editgroup\''));
+		return FALSE;
+	}
+	$flds = "
+	calendarid C(24),
+	twtfrom C(18)
+";
+	$sql = $dict->AddColumnSQL($pref.'module_tmt_brackets',$flds);
 	$dict->ExecuteSQLArray($sql,FALSE);
-	$sql = $dict->AddColumnSQL($pref.'module_tmt_brackets','twtfrom C(18)');
-	$dict->ExecuteSQLArray($sql,FALSE);
+
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_matches','flags I(1) DEFAULT 0');
 	$dict->ExecuteSQLArray($sql,FALSE);
 
@@ -36,32 +64,6 @@ switch ($oldversion)
 	$sql = 'INSERT INTO'.$pref.'module_tmt_tweet (bracket_id,handle) VALUES (0,\'firstrow\')';
 	$db->Execute($sql);
 
-	$rel = $this->GetPreference('uploads_dir');
-	if(!$rel)
-		$this->SetPreference('uploads_dir',$this->GetName());
- case '0.1.2':
- 	if (!$dict) $dict = NewDataDictionary($db);
-	$flds = "
-	type I(1) DEFAULT ".KOTYPE.",
-	match_days C(128),
-	match_hours C(128),
-	playgaptype I(1) DEFAULT 2,
-	placegaptype I(1) DEFAULT 2
-";
-	$sql = $dict->AlterColumnSQL($pref.'module_tmt_brackets',$flds);
-	if(!$sql || !$dict->ExecuteSQLArray($sql))
-	{
-		//UI error message too?
-		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','change fields'));
-		return FALSE;
-	}
-	$sql = $dict->DropColumnSQL($pref.'module_tmt_brackets',"admin_editgroup");
-	if(!$sql || !$dict->ExecuteSQLArray($sql))
-	{
-		//UI error message too?
-		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','delete field \'admin_editgroup\''));
-		return FALSE;
-	}
 	break;
 }
 // put mention into the admin log
