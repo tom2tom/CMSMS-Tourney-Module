@@ -1,4 +1,5 @@
 .dndhelp { display:none; } /* changed at runtime if js is available */
+img.tipper { display:none; } /* ditto */
 
 table.table_sort thead tr th
 {
@@ -137,26 +138,3 @@ input#mc_deny:hover
 	color:#FFF;
 	background:#F00;
 }
-//popup calendar
-/*
-is-bound
-is-empty
-is-hidden
-pika-button
-pika-calendar
-pika-day
-pika-label
-pika-next
-pika-prev
-pika-select
-pika-select-month
-pika-select-year
-pika-single
-pika-table
-pika-title
-pika-week
-*/
-div.pika\-single { display:none; }
-div.is\-hidden { display:none; }
-table.pika\-table th { text-align:center; }
-table.pika\-table td { text-align:center; }

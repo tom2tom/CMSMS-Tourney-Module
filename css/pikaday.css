@@ -6,6 +6,24 @@
  */
 
 /*
+classes:
+is-bound
+is-empty
+is-hidden
+pika-button
+pika-calendar
+pika-day
+pika-label
+pika-next
+pika-prev
+pika-select
+pika-select-month
+pika-select-year
+pika-single
+pika-table
+pika-title
+pika-week
+layout:
 <div class="pika-single is-bound" style="">
  <div class="pika-lendar">
   <div class="pika-title">
