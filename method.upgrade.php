@@ -24,7 +24,9 @@ switch ($oldversion)
 	type I(1) DEFAULT ".KOTYPE.",
 	match_days C(128),
 	match_hours C(128),
+	playgap N(6.2),
 	playgaptype I(1) DEFAULT 2,
+	placegap N(6.2),
 	placegaptype I(1) DEFAULT 2
 ";
 	$sql = $dict->AlterColumnSQL($pref.'module_tmt_brackets',$flds);
@@ -42,8 +44,11 @@ switch ($oldversion)
 		return FALSE;
 	}
 	$flds = "
+	locale C(12),
+	twtfrom C(18),
 	calendarid C(24),
-	twtfrom C(18)
+	latitude N(8.3),
+	longitude N(8.3)
 ";
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_brackets',$flds);
 	$dict->ExecuteSQLArray($sql,FALSE);
