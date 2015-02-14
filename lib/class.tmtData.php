@@ -102,14 +102,9 @@ class tmtData
 			break;
 		}
 		$data->playgaptype = $tmp;
-		$tmp = $params['tmt_match_days'];
-		$data->match_days = str_replace(' ','',$tmp);
+		$data->match_days = $params['tmt_match_days'];
 		if($data->match_days == FALSE)
 			$data->match_days = NULL;
-		$tmp = $params['tmt_match_hours'];
-		$data->match_hours = str_replace(' ','',$tmp);
-		if($data->match_hours == FALSE)
-			$data->match_hours = NULL;
 
 		$tmp = $params['tmt_latitude'] + 0; //strip trailing 0
 		if($tmp == FALSE)
@@ -345,13 +340,12 @@ class tmtData
 			$data->sametime = '';
 			$data->calendarid = '';
 			$data->playgap = 1;
-			$data->playgaptype = 'days';
+			$data->playgaptype = 0;
 			$data->match_days = '';
-			$data->match_hours = '';
 			$data->latitude = '';
 			$data->longitude = '';
 			$data->placegap = 1;
-			$data->placegaptype = 'hours';
+			$data->placegaptype = 2;
 			//the rest are not in brackets-table data
 			$data->added = 1; //signal this is a new addition
 			$data->cssfile = '';
@@ -421,7 +415,6 @@ class tmtData
 			$data->playgap = $row['playgap'];
 			$data->playgaptype = $row['playgaptype'];
 			$data->match_days = $row['match_days'];
-			$data->match_hours = $row['match_hours'];
 			$data->latitude = $row['latitude'];
 			$data->longitude = $row['longitude'];
 			$data->placegap = $row['placegap'];

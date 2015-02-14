@@ -22,8 +22,7 @@ switch ($oldversion)
 
 	$flds = "
 	type I(1) DEFAULT ".KOTYPE.",
-	match_days C(128),
-	match_hours C(128),
+	match_days C(256),
 	playgap N(6.2),
 	playgaptype I(1) DEFAULT 2,
 	placegap N(6.2),
@@ -36,7 +35,12 @@ switch ($oldversion)
 		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','change fields'));
 		return FALSE;
 	}
-	$sql = $dict->DropColumnSQL($pref.'module_tmt_brackets','admin_editgroup');
+	
+	$flds = "
+	admin_editgroup,
+	match_hours,
+";
+	$sql = $dict->DropColumnSQL($pref.'module_tmt_brackets',$flds);
 	if(!$dict->ExecuteSQLArray($sql))
 	{
 		//UI error message too?

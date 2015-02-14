@@ -391,7 +391,7 @@ $lang['title_days']='Day(s)';
 $lang['title_weeks']='Week(s)';
 $lang['title_calendar']='Calendar identifier';
 $lang['help_calendar']='Schedule matches in accordance with reservations under this name, and if necessary, revert to days/times specified below.';
-$lang['title_match_on']='Matches may be scheduled on';
+/*$lang['title_match_on']='Matches may be scheduled on';
 $lang['help_match_days']= <<< EOS
 One or more (in which case, comma-separated) day descriptors, like<br />
 &#8226; for day(s)-of-month: 1 or -2 or 1..10 or 2..-1 or -3..-1<br />
@@ -405,10 +405,19 @@ If multiple conditions are specified, it will be sufficient for any of them to b
 If blank, all days are available.
 EOS;
 $lang['title_anyday']='Any day';
+*/
+$lang['title_match_on']='Match scheduling conditions';
+$lang['help_match_days']= <<< EOS
+See module help for information on calendar availability language.
+EOS;
+$lang['help_daysend']= <<< EOS
+{$lang['help_use_smarty']}<br />
+If blank, all days and times are available.
+EOS;
 //$lang['title_weekdays']='Selected days of any week';
 //$lang['title_monthdays']='Selected days of any month';
 //$lang['title_monthweeks']='Selected weeks of any month';
-$lang['title_match_times']='On any match day, suitable times are';
+/*$lang['title_match_times']='On any match day, suitable times are';
 $lang['help_match_times']= <<< EOS
 One or more (in which case, comma-separated) time descriptors, like<br />
 &#8226; 9 or 12..23 or 6:30..15:30 or sunrise..16 or 9..sunset-3:30
@@ -418,6 +427,7 @@ $lang['help_timesend']= <<< EOS
 If multiple conditions are specified, it will be sufficient for any of them to be satisfied.
 If blank, all times are available.
 EOS;
+*/
 $lang['help_same_time']='Blank means no limit';
 $lang['help_selection']='No selection means no restriction';
 //longform daynames

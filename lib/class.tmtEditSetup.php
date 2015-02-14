@@ -398,7 +398,7 @@ EOS;
 		$main[] = array(
 			$mod->Lang('title_desc'),
 			($pmod) ?
-			$mod->CreateTextArea(TRUE,$id,$data->description,'tmt_description','','','','',65,10,'','','style="height:100px;"') :
+			$mod->CreateTextArea(TRUE,$id,$data->description,'tmt_description','','','','',65,10,'','','style="height:8em;"') :
 			$data->description
 		);
 		$main[] = array(
@@ -657,14 +657,9 @@ EOS;
 		$sched[] = array(
 			$mod->Lang('title_match_on').' (NOT YET WORKING)',
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_match_days',$data->match_days,50,128) : $data->match_days,
+			$mod->CreateTextArea(FALSE,$id,$data->match_days,'tmt_match_days','','','','',40,3,'','','style="height:3em"') :
+			$data->match_days,
 			$mod->Lang('help_match_days').'<br />'.$mod->Lang('help_daysend')
-		);
-		$sched[] = array(
-			$mod->Lang('title_match_times').' (NOT YET WORKING)',
-			($pmod) ?
-			$mod->CreateInputText($id,'tmt_match_hours',$data->match_hours,50,128) : $data->match_hours,
-			$mod->Lang('help_match_times').'<br />'.$mod->Lang('help_timesend')
 		);
 		$sched[] = array(
 			$mod->Lang('title_latitude'),
