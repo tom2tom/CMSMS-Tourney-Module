@@ -40,14 +40,14 @@ $sch = new tmtSchedule();
 switch ($bdata['type'])
 {
  case DETYPE:
-	$sch->UpdateDEMatches ($bracket_id);
+	$sch->UpdateDEMatches ($this,$bracket_id);
 	break;
  case RRTYPE:
 	$sch->NextRRMatches($this,$bracket_id);
 	break;
  default:
 // case KOTYPE:
-	$sch->UpdateKOMatches($bracket_id);
+	$sch->UpdateKOMatches($this,$bracket_id);
 	break;
 }
 unset($sch);

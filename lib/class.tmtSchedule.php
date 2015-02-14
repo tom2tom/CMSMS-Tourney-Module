@@ -285,13 +285,14 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 
 	/**
 	ScheduleMatches:
+	@mod: reference to module object
 	@bracket_id: the bracket identifier
 	Setup dates/times for matches whose participants are known.
 	The matches table is updated accordingly.
 	Returns: FALSE upon error or nothing to process or
 	 no startdate or timezone for the bracket
 	*/
-	function ScheduleMatches($bracket_id)
+	function ScheduleMatches(&$mod,$bracket_id)
 	{
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
@@ -309,8 +310,8 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$stamp = $dt->getTimestamp();
  		if($stamp < $sstamp)
 			$stamp = $sstamp;
-		$at = $this->GetNextSlot($bdata,$stamp,FALSE); //find 1st slot
-		if($at === FALSE)
+		$at = $this->GetNextSlot($mod,$bdata,$stamp,FALSE); //find 1st slot
+		if($at == FALSE)
 			return FALSE;
 		
 		//matches in DESC order so next foreach overwrites newer ones in $allteams array
@@ -338,11 +339,12 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		asort($playorder,SORT_NUMERIC); //TODO for RR?
 
 		$save = strftime('%F %R',$at);
-		$threshold = $this->GetCutoff($bdata,$at);
-		$diff = $at - $threshold; //doesn't change
-		//now set real threshold
+		$diff = self::GapSeconds($bdata['playgaptype'],$bdata['playgap']);
+		//initial threshold
  		if($stamp == $sstamp)
 			$threshold = $sstamp;
+		else
+			$threshold = $at - $diff;
 		$slotcount = $bdata['sametime']; //maybe null
 		$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?,status=? WHERE match_id=?';
 		foreach($playorder as $tid=>$last)
@@ -359,8 +361,8 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 					{
 						if(--$slotcount == 0)
 						{
-							$at = $this->GetNextSlot($bdata,$at,TRUE);
-							if($at === FALSE)
+							$at = $this->GetNextSlot($mod,$bdata,$at,TRUE);
+							if($at == FALSE)
 								return FALSE;
 							$save = strftime('%F %R',$at);
 							$threshold = $at - $diff;
@@ -375,113 +377,62 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 	}
 
 	/**
-	GetNextSlot:
-	@bdata: array of bracket data
-	@base: timestamp expressed for local timezone
-	@withgap: optional, whether to append bracket's placegap to @base, default FALSE
-	Returns: timestamp or FALSE
+	GapSeconds:
+	Get no. of seconds for a gap
+	@type: gap-type enum 0 = none, 1 = second .. 5 = month
+	@count: no. of @type in the gap
 	*/
-	private function GetNextSlot($bdata,$base,$withgap=FALSE)
+	private function GapCount($type,$count)
 	{
-		$stamp = floor($base/3600)*3600; //set its min:sec to 0:0
-		if($withgap)
+		switch($type)
 		{
-			switch($bdata['placegaptype'])
-			{
-			 case 'hours':
-			 	$f = 3600;
-				break;
-			 case 'days':
-			 	$f = 86400; //3600*24
-				break;
-			 case 'weeks':
-			 	$f = 604800; //3600*24*7
-				break;
-//			 case 'months':
-//			    $f = -1; //special handling
-//				break;
-			 default: //minutes
-				$f = 60;
-				break;
-			}
-			if(empty($bdata['placegap']))
-				$stamp += $f;
-			else
-				$stamp += $f * $bdata['placegap'];
+		 case 1:
+			$f = 60;
+			break;
+		 case 2:
+		 	$f = 3600;
+			break;
+		 case 3:
+		 	$f = 86400; //3600*24
+			break;
+		 case 4:
+		 	$f = 604800; //3600*24*7
+			break;
+		 case 5:
+			$f = 18144000; //3600*24*7*30 TODO special handling for months
+			break;
+		 default: //none
+			$f = 0;
+			break;
 		}
-		$stampf = $stamp + 604800; //stop after a week of checks
-		$thisday = date('w',$stamp) + 1;	//1(for Sunday) .. 7(for Saturday) to match recorded data
-		$thishour = intval(date('G',$stamp));
-
-		$days = $bdata['match_days'];
-		if($days == null)
-			$days == ''; //simple matching cuz single-digit days used
-		$hours = $bdata['match_hours'];
-		if($hours == null)
-			$hours == '';
-		if($hours != '')
-			$hours = explode(';',$hours); //array matching cuz multi-digit days used
-
-		while(1)
-		{
-			if($days == '' || strpos($days,(string)$thisday) !== FALSE)
-			{
-				if($hours == '' || in_array((string)$thishour,$hours))
-					return $stamp;
-				elseif($thishour < 23)
-					$thishour++;
-				else
-				{
-					$thishour = 0;
-					if(++$thisday > 7)
-						$thisday -= 7;
-				}
-				$stamp += 3600;
-				if($stamp > $stampf)
-					return FALSE;
-			}
-			else
-			{
-				$stamp += 86400;
-				if($stamp > $stampf)
-					return FALSE;
-				if(++$thisday > 7)
-					$thisday -= 7;
-			}
-		}
+		if(empty($count))
+			return $f;
+		else
+			return $f * $count;
 	}
 
 	/**
-	GetCutoff:
-	@bdata: array of bracket data
-	@base: timestamp expressed for local timezone
-	Returns: timestamp before @base
+	GetNextSlot:
+	@mod: reference to module object
+	@bdata: reference to array of bracket data
+	@stamp: timestamp expressed for local timezone
+	@withgap: optional, whether to append bracket's placegap to @stamp, default FALSE
+	@later: optional, no. of days-ahead to scan for the slot, default 14
+	Returns: timestamp or 0
 	*/
-	private function GetCutoff($bdata,$base)
+	private function GetNextSlot(&$mod,&$bdata,$stamp,$withgap=FALSE,$later=14)
 	{
-		switch($bdata['playgaptype'])
+		if($withgap)
 		{
-		 case 'hours':
-			$f = 3600;
-			break;
-		 case 'days':
-			$f = 86400; //3600*24
-			break;
-		 case 'weeks':
-			$f = 604800; //3600*24*7
-			break;
-//		 case 'months':
-//		    $f = -1; //special handling
-//			break;
-		 default: //minutes
-			$f = 60;
-			break;
+			//TODO find relevant resource, its last end-time, gap from then
+			$stamp += self::GapSeconds($bdata['placegaptype'],$bdata['placegap']);
 		}
-		if(empty($bdata['playgap']))
-			$stamp = $base - $f;
-		else
-			$stamp = $base - $f * $bdata['playgap'];
-		return $stamp;
+		$slotlen = self::GapSeconds($bdata['playgaptype'],$bdata['playgap']);
+
+		$funcs = new tmtCalendar();
+		$at = $funcs->SlotStart($mod,$bdata,$stamp,$slotlen,$later);
+		$at = floor($at/60)*60; //ensure 0 sec
+		return $at;
 	}
 
 	/**
@@ -593,7 +544,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			//store status for matches with a bye
 			$this->InitByes($bracket_id,$db,$pref);
 			//chain up
-			$this->UpdateKOMatches($bracket_id);
+			$this->UpdateKOMatches($mod,$bracket_id);
 		}
 		else
 			$db->Execute($sql,array($id1,$bracket_id,null,$allteams[0],$allteams[1])); //one match,the final
@@ -603,11 +554,12 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 
 	/**
 	UpdateKOMatches()
+	@mod: reference to module object
 	@bracket_id: the bracket identifier
 	Migrate match winners to corresponding next matches. Byes are propagated.
 	Returns: TRUE if update done, FALSE if not
 	*/
-	function UpdateKOMatches($bracket_id)
+	function UpdateKOMatches(&$mod,$bracket_id)
 	{
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
@@ -664,7 +616,7 @@ WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS N
 			else
 				break;
 		}
-		$this->ScheduleMatches($bracket_id);
+		$this->ScheduleMatches($mod,$bracket_id);
 		return $done;
 	}
 
@@ -813,17 +765,18 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		//store status for band-1 matches with a bye
 		$this->InitByes($bracket_id,$db,$pref);
 		//chain up,including loser-band byes
-		$this->UpdateDEMatches($bracket_id);
+		$this->UpdateDEMatches($mod,$bracket_id);
 		return TRUE;
 	}
 
 	/**
 	UpdateDEMatches:
+	@mod: reference to module object
 	@bracket_id: the bracket identifier
 	Migrate match winners and losers to corresponding next matches. Byes are propagated.
 	Returns: TRUE if update done, FALSE if not
 	*/
-	function UpdateDEMatches($bracket_id)
+	function UpdateDEMatches($mod,$bracket_id)
 	{
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
@@ -888,7 +841,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			else
 				break;
 		}
-		$this->ScheduleMatches($bracket_id);
+		$this->ScheduleMatches($mod,$bracket_id);
 		return $done;
 	}
 
@@ -1003,7 +956,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			}
 			return TRUE;
 		}
-		$this->ScheduleMatches($bracket_id);
+		$this->ScheduleMatches($mod,$bracket_id);
 		return 'info_nomatch';
 	}
 

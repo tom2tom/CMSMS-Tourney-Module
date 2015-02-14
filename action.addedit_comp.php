@@ -192,14 +192,14 @@ else
 			switch ($type)
 			{
 			 case DETYPE:
-				$sch->UpdateDEMatches($bid);
+				$sch->UpdateDEMatches($this,$bid);
 				break;
 			 case RRTYPE:
 				$sch->NextRRMatches($this,$bid);
 				break;
 			 default:
 			 //case KOTYPE:
-				$sch->UpdateKOMatches($bid);
+				$sch->UpdateKOMatches($this,$bid);
 				break;
 			}
 			unset($sch);

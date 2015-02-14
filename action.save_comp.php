@@ -266,7 +266,7 @@ if(isset($params['apply']) || isset($params['submit']))
 			if($newtype)
 			{
 				if(!$sch) $sch = new tmtSchedule();
-				$sch->ScheduleMatches($bracket_id);
+				$sch->ScheduleMatches($this,$bracket_id);
 			}
 			if($newtype || $matches || $results)
 			{
