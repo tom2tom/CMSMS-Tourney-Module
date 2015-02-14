@@ -222,6 +222,9 @@ $lang['help_cssupload']=
 <li>filesystem permissions are insufficient</li>
 </ul></p>
 ';
+
+$lang['showhelp']='click to toggle display of information about this parameter';
+
 $lang['title_zone']='Time zone';
 $lang['help_zone']='Default setting for local/tournament time';
 $lang['help_zone2']='For local/tournament time';
@@ -229,6 +232,10 @@ $lang['title_date_format']='Date format';
 $lang['help_date_format']='A string including format characters recognised by PHP\'s date() function. For reference, please check the <a href="http://php.net/manual/en/function.date.php">php manual</a>. Remember to escape any characters you don\'t want interpreted as date format codes!';
 $lang['title_time_format']='Time format';
 $lang['help_time_format']='See information above about date format';
+$lang['title_latitude'] = 'Latitude';
+$lang['help_latitude'] = 'Needed only for sunrise/sunset calculations for available times. Accuracy up to 3 decimal places.';
+$lang['title_longitude'] = 'Longitude';
+$lang['help_longitude'] = 'See advice for latitude.';
 $lang['title_uploads_dir']='Sub-directory for module-specific file uploads';
 $lang['help_uploads_dir']='Filesystem path relative to website-host uploads directory. No leading or trailing path-separator, and any intermediate path-separator must be host-system-specific e.g. \'\\\' on Windows. If left blank, the default will be used. Directory could contain .css and/or .ttf files for charts, among others.';
 //$lang['title_css_class']='CSS Class';
@@ -287,10 +294,10 @@ $lang['months']='months';
 $lang['year']='year';
 $lang['years']='years';
 //popup calendar titles
-$lang['title_month']='Month';
+//$lang['title_month']='Month';
 $lang['nextm']='Next Month';
 $lang['prevm']='Previous Month';
-$lang['title_year']='Year';
+//$lang['title_year']='Year';
 
 //specific tournament
 
@@ -373,6 +380,11 @@ $lang['help_date']='Enter date in a format that php\'s strtotime() will recognis
 $lang['title_play_gap']='Minimum period between matches';
 $lang['help_play_gap']='Recovery time for competitors. The number need not be whole.';
 
+$lang['title_locale']='Locale identifier for localising displayed date/time';
+$lang['help_locale']='
+A "locale" is an identifier which can be used to get language-specific terms. Examples are "en_US" and "cs_CZ.UTF-8" and "zh_Hant_TW".
+Refer to <a href="https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html">this reference</a> for more details.
+Blank means use default.';
 $lang['title_same_time']='Maximum number of contemporary matches';
 $lang['title_hours']='Hour(s)';
 $lang['title_days']='Day(s)';
