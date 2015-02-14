@@ -6,9 +6,9 @@
 {$maintab_start}
  <div class="pageoverflow">
 {foreach from=$main item=entry}
-{if isset($entry[0])}<p class="pagetext">{$entry[0]}:</p>{/if}
-{if isset($entry[1])}<p class="pageinput">{$entry[1]}</p>{/if}
-{if isset($entry[2])}<p class="pageinput">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
 {/foreach}
 </div>
 {$tab_end}
@@ -16,9 +16,9 @@
 {$scheduletab_start}
  <div class="pageoverflow">
 {foreach from=$schedulers item=entry}
-{if isset($entry[0])}<p class="pagetext">{$entry[0]}:</p>{/if}
-{if isset($entry[1])}<p class="pageinput">{$entry[1]}</p>{/if}
-{if isset($entry[2])}<p class="pageinput">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
 {/foreach}
 </div>
 {$tab_end}
@@ -26,9 +26,9 @@
 {$advancedtab_start}
  <div class="pageoverflow">
 {foreach from=$advanced item=entry}
-{if isset($entry[0])}<p class="pagetext">{$entry[0]}:</p>{/if}
-{if isset($entry[1])}<p class="pageinput">{$entry[1]}</p>{/if}
-{if isset($entry[2])}<p class="pageinput">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
 {/foreach}
 </div>
 {$tab_end}
@@ -36,9 +36,9 @@
 {$charttab_start}
  <div class="pageoverflow">
 {foreach from=$names item=entry}
-{if isset($entry[0])}<p class="pagetext">{$entry[0]}:</p>{/if}
-{if isset($entry[1])}<p class="pageinput">{$entry[1]}</p>{/if}
-{if isset($entry[2])}<p class="pageinput">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
 {/foreach}
 {if isset($matches)}<br /><p class="pageinput">{$chart}&nbsp;{$list}&nbsp;{$print}</p>{/if}
 </div>
@@ -173,6 +173,7 @@
 </div>
 {$form_end}
 
+<script type="text/javascript" src="{$incpath}jquery.tmtfuncs.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.metadata.min.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.SSsort.min.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.tablednd.min.js"></script>
@@ -185,4 +186,3 @@
 {foreach from=$jsfuncs item=func}{$func}{/foreach}
 //]]>
 </script>
-<script type="text/javascript" src="{$incpath}jquery.tmtfuncs.js"></script>
