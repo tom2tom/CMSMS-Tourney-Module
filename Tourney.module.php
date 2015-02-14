@@ -154,9 +154,9 @@ class Tourney extends CMSModule
 
 	function GetHeaderHTML()
 	{
-		$config = cmsms()->GetConfig();
-		$url = $config['root_url'].'/modules/';
-		return '<link rel="stylesheet" type="text/css" href="'.$url.$this->GetName()."/css/module.css\" />\n";
+		$url = $this->GetModuleURLPath();
+		return '<link rel="stylesheet" type="text/css" href="'.$url.'/css/pikaday.css" />
+<link rel="stylesheet" type="text/css" href="'.$url."/css/module.css\" />\n";
 	}
 
 	function SuppressAdminOutput(&$request)
