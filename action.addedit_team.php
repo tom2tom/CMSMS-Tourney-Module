@@ -529,7 +529,7 @@ if($rows)
 	if($pmod)
 	{
 		$jsloads[] = <<< EOS
- $('#team').find('.plr_delete').children().modalconfirm({
+ teamtable.find('.plr_delete').children().modalconfirm({
   overlayID: 'confirm',
   preShow: function(d){
    var name = \$(this).closest('tr').find('.plr_name').attr('value');
@@ -565,23 +565,66 @@ function ajaxData(droprow,dropcount) {
 }
 function dropresponse(data,status) {
  if(status == 'success' && data) {
-	var i = 1;
-	$('#team').find('.ord').each(function(){\$(this).attr('value',i++);});
-	var name;
-	var oddclass = 'row1';
-	var evenclass = 'row2';
-	i = true;
-	$('#team').trigger('update').find('tbody tr').each(function() {
-		name = i ? oddclass : evenclass;
-		\$(this).removeClass().addClass(name);
-		i = !i;
-	});
+  var i = 1;
+  var teamtable = $('#team');
+  teamtable.find('.ord').each(function(){\$(this).attr('value',i++);});
+  var name;
+  var oddclass = 'row1';
+  var evenclass = 'row2';
+  i = true;
+  teamtable.trigger('update').find('tbody tr').each(function() {
+	name = i ? oddclass : evenclass;
+	\$(this).removeClass().addClass(name);
+	i = !i;
+  });
  } else {
   $('#page_tabs').prepend('<p style=\"font-weight:bold;color:red;\">{$this->Lang('err_ajax')}!</p><br />');
  }
 }
 
 EOS;
+		$jsloads[] = <<< EOS
+ teamtable.addClass('table_drag').tableDnD({
+	dragClass: 'row1hover',
+	onDrop: function(table, droprows) {
+		var odd = true;
+		var oddclass = 'row1';
+		var evenclass = 'row2';
+		var droprow = $(droprows)[0];
+		$(table).find('tbody tr').each(function() {
+			var name = odd ? oddclass : evenclass;
+			if (this === droprow) {
+				name = name+'hover';
+			}
+			$(this).removeClass().addClass(name);
+			odd = !odd;
+		});
+		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {		
+			var ajaxdata = ajaxData(droprow,droprows.length);
+			if (ajaxdata) {
+				$.ajax({
+				 url: 'moduleinterface.php',
+				 type: 'POST',
+				 data: ajaxdata,
+				 dataType: 'text',
+				 success: dropresponse
+				});
+			}
+		}
+	 }
+  }).find('tbody tr').removeAttr('onmouseover').removeAttr('onmouseout').mouseover(function() {
+		var now = $(this).attr('class');
+		$(this).attr('class', now+'hover');
+  }).mouseout(function() {
+		var now = $(this).attr('class');
+		var to = now.indexOf('hover');
+		$(this).attr('class', now.substring(0,to));
+  });
+ $('.updown').hide();
+ $('.dndhelp').css('display','block');
+
+EOS;
+
 	$onsort = <<< EOS
 function () {
  var orders = [];
@@ -609,6 +652,7 @@ EOS;
 	else //!$pmod
 		$onsort = 'null'; //no mods >> do nothing after sorting
 
+
 	$jsloads[] = <<< EOS
  $.SSsort.addParser({
   id: 'textinput',
@@ -622,7 +666,7 @@ EOS;
   watch: true,
   type: 'text'
  });
- $('#team').addClass('table_drag').addClass('table_sort').SSsort({
+ teamtable.addClass('table_sort').SSsort({
   sortClass: 'SortAble',
   ascClass: 'SortUp',
   descClass: 'SortDown',
@@ -726,7 +770,8 @@ $smarty->assign('incpath',$this->GetModuleURLPath().'/include/');
 if($jsloads)
 {
 	$jsfuncs[] = '
-$(function() {
+$(document).ready(function() {
+ var teamtable = $(\'#team\');
 ';
 	$jsfuncs = array_merge($jsfuncs,$jsloads);
 	$jsfuncs[] = '});
