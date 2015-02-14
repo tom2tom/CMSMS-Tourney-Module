@@ -46,6 +46,7 @@
 </div>
 {$form_end}
 
+<script type="text/javascript" src="{$incpath}jquery.tmtfuncs.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.metadata.min.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.SSsort.min.js"></script>
 <script type="text/javascript" src="{$incpath}jquery.tablednd.min.js"></script>
@@ -55,4 +56,3 @@
 {foreach from=$jsfuncs item=func}{$func}{/foreach}
 //]]>
 </script>
-<script type="text/javascript" src="{$incpath}jquery.tmtfuncs.js"></script>
