@@ -11,15 +11,15 @@ class tmtData
 {
 	private function GetIntegerFor($val,$positive=TRUE)
 	{
-		$ret = intval($val);
+		$ret = (int)$val;
 		if ($positive && $ret < 0) $ret = 0;
 		return $ret;
 	}
 
 	private function GetFloatFor($val,$positive=TRUE)
 	{
-		$ret = floatval($val);
-		if ($positive && $ret < 0) $ret = 0;
+		$ret = (float)($val+0); //strip trailing 0's
+		if ($positive && $ret < 0) $ret = 0.0;
 		return $ret;
 	}
 
@@ -75,6 +75,7 @@ class tmtData
 		$data->description = $params['tmt_description'];
 		$data->owner = $params['tmt_owner'];
 		$data->contact = $params['tmt_contact'];
+		$data->locale = trim($params['tmt_locale']);
 		$data->twtfrom = $params['tmt_twtfrom'];
 		if (isset ($params['tmt_feu_editgroup']))
 			$data->feu_editgroup = $params['tmt_feu_editgroup'];
@@ -109,7 +110,17 @@ class tmtData
 		$data->match_hours = str_replace(' ','',$tmp);
 		if($data->match_hours == FALSE)
 			$data->match_hours = NULL;
-		$tmp = $params['tmt_placegaptype'];
+
+		$tmp = $params['tmt_latitude'] + 0; //strip trailing 0
+		if($tmp == FALSE)
+			$tmp = NULL;
+		$data->latitude = $tmp;
+		$tmp = $params['tmt_longitude'] + 0;
+		if($tmp == FALSE)
+			$tmp = NULL;
+		$data->longitude = $tmp;
+
+		$tmp = $params['tmt_placegaptype'] + 0;
 		switch ($tmp)
 		{
 		 case 0: //none
@@ -301,6 +312,7 @@ class tmtData
 			$data->teamsize = 1;
 			$data->owner = '';
 			$data->contact = '';
+			$data->locale = '';
 			$data->twtfrom = '';
 //		$data->admin_editgroup = 'none';
 			$data->feu_editgroup = 'none';
@@ -336,6 +348,8 @@ class tmtData
 			$data->playgaptype = 'days';
 			$data->match_days = '';
 			$data->match_hours = '';
+			$data->latitude = '';
+			$data->longitude = '';
 			$data->placegap = 1;
 			$data->placegaptype = 'hours';
 			//the rest are not in brackets-table data
@@ -372,6 +386,7 @@ class tmtData
 			$data->teamsize = intval($row['teamsize']);
 			$data->owner = $row['owner'];
 			$data->contact = $row['contact'];
+			$data->locale = $row['locale'];
 			$data->twtfrom = $row['twtfrom'];
 //		$data->admin_editgroup = $row['admin_editgroup'];
 			$data->feu_editgroup = $row['feu_editgroup'];
@@ -407,6 +422,8 @@ class tmtData
 			$data->playgaptype = $row['playgaptype'];
 			$data->match_days = $row['match_days'];
 			$data->match_hours = $row['match_hours'];
+			$data->latitude = $row['latitude'];
+			$data->longitude = $row['longitude'];
 			$data->placegap = $row['placegap'];
 			$data->placegaptype = $row['placegaptype'];
 
