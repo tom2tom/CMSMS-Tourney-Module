@@ -346,7 +346,7 @@ EOS;
   evensortClass: 'row2s',
   onSorted: {$onsort}
  };
- $('#tmt_players').addClass('table_drag').addClass('table_sort').SSsort(opts);
+ $('#tmt_players').addClass('table_sort').SSsort(opts);
  delete opts.onSorted;
  $('#tmt_matches').addClass('table_sort').SSsort(opts);
  $('#tmt_results').addClass('table_sort').SSsort(opts);
@@ -384,25 +384,27 @@ EOS;
 		$this->MatchExists($data->bracket_id);
 		$funcs = new tmtData();
 
+		$theme = cmsms()->get_variable('admintheme');
+		$iconinfo = $theme->DisplayImage('icons/system/info.gif',$mod->Lang('showhelp'),'','','systemicon tipper');
+		$smarty->assign('showtip',$iconinfo);
+
 //========= MAIN OPTIONS ==========
 		$main = array();
 		$main[] = array(
 			$mod->Lang('title_title'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_name',$data->name,50) :
-			(($data->name) ? $data->name : '&nbsp;')
+			$mod->CreateInputText($id,'tmt_name',$data->name,50) : $data->name
 		);
 		$main[] = array(
 			$mod->Lang('title_desc'),
 			($pmod) ?
 			$mod->CreateTextArea(TRUE,$id,$data->description,'tmt_description','','','','',65,10,'','','style="height:100px;"') :
-			(($data->description) ? $data->description : '&nbsp;')
+			$data->description
 		);
 		$main[] = array(
 			$mod->Lang('title_alias'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_alias',$data->alias,30) :
-			(($data->alias) ? $data->alias : '&nbsp;'),
+			$mod->CreateInputText($id,'tmt_alias',$data->alias,30) : $data->alias,
 			$mod->Lang('help_alias')
 		);
 		$options = $funcs->GetTypeNames($mod);
@@ -440,13 +442,13 @@ EOS;
 		$main[] = array(
 			$mod->Lang('title_owner'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_owner',$data->owner,50) : (($data->owner)?$data->owner:'&nbsp;'),
+			$mod->CreateInputText($id,'tmt_owner',$data->owner,50) : $data->owner,
 			$mod->Lang('help_owner')
 		);
 		$main[] = array(
 			$mod->Lang('title_contact'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_contact',$data->contact,50) : (($data->contact)?$data->contact:'&nbsp;'),
+			$mod->CreateInputText($id,'tmt_contact',$data->contact,50) : $data->contact,
 			$mod->Lang('help_contact')
 		);
 		$help = $mod->Lang('help_twt1');
@@ -464,35 +466,9 @@ EOS;
 		$main[] = array(
 			$mod->Lang('title_twtfrom'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16) : (($data->twtfrom)?$data->twtfrom:'&nbsp;'),
+			$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16) : $data->twtfrom,
 			$help
 		);
-/*		if($pmod)
-		{
-			include(cms_join_path($config['root_path'],'lib','classes','class.groupoperations.inc.php'));
-			$ob = new GroupOperations();
-			$grpdata = $ob->LoadGroups();
-			unset($ob);
-			$grpnames = array($mod->Lang('no_groups')=>'none');
-			if($grpdata)
-			{
-				$grpnames[$mod->Lang('all_groups')]='any';
-				foreach($grpdata as &$thisgrp)
-				{
-					if($thisgrp->active == '1')
-						$grpnames[$thisgrp->name] = $thisgrp->id;
-				}
-				unset($thisgrp);
-				unset($grpdata);
-			}
-		}
-		$main[] = array(
-			$mod->Lang('title_admin_eds'),
-			($pmod) ?
-			$mod->CreateInputDropdown($id,'tmt_admin_editgroup',$grpnames,'',$data->admin_editgroup) : (($data->admin_editgroup)?$data->:'&nbsp;'),
-			$mod->Lang('help_login')
-		);
-*/
 		$ob =& $mod->GetModuleInstance('FrontEndUsers');
 		if($ob)
 		{
@@ -549,15 +525,15 @@ EOS;
 				$mod->Lang('title_mailouttemplate'),
 				($pmod) ?
 				$mod->CreateTextArea(FALSE,$id,$data->motemplate,'tmt_motemplate','','','','',65,10,'','','style="height:8em"') :
-				(($data->motemplate) ? $data->motemplate : '&nbsp;'),
-				 $help
+				$data->motemplate,
+				$help
 			);
 		}
 		$adv[] = array(
 			$mod->Lang('title_tweetouttemplate'),
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->totemplate,'tmt_totemplate','','','','',65,3,'','','style="height:3em"') :
-			(($data->totemplate) ? $data->totemplate : '&nbsp;'),
+			$data->totemplate,
 			(($mail)?$mod->Lang('seeabove'):$help)
 		);  //TODO maybe specific $tplhelp[]
 		$tplhelp = array();
@@ -580,15 +556,15 @@ EOS;
 				$mod->Lang('title_mailintemplate'),
 				($pmod) ?
 				$mod->CreateTextArea(FALSE,$id,$data->mitemplate,'tmt_mitemplate','','','','',65,10,'','','style="height:8em"') :
-				(($data->mitemplate) ? $data->mitemplate : '&nbsp;'),
-				 $help
+				$data->mitemplate,
+				$help
 			);
 		}
 		$adv[] = array(
 			$mod->Lang('title_tweetintemplate'),
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->titemplate,'tmt_titemplate','','','','',65,3,'','','style="height:3em"') :
-			(($data->titemplate) ? $data->titemplate : '&nbsp;'),
+			$data->titemplate,
 			(($mail)?$mod->Lang('seeabove'):$help)
 		);  //TODO maybe specific $tplhelp[]
 
@@ -596,7 +572,7 @@ EOS;
 			$mod->Lang('title_logic'),
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->logic,'tmt_logic','','','','',65,15,'','','style="height:8em"') :
-			(($data->logic) ? $data->logic : '&nbsp;'),
+			$data->logic,
 			$mod->Lang('help_logic')
 		);
 
@@ -642,8 +618,6 @@ EOS;
 		if($pmod)
 		{
 			//for popup calendars
-			$yy = $mod->Lang('title_year');
-			$mm = $mod->Lang('title_month');
 			$nextm = $mod->Lang('nextm');
 			$prevm = $mod->Lang('prevm');
 			$mnames = <<< EOS
@@ -659,12 +633,9 @@ EOS;
 		$jsloads[] = <<< EOS
  $('.pickdate').each(function() {
    $(this).Pikaday({
-    field: this,
     container: this.parentNode,
     format: 'YYYY-MM-DD',
     i18n: {
-     Year: '{$yy}',
-     Month: '{$mm}',
      previousMonth: '{$prevm}',
      nextMonth: '{$nextm}',
      months: [{$mnames}],
@@ -677,30 +648,40 @@ EOS;
 EOS;
 		}
 
-
 		$sched[] = array(
 			$mod->Lang('title_calendar').' (NOT YET WORKING)',
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_calendarid',$data->calendarid,15,20) : (($data->calendarid)?$data->calendarid:'&nbsp;'),
+			$mod->CreateInputText($id,'tmt_calendarid',$data->calendarid,15,20) : $data->calendarid,
 			$mod->Lang('help_calendar')
 		);
 		$sched[] = array(
 			$mod->Lang('title_match_on').' (NOT YET WORKING)',
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_match_days',$data->match_days,50,128) : (($data->match_days)?$data->match_days:'&nbsp;'),
+			$mod->CreateInputText($id,'tmt_match_days',$data->match_days,50,128) : $data->match_days,
 			$mod->Lang('help_match_days').'<br />'.$mod->Lang('help_daysend')
 		);
 		$sched[] = array(
 			$mod->Lang('title_match_times').' (NOT YET WORKING)',
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_match_hours',$data->match_hours,50,128) : (($data->match_hours)?$data->match_hours:'&nbsp;'),
+			$mod->CreateInputText($id,'tmt_match_hours',$data->match_hours,50,128) : $data->match_hours,
 			$mod->Lang('help_match_times').'<br />'.$mod->Lang('help_timesend')
+		);
+		$sched[] = array(
+			$mod->Lang('title_latitude'),
+			($pmod) ?
+			$mod->CreateInputText($id, 'tmt_latitude', $data->latitude,8) : $data->latitude,
+			$mod->Lang('help_latitude')
+		);
+		$sched[] = array(
+			$mod->Lang('title_longitude'),
+			($pmod) ?
+			$mod->CreateInputText($id, 'tmt_longitude', $data->longitude,8) : $data->longitude,
+			$mod->Lang('help_longitude')
 		);
 		$sched[] = array(
 			$mod->Lang('title_same_time'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_sametime',$data->sametime,3,3) :
-			(($data->sametime) ? $data->sametime : '&nbsp;'),
+			$mod->CreateInputText($id,'tmt_sametime',$data->sametime,3) : $data->sametime,
 			$mod->Lang('help_same_time'),
 		);
 
@@ -737,38 +718,38 @@ EOS;
 		$names[] = array(
 			$mod->Lang('title_final'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_final',$data->final,30) : (($data->final)?$data->final:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_final',$data->final,30) : $data->final
 		);
 		$names[] = array(
 			$mod->Lang('title_semi'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_semi',$data->semi,30) : (($data->semi)?$data->semi:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_semi',$data->semi,30) : $data->semi
 		);
 		$names[] = array(
 			$mod->Lang('title_quarter'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_quarter',$data->quarter,30) : (($data->quarter)?$data->quarter:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_quarter',$data->quarter,30) : $data->quarter
 		);
 		$names[] = array(
 			$mod->Lang('title_eighth'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_eighth',$data->eighth,30) : (($data->eighth)?$data->eighth:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_eighth',$data->eighth,30) : $data->eighth
 		);
 		$names[] = array(
 			$mod->Lang('title_roundname'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_roundname',$data->roundname,30) : (($data->roundname)?$data->roundname:'&nbsp;'),
+			$mod->CreateInputText($id,'tmt_roundname',$data->roundname,30) : $data->roundname,
 			$mod->Lang('help_match_names')
 		);
 		$names[] = array(
 			$mod->Lang('title_against'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_versus',$data->versus,30) : (($data->versus)?$data->versus:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_versus',$data->versus,30) : $data->versus
 		);
 		$names[] = array(
 			$mod->Lang('title_defeated'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_defeated',$data->defeated,30) : (($data->defeated)?$data->defeated:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_defeated',$data->defeated,30) : $data->defeated
 		);
 		$names[] = array(
 			$mod->Lang('title_cantie'),
@@ -779,22 +760,22 @@ EOS;
 		$names[] = array(
 			$mod->Lang('title_tied'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_tied',$data->tied,30) : (($data->tied)?$data->tied:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_tied',$data->tied,30) : $data->tied
 		);
 		$names[] = array(
 			$mod->Lang('title_noop'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_bye',$data->bye,30) : (($data->bye)?$data->bye:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_bye',$data->bye,30) : $data->bye
 		);
 		$names[] = array(
 			$mod->Lang('title_forfeit'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_forfeit',$data->forfeit,30) : (($data->forfeit)?$data->forfeit:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_forfeit',$data->forfeit,30) : $data->forfeit
 		);
 		$names[] = array(
 			$mod->Lang('title_abandoned'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_nomatch',$data->nomatch,30) : (($data->nomatch)?$data->nomatch:'&nbsp;')
+			$mod->CreateInputText($id,'tmt_nomatch',$data->nomatch,30) : $data->nomatch
 		);
 		$names[] = array(
 			$mod->Lang('title_cssfile'),
@@ -802,8 +783,14 @@ EOS;
 			$mod->CreateInputText($id,'tmt_chartcss',$data->chartcss,20,128).
 			' '.$mod->CreateInputSubmit($id,'upload_css',$mod->Lang('upload'),
 				'title="'.$mod->Lang('upload_tip').'" onclick="set_params(this);"') :
-			(($data->chartcss) ? $data->chartcss : '&nbsp;'),
+			$data->chartcss,
 			$mod->Lang('help_cssfile')
+		);
+		$names[] = array(
+			$mod->Lang('title_locale'),
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_locale',$data->locale,8,12) : $data->locale,
+			$mod->Lang('help_locale')
 		);
 		$tplhelp = array();
 		$tplhelp[] = $mod->Lang('help_template');
@@ -824,7 +811,7 @@ EOS;
 			$mod->Lang('title_chttemplate'),
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->chttemplate,'tmt_chttemplate','','','','',65,20,'','','style="height:10em"') :
-			(($data->chttemplate) ? $data->chttemplate : '&nbsp;'),
+			$data->chttemplate,
 			$help
 		);
 		
@@ -906,6 +893,50 @@ EOS;
 
 			if($pmod)
 			{
+				if($tcount>1)
+				{
+					$jsloads[] = <<< EOS
+ $('#tmt_players').addClass('table_drag').tableDnD({
+	dragClass: 'row1hover',
+	onDrop: function(table, droprows) {
+		var odd = true;
+		var oddclass = 'row1';
+		var evenclass = 'row2';
+		var droprow = $(droprows)[0];
+		$(table).find('tbody tr').each(function() {
+			var name = odd ? oddclass : evenclass;
+			if (this === droprow) {
+				name = name+'hover';
+			}
+			$(this).removeClass().addClass(name);
+			odd = !odd;
+		});
+		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {		
+			var ajaxdata = ajaxData(droprow,droprows.length);
+			if (ajaxdata) {
+				$.ajax({
+				 url: 'moduleinterface.php',
+				 type: 'POST',
+				 data: ajaxdata,
+				 dataType: 'text',
+				 success: dropresponse
+				});
+			}
+		}
+	 }
+  }).find('tbody tr').removeAttr('onmouseover').removeAttr('onmouseout').mouseover(function() {
+		var now = $(this).attr('class');
+		$(this).attr('class', now+'hover');
+  }).mouseout(function() {
+		var now = $(this).attr('class');
+		var to = now.indexOf('hover');
+		$(this).attr('class', now.substring(0,to));
+  });
+ $('.updown').hide();
+ $('.dndhelp').css('display','block');
+
+EOS;
+				}
 				$jsloads[] = <<< EOS
  $('#tmt_players').find('.tem_delete').children().modalconfirm({
   overlayID: 'confirm',
@@ -1218,17 +1249,13 @@ EOS;
 
 			if($pmod && $matches)
 			{
-				//embedded vars were defined for start/end-date calendars
+				//embedded vars here were defined for start/end-date calendars
 				$jsloads[] = <<< EOS
- var holder = $('#matchcalendar')[0];
  $('.mat_playwhen').each(function() {
    $(this).Pikaday({
-    field: this,
-    container: holder,
+    container: this.parentNode,
     format: 'YYYY-MM-DD HH:MM',
     i18n: {
-     Year: '{$yy}',
-     Month: '{$mm}',
      previousMonth: '{$prevm}',
      nextMonth: '{$nextm}',
      months: [{$mnames}],
