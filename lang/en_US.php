@@ -407,7 +407,7 @@ EOS;
 $lang['title_anyday']='Any day';
 */
 $lang['title_match_on']='Match scheduling conditions';
-$lang['help_match_days']= <<< EOS
+$lang['help_available']= <<< EOS
 See module help for information on calendar availability language.
 EOS;
 $lang['help_daysend']= <<< EOS

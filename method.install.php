@@ -29,7 +29,7 @@ $flds = "
 	sametime I(1) DEFAULT 0,
 	playgap N(6.2),
 	playgaptype I(1) DEFAULT 2,
-	match_days C(256),
+	available C(256),
 	calendarid C(24),
 	latitude N(8.3),
 	longitude N(8.3),

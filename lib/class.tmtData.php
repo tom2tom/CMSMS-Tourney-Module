@@ -102,9 +102,9 @@ class tmtData
 			break;
 		}
 		$data->playgaptype = $tmp;
-		$data->match_days = $params['tmt_match_days'];
-		if($data->match_days == FALSE)
-			$data->match_days = NULL;
+		$data->available = $params['tmt_available'];
+		if($data->available == FALSE)
+			$data->available = NULL;
 
 		$tmp = $params['tmt_latitude'] + 0; //strip trailing 0
 		if($tmp == FALSE)
@@ -341,7 +341,7 @@ class tmtData
 			$data->calendarid = '';
 			$data->playgap = 1;
 			$data->playgaptype = 0;
-			$data->match_days = '';
+			$data->available = '';
 			$data->latitude = '';
 			$data->longitude = '';
 			$data->placegap = 1;
@@ -414,7 +414,7 @@ class tmtData
 			$data->calendarid = $row['calendarid'];
 			$data->playgap = $row['playgap'];
 			$data->playgaptype = $row['playgaptype'];
-			$data->match_days = $row['match_days'];
+			$data->available = $row['available'];
 			$data->latitude = $row['latitude'];
 			$data->longitude = $row['longitude'];
 			$data->placegap = $row['placegap'];

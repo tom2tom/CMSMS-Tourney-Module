@@ -657,9 +657,9 @@ EOS;
 		$sched[] = array(
 			$mod->Lang('title_match_on').' (NOT YET WORKING)',
 			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->match_days,'tmt_match_days','','','','',40,3,'','','style="height:3em"') :
-			$data->match_days,
-			$mod->Lang('help_match_days').'<br />'.$mod->Lang('help_daysend')
+			$mod->CreateTextArea(FALSE,$id,$data->available,'tmt_available','','','','',40,3,'','','style="height:3em"') :
+			$data->available,
+			$mod->Lang('help_available').'<br />'.$mod->Lang('help_daysend')
 		);
 		$sched[] = array(
 			$mod->Lang('title_latitude'),

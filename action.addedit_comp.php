@@ -73,7 +73,7 @@ if ($add)
 	'timezone' => $data->timezone,
 	'playgap' => $data->playgap,
 	'playgaptype' => $data->playgaptype,
-	'match_days' => $data->match_days, 
+	'available' => $data->available, 
 	'placegap' => $data->placegap,
 	'placegaptype' => $data->placegaptype);
 	$fields = implode(',',array_keys($args));

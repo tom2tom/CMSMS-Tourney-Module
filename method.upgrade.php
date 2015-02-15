@@ -35,7 +35,7 @@ switch ($oldversion)
 		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','change fields'));
 		return FALSE;
 	}
-	
+
 	$flds = "
 	admin_editgroup,
 	match_hours,
@@ -55,6 +55,9 @@ switch ($oldversion)
 	longitude N(8.3)
 ";
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_brackets',$flds);
+	$dict->ExecuteSQLArray($sql,FALSE);
+
+	$sql = $dict->RenameColumnSQL($pref.'module_tmt_brackets','match_days','available');
 	$dict->ExecuteSQLArray($sql,FALSE);
 
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_matches','flags I(1) DEFAULT 0');
