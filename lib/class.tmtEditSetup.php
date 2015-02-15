@@ -107,53 +107,30 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		}
 	}
 
-	//TODO migrate this to tmtCalendar class
+	//TODO this is also in tmtCalendar class
 	function IntervalNames(&$mod,$which,$plural=FALSE,$cap=FALSE)
 	{
+		$k = ($plural) ? 'multiperiods' : 'periods';
+		$all = explode(',',$mod->Lang($k));
+		array_unshift($all,$mod->Lang('none'));
+
 		if (!is_array($which))
-			$which = array($which);
+		{
+			if ($which >= 0 && $which < 7)
+				return $all[$which];
+			return '';
+		}
 		$ret = array();
 		foreach($which as $period)
 		{
-			switch($period)
+			if ($period >= 0 && $period < 7)
 			{
-			case 0:
-				$k = 'none';
-				break;
-			case 1:
-				$k = 'minute';
-				break;
-			case 2:
-				$k = 'hour';
-				break;
-			case 3:
-				$k = 'day';
-				break;
-			case 4:
-				$k = 'week';
-				break;
-			case 5:
-				$k = 'month';
-				break;
-			case 6:
-				$k = 'year';
-				break;
-			default:
-				continue;
+				$ret[$period] = ($cap) ? ucfirst($all[$period]): //for current locale
+					$all[$period];
 			}
-			if($plural && ($period > 0))
-				$k .= 's';
-			$v = $mod->Lang($k);
-			if($cap)
-				$ret[$k] = ucfirst($v); //for current locale
-			else
-				$ret[$k] = $v;
 		}
-		if (count($which) > 1)
-			return $ret;
-		return(reset($ret));
+		return $ret;
 	}
-
 
 	function Setup(&$mod,&$smarty,&$data,$id,$returnid,$activetab='',$message='')
 	{
@@ -620,9 +597,13 @@ EOS;
 			//for popup calendars
 			$nextm = $mod->Lang('nextm');
 			$prevm = $mod->Lang('prevm');
-			$mnames = $mod->Lang('longmonths');
-			$dnames = $mod->Lang('longdays');
-			$sdnames = $mod->Lang('shortdays');
+			//js wants quoted period-names
+			$t = $mod->Lang('longmonths');
+			$mnames = "'".str_replace(",","','",$t)."'";
+			$t = $mod->Lang('longdays');
+			$dnames = "'".str_replace(",","','",$t)."'";
+			$t = $mod->Lang('shortdays');
+			$sdnames = "'".str_replace(",","','",$t)."'";
 			$jsloads[] = <<< EOS
  $('.pickdate').each(function() {
    $(this).Pikaday({
@@ -648,11 +629,11 @@ EOS;
 			$mod->Lang('help_calendar')
 		);
 		$sched[] = array(
-			$mod->Lang('title_match_on').' (NOT YET WORKING)',
+			$mod->Lang('title_available').' (NOT YET WORKING)',
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->available,'tmt_available','','','','',40,3,'','','style="height:3em"') :
 			$data->available,
-			$mod->Lang('help_available').'<br />'.$mod->Lang('help_daysend')
+			$mod->Lang('help_available')
 		);
 		$sched[] = array(
 			$mod->Lang('title_latitude'),
