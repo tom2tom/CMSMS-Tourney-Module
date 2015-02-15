@@ -125,7 +125,7 @@ class tmtCalendar
 	}
 
 	//Sort array in which any member(s) may be a range-array. All strings, caseless.
-	private static function _cmp_dblocks($a,$b)
+	private static function _cmp_periods($a,$b)
 	{
 		if(is_array($a))
 		{
@@ -146,14 +146,17 @@ class tmtCalendar
 	}
 
 	/**
-	_ParseDayCondition:
+	_ParsePeriod:
 	
-	Get array of day-range(s), each value therein an integer relative to start of
-	current year. Assumes no whitespace in @str.
+	Get array of [midnight timestamps CHECKME] for each day in the range day-of- @start to
+	that day plus @later days, inclusive, and which complies with @str.
+	Assumes no whitespace in @str.
 
 	@str: the string to be parsed
+	@start: timestamp for period being matched
+	@later: no. of days to process after the day of @start
 	*/
-	private function _ParseDayCondition($str)
+	private function _ParsePeriod($str,$start,$later)
 	{
 		$parts = self::_SplitCondition($str);
 		//clean
@@ -169,7 +172,7 @@ class tmtCalendar
 		unset($one);
 		//sort
 		if($count($parts) > 1)
-			usort($parts, array('tmtCalendar','_cmp_dblocks'));
+			usort($parts, array('tmtCalendar','_cmp_periods'));
 		//coalesce
 		$blocks = array(array(-1,-1)); //always have something to compare
 		foreach($parts as &$one)
@@ -193,7 +196,7 @@ class tmtCalendar
 	}
 
 	//Sort array in which any member(s) may be a range-array. All strings, case-specific.
-	private static function _cmp_blocks($a,$b)
+	private static function _cmp_times($a,$b)
 	{
 		if(is_array($a))
 		{
@@ -280,7 +283,7 @@ class tmtCalendar
 		'day'=>timestamp for day being processed
 	)
 	*/
-	private function _ParseHourCondition($str,$sunstuff=FALSE)
+	private function _ParseTime($str,$sunstuff=FALSE)
 	{
 		$parts = self::_SplitCondition($str);
 		//cleanup
@@ -319,7 +322,7 @@ class tmtCalendar
 		}
 		unset($one);
 		if($count($parts) > 1)
-			usort($parts, array('tmtCalendar','_cmp_blocks'));
+			usort($parts, array('tmtCalendar','_cmp_times'));
 		//coalesce
 //	$tvals = array(0,0,0,1,1,date("Y")); //start of current year (CHECKME or 1970?)
 //	$base = mktime($tvals);
@@ -360,76 +363,125 @@ class tmtCalendar
 	}
 
 	/**
-	SlotComplies:
-
-	Determine whether the (timestamp) interval @start to @start + @length satisfies
-	constaints specified in	relevant fields in @bdata.
-
-	@mod: reference to current module-object
-	@bdata: reference to array of data for current bracket 	
-	@start: preferred start time (timestamp)
-	@length: optional length (seconds) of time period to be checked, default 0
-	*/
-	function SlotComplies(&$mod,&$bdata,$start,$length=0)
-	{
-		$calcond = $bdata['match_days'];
-		if($calcond == FALSE)
-			return TRUE;
-		if(0)
-		{
-			//TODO use cached $this->dayblocks if appropriate ?
-			$candays = self::_ParseDayCondition($daycond);
-			foreach ($candays as $block)
-			{
-				if($timecond)
-				{
-					//TODO use cached $this->timeblocks if appropriate ?
-					$sunstuff = FALSE; //TODO
-					$cantimes = self::_ParseHourCondition($timecond,$sunstuff);
-				}
-				//TODO find whether start..start+length fits within $candays() + $cantimes()
-			}
-		}
-		return FALSE;
-	}
-
-	/**
-	SlotStart:
+	_ParseConditions:
 	
-	Get start-time (timestamp) matching constraints specified in relevant fields in
-	@bdata, and	starting no sooner than @start, or ASAP within @later days after
-	the one including @start, and where the available time is at least @length.
-	Returns 0 if no such time is available within the requested interval.
+	Parse each member of @conds[] (as [p][@][t]) into arrays of days and related
+	times.
 
-	@mod: reference to current module-object
-	@bdata: reference to array of data for current bracket
-	@start: preferred start time (timestamp)
-	@length: optional length (seconds) of time period to be discovered, default 0
-	@later: optional, no. of extra days to check after the one including @start, default 365
+	@conds: reference to array of availability-descriptor strings
+	@sunstuff: reference to array of sunrise/sunset calc parameters, or FALSE
+	@start: preferred start time (bracket-local timestamp)
+	@later: no. of extra days to check after the one including @start
 	*/
-	function SlotStart(&$mod,&$bdata,$start,$length=0,$later=365)
+	private function _ParseConditions(&$conds,&$sunstuff,$start,$later)
 	{
-		$calcond = $bdata['match_days'];
-		if($calcond == FALSE)
-			return $start;
-		if(0)
+		$days = array();
+		$daytimes = array();
+		foreach($conds as $one)
 		{
-			//TODO use cached $this->dayblocks if appropriate ?
-			$candays = self::_ParseDayCondition($daycond);
-			foreach ($candays as $block)
+			$p = strpos($one,'@');
+			if($p !== -1)
 			{
-				if($timecond)
+				$days[] = self:_ParsePeriod(substr($one,0,$p),$start,$later); //midnight-stamps
+				$times[] = self:_ParseTime(substr($one,$p+1),$sunstuff); //seconds-blocks rel some base
+			}
+			else //[p] or [t]
+			{
+				//if contains date,monthname,dayname,'week',maybe nos > 24
+				if(0) //period
 				{
-					//TODO use cached $this->timeblocks if appropriate ?
-					$sunstuff = FALSE; //TODO
-					$cantimes = self::_ParseHourCondition($timecond,$sunstuff);
+					$days[] = self:_ParsePeriod($one,$start,$later);
+					$times[] = FALSE;
 				}
-				//TODO find in candays + cantimes next interval matching start..start+length 
+				else //time contains only numbers,':',sunrise/set,+-
+				{
+					$days[] = array($dstart,$dstart+$later);
+					$times[] = self:_ParseTime($one,$sunstuff);
+				}
 			}
 		}
-		return 0;
+		if($days)
+			return array($days,$daytimes);
+		return array(FALSE,FALSE)
 	}
 
+	//Get array of 'cleaned' condition(s) in $avail (i.e. split on outside-bracket commas)
+	private function _GetConditions($avail)
+	{
+		$clean = str_replace(array(' ',"\n"),array('',''),$avail);
+		$l = strlen($clean);
+		$parts = array();
+		$d = 0; $s = 0;
+		for($p=0; $p<$l; $p++)
+		{
+			switch ($clean[$p])
+			{
+			 case '(':
+				$d++;
+				break;
+			 case ')':
+				$d--;
+				if($d < 0)
+					$d = 0;
+				break;
+			 case ',':
+				if($d == 0)
+				{
+					if($p > $s && $clean[$p-1] != ',')
+						$parts[] = substr($clean,$s,$p-$s);
+					$s = $p+1;
+				}
+			 default:
+				break;
+			}
+		}
+		if($p > $s)
+			$parts[] = substr($clean,$s,$p-$s); //last (or entire) part
+		return $parts;
+	}
+
+	private function _GetSunData(&$mod,&$bdata)
+	{
+		$cond = $bdata['available'];
+		$rise = $mod->Lang('sunrise');
+		$set = $mod->Lang('sunset');
+		if(strpos($cond,$rise) !== FALSE || strpos($cond,$set) !== FALSE)
+		{
+			if($bdata['timezone'])
+				$zone = $bdata['timezone'];
+			else
+			{
+				$zone = $mod->GetPreference('time_zone','');
+				if(!zone)
+					$zone = 'Europe/London'; //TODO BETTER
+			}
+			if($bdata['latitude'] && $bdata['longitude'])
+			{
+				$lat = $bdata['latitude'];
+				$long = $bdata['longitude'];
+			}
+			else
+			{
+				//TODO BETTER e.g. func($zone)
+				$lat = 0.0;
+				$long = 0.0;
+			}
+			$sunstuff = array(
+			 'rise'=>$rise,
+			 'set'=>$set,
+			 'lat'=>$lat,
+			 'long'=>$long,
+			 'zone'=>$zone,
+			 'day'=>floor($start/3600)*3600;
+			);
+		}
+		else
+			$sunstuff = FALSE;
+		return $sunstuff;
+	}
+
+	//========== PUBLIC FUNCS ===========
+ 
 	/**
 	AdminMonthNames:
 
@@ -503,8 +555,9 @@ class tmtCalendar
 	
 	@mod: reference to current module object
 	@which: 1 (for January) .. 12 (for December), or array of such indices
+	@short: optional, whether to get short-form name, default FALSE
 	*/
-	function MonthNames(&$mod,$which)
+	function MonthNames(&$mod,$which,$short=FALSE)
 	{
 		$ret = array();
 		if (!is_array($which))
@@ -513,16 +566,51 @@ class tmtCalendar
 		{
 			switch($month)
 			{
-				//TODO
-//				case 1:
-//				 $k = ;
-//				 break;
+				case 1:
+				 $k = 'jan'; //part of Lang() key
+				 break;
+				case 2:
+				 $k = 'feb';
+				 break;
+				case 3:
+				 $k = 'mar';
+				 break;
+				case 4:
+				 $k = 'apr';
+				 break;
+				case 5:
+				 $k = 'may';
+				 break;
+				case 6:
+				 $k = 'jun';
+				 break;
+				case 7:
+				 $k = 'jul';
+				 break;
+				case 8:
+				 $k = 'aug';
+				 break;
+				case 9:
+				 $k = 'sep';
+				 break;
+				case 10:
+				 $k = 'oct';
+				 break;
+				case 11:
+				 $k = 'nov';
+				 break;
+				case 12:
+				 $k = 'dec';
+				 break;
 				default:
 				 $k = FALSE;
 				 break;
 			}
 			if($k)
+			{
+				$k = ($short) ? 'sm'.$k : 'mth'.$k;
 				$ret[$month] = $mod->Lang($k);
+			}
 		}
 		if (count($which) > 1)
 			return $ret;
@@ -536,8 +624,9 @@ class tmtCalendar
 
 	@mod: reference to current module object
 	@which: 1 (for Sunday) .. 7 (for Saturday), or array of such indices
+	@short: optional, whether to get short-form name, default FALSE
 	*/
-	function DayNames(&$mod,$which)
+	function DayNames(&$mod,$which,$short=FALSE)
 	{
 		$ret = array();
 		if (!is_array($which))
@@ -546,16 +635,36 @@ class tmtCalendar
 		{
 			switch($day)
 			{
-				//TODO
-//				case 1:
-//				 $k = ;
-//				 break;
+				case 1:
+				 $k = 'sun'; //part of Lang() key
+				 break;
+				case 2:
+				 $k = 'mon';
+				 break;
+				case 3:
+				 $k = 'tue';
+				 break;
+				case 4:
+				 $k = 'wed';
+				 break;
+				case 5:
+				 $k = 'thu';
+				 break;
+				case 6:
+				 $k = 'fri';
+				 break;
+				case 7:
+				 $k = 'sat';
+				 break;
 				default:
 				 $k = FALSE;
 				 break;
 			}
 			if($k)
+			{
+				$k = ($short) ? 'sd'.$k : 'day'.$k;
 				$ret[$day] = $mod->Lang($k);
+			}
 		}
 		if (count($which) > 1)
 			return $ret;
@@ -619,26 +728,109 @@ class tmtCalendar
 	}
 
 	/**
-	CheckConstraint:
+	SlotComplies:
 
-	Determine whether @str has correct syntax for a calendar-constraint.
+	Determine whether the interval @start to @start + @length satisfies constraints
+	specified in	relevant fields in @bdata.
+
+	@mod: reference to current module-object
+	@bdata: reference to array of data for current bracket 	
+	@start: preferred start time (bracket-local timestamp)
+	@length: optional length (seconds) of time period to be checked, default 0
+	*/
+	function SlotComplies(&$mod,&$bdata,$start,$length=0)
+	{
+		if($bdata['available'] == FALSE)
+			return TRUE;
+		$conds = self::_GetConditions($bdata['available']);
+		$sunstuff = self::_GetSunData($mod,$bdata);
+		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$start,365); //check up to a year ahead
+		if($days)
+		{
+			foreach($days as $k=>&$one)
+			{
+				$times = $daytimes[$k];
+				if(!$times)
+					$times = array(0,86399); //whole day's worth of seconds
+				foreach($times as &$range)
+				{
+					$base = stampfunc($one);
+					$from = MAX($start,($base+$range[0]));
+					if(($base+$range[1]) >= ($from+$length))
+					{
+						unset($one);
+						unset($range);
+						return TRUE;
+					}
+				}
+				unset($range);
+			}
+			unset($one);
+		}
+		return FALSE;
+	}
+
+	/**
+	SlotStart:
+	
+	Get start-time (timestamp) matching constraints specified in relevant fields in
+	@bdata, and	starting no sooner than @start, or ASAP within @later days after
+	the one including @start, and where the available time is at least @length.
+	Returns FALSE if no such time is available within the specified interval.
 
 	@mod: reference to current module-object
 	@bdata: reference to array of data for current bracket
-	@str: condition-string to be processed
-	@type: enumerator - 1 for time, 2 for day or greater
+	@start: preferred/first start time (bracket-local timestamp)
+	@length: optional length (seconds) of time period to be discovered, default 0
+	@later: optional, no. of extra days to check after the one including @start, default 365
 	*/
-	function CheckCondition(&$mod,&$bdata,$str,$type)
+	function SlotStart(&$mod,&$bdata,$start,$length=0,$later=365)
 	{
-		if($str == FALSE)
+		if($bdata['available'] == FALSE)
+			return $start;
+		$conds = self::_GetConditions($bdata['available']);
+		$sunstuff = self::_GetSunData($mod,$bdata);
+		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$start,$later);
+		if($days)
+		{
+			foreach($days as $k=>&$one)
+			{
+				$times = $daytimes[$k];
+				if(!$times)
+					$times = array(0,86399); //whole day's worth of seconds
+				foreach($times as &$range)
+				{
+					$base = stampfunc($one);
+					$ret = MAX($start,($base+$range[0]));
+					if(($base+$range[1]) >= ($ret+$length))
+					{
+						unset($one);
+						unset($range);
+						return $ret;
+					}
+				}
+				unset($range);
+			}
+			unset($one);
+		}
+		return FALSE;
+	}
+
+	/**
+	CheckConstraint:
+
+	Determine whether bracket calendar-constraint has correct syntax.
+	Returns TRUE if no constraint exists.
+
+	@mod: reference to current module-object
+	@bdata: reference to array of data for current bracket
+	*/
+	function CheckCondition(&$mod,&$bdata)
+	{
+		if($bdata['available'] == FALSE)
 			return TRUE;
-		//TODO
-		if($type == 1)
-		{
-		}
-		else
-		{
-		}
+		$conds = self::_GetConditions($bdata['available']);
+		//TODO PARSE CONDS
 		return FALSE;
 	}
 }
