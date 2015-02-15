@@ -310,7 +310,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$stamp = $dt->getTimestamp();
  		if($stamp < $sstamp)
 			$stamp = $sstamp;
-		$at = $this->GetNextSlot($mod,$bdata,$stamp,FALSE); //find 1st slot
+		$at = self::GetNextSlot($mod,$bdata,$stamp,FALSE); //find 1st slot
 		if($at == FALSE)
 			return FALSE;
 		
@@ -361,7 +361,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 					{
 						if(--$slotcount == 0)
 						{
-							$at = $this->GetNextSlot($mod,$bdata,$at,TRUE);
+							$at = self::GetNextSlot($mod,$bdata,$at,TRUE);
 							if($at == FALSE)
 								return FALSE;
 							$save = strftime('%F %R',$at);
@@ -486,7 +486,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 
 		if($rs)
 		{
-			$exseeds = $this->RandomOrder($rs,$numseeds - $rs);
+			$exseeds = self::RandomOrder($rs,$numseeds - $rs);
 			foreach($exseeds as $old=>$new)
 			{
 				$tmp = $allteams[$old];
@@ -496,10 +496,10 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		}
 
 		if($numteams > $numseeds)
-			$randoms = $this->RandomOrder($numseeds+1,$numteams-$numseeds);
+			$randoms = self::RandomOrder($numseeds+1,$numteams-$numseeds);
 
 		$allteams = array_keys($allteams); //convert seed-no's to teamid's
-		$order = $this->OrderMatches($numteams,$numseeds,$stype);
+		$order = self::OrderMatches($numteams,$numseeds,$stype);
 		foreach($order as $i=>$tid)
 		{
 			if($tid <= $numseeds)
@@ -515,7 +515,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$db->Execute($sql,array($bracket_id));
 
 		//safely 'reserve' enough match_id's - for knockouts,N teams means N-1 total matches
-		$id1 = $this->ReserveMatches($db,$pref,$numteams-1);
+		$id1 = self::ReserveMatches($db,$pref,$numteams-1);
 		$sql = 'INSERT INTO '.$pref.'module_tmt_matches (match_id,bracket_id,nextm,teamA,teamB) VALUES (?,?,?,?,?)';
 		if($LC > 1) //> 2 teams in the comp
 		{
@@ -542,9 +542,9 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 				}
 			}
 			//store status for matches with a bye
-			$this->InitByes($bracket_id,$db,$pref);
+			self::InitByes($bracket_id,$db,$pref);
 			//chain up
-			$this->UpdateKOMatches($mod,$bracket_id);
+			self::UpdateKOMatches($mod,$bracket_id);
 		}
 		else
 			$db->Execute($sql,array($id1,$bracket_id,null,$allteams[0],$allteams[1])); //one match,the final
@@ -596,12 +596,12 @@ WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS N
 				if(!($winner == $mdata['nexttA'] || $winner == $mdata['nexttB']
 				   || $winner == -1 || $winner == null))
 				{
-					$this->SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
+					self::SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
 					$more = TRUE;
 				}
 				elseif($winner == -1 &&($mdata['nexttA'] == FALSE || $mdata['nexttB'] == FALSE))
 				{
-					$this->SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
+					self::SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
 					$more = TRUE;
 				}
 				$skips[] = $mid;
@@ -616,7 +616,7 @@ WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS N
 			else
 				break;
 		}
-		$this->ScheduleMatches($mod,$bracket_id);
+		self::ScheduleMatches($mod,$bracket_id);
 		return $done;
 	}
 
@@ -671,7 +671,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 
 		if($rs)
 		{
-			$exseeds = $this->RandomOrder($rs,$numseeds - $rs);
+			$exseeds = self::RandomOrder($rs,$numseeds - $rs);
 			foreach($exseeds as $old=>$new)
 			{
 				$tmp = $allteams[$old];
@@ -681,9 +681,9 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		}
 
 		if($numteams > $numseeds)
-			$randoms = $this->RandomOrder($numseeds+1,$numteams-$numseeds);
+			$randoms = self::RandomOrder($numseeds+1,$numteams-$numseeds);
 		$allteams = array_keys($allteams);
-		$order = $this->OrderMatches($numteams,$numseeds,$stype);
+		$order = self::OrderMatches($numteams,$numseeds,$stype);
 		foreach($order as $i=>$tid)
 		{
 			if($tid <= $numseeds)
@@ -698,7 +698,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$sql = 'DELETE FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
 		$db->Execute($sql,array($bracket_id));
 		//safely 'reserve' enough match_id's : N teams means 2N-2 matches
-		$idW1 = $this->ReserveMatches($db,$pref,$numteams*2-2); //1st winners' draw match no.
+		$idW1 = self::ReserveMatches($db,$pref,$numteams*2-2); //1st winners' draw match no.
 		$idL1 = $idW1 + $numteams - 1; //1st losers' draw match no. (half matches in each draw)
 		//setup winners' draw bands, the last of which is a semi-final i.e. one match
 		$sql = 'INSERT INTO '.$pref.'module_tmt_matches (match_id,bracket_id,nextm,nextlm,teamA,teamB) VALUES (?,?,?,?,?,?)';
@@ -763,9 +763,9 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$db->Execute($sql,array($wbase,$bracket_id,$wbase+1)); //semi final
 		$db->Execute($sql,array($wbase+1,$bracket_id,NULL)); //final
 		//store status for band-1 matches with a bye
-		$this->InitByes($bracket_id,$db,$pref);
+		self::InitByes($bracket_id,$db,$pref);
 		//chain up,including loser-band byes
-		$this->UpdateDEMatches($mod,$bracket_id);
+		self::UpdateDEMatches($mod,$bracket_id);
 		return TRUE;
 	}
 
@@ -817,16 +817,16 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				if(!($winner == $mdata['nexttA'] || $winner == $mdata['nexttB']
 				   || $winner == -1 || $winner == NULL))
 				{
-					$this->SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
+					self::SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
 					if($mdata['nextlm'] && $loser != NULL)
-						$this->SetTeam((int)$loser,(int)$mdata['nextlm'],$mid,$db,$pref,TRUE);
+						self::SetTeam((int)$loser,(int)$mdata['nextlm'],$mid,$db,$pref,TRUE);
 					$more = TRUE;
 				}
 				elseif($winner == -1 &&($mdata['nexttA'] == FALSE || $mdata['nexttB'] == FALSE))
 				{
-					$this->SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
+					self::SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
 					if($mdata['nextlm'] && $loser != NULL)
-						$this->SetTeam((int)$loser,(int)$mdata['nextlm'],$mid,$db,$pref,TRUE);
+						self::SetTeam((int)$loser,(int)$mdata['nextlm'],$mid,$db,$pref,TRUE);
 					$more = TRUE;
 				}
 				$skips[] = $mid;
@@ -841,7 +841,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			else
 				break;
 		}
-		$this->ScheduleMatches($mod,$bracket_id);
+		self::ScheduleMatches($mod,$bracket_id);
 		return $done;
 	}
 
@@ -947,7 +947,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			if($c > 1)
 				ksort($matches,SORT_NUMERIC);
 			//safely 'reserve' enough match_id's
-			$mid = $this->ReserveMatches($db,$pref,$c);
+			$mid = self::ReserveMatches($db,$pref,$c);
 			$sql = 'INSERT INTO '.$pref.'module_tmt_matches (match_id,bracket_id,teamA,teamB) VALUES (?,?,?,?)';
 			foreach($matches as $A=>$B)
 			{
@@ -956,7 +956,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			}
 			return TRUE;
 		}
-		$this->ScheduleMatches($mod,$bracket_id);
+		self::ScheduleMatches($mod,$bracket_id);
 		return 'info_nomatch';
 	}
 
@@ -1019,7 +1019,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
 
-		if($this->MatchCommitted($db,$pref,$bracket_id,$zone))
+		if(self::MatchCommitted($db,$pref,$bracket_id,$zone))
 		{
 			if($type != RRTYPE)
 			{
@@ -1027,11 +1027,11 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 					$tid = array($tid);
 				foreach($tid as $one)
 				{
-					if(!$this->RandomAdd($bracket_id,$tid))
+					if(!self::RandomAdd($bracket_id,$tid))
 						return FALSE;
 				}
 			}
-			elseif($this->NextRRMatches($mod,$bracket_id) !== TRUE) //TODO add & schedule a match for $team_id
+			elseif(self::NextRRMatches($mod,$bracket_id) !== TRUE) //TODO add & schedule a match for $team_id
 				return FALSE;
 		}
 		return TRUE;
@@ -1053,7 +1053,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
 	
-		if($this->MatchCommitted($db,$pref,$bracket_id,$zone))
+		if(self::MatchCommitted($db,$pref,$bracket_id,$zone))
 		{
 			$args = array($bracket_id);
 			if(is_array($tid))
@@ -1102,12 +1102,12 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			switch($type)
 			{
 			 case DETYPE:
-				return ($this->InitDEMatches($mod,$bracket_id) === TRUE);
+				return (self::InitDEMatches($mod,$bracket_id) === TRUE);
 			 case RRTYPE:
-				return ($this->NextRRMatches($mod,$bracket_id) === TRUE);
+				return (self::NextRRMatches($mod,$bracket_id) === TRUE);
 			 default:
 			 //case KOTYPE:
-				return ($this->InitKOMatches($mod,$bracket_id) === TRUE);
+				return (self::InitKOMatches($mod,$bracket_id) === TRUE);
 			}
 		}
 	}
