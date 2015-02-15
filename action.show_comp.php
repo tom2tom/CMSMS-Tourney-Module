@@ -68,7 +68,7 @@ if (!$list)
 	{
 		$message = $this->PrettyMessage('err_chart',FALSE);
 		if($errkey)
-			$message .= '<br /><br />'.$mod->Lang($errkey);
+			$message .= '<br /><br />'.$this->Lang($errkey);
 		$newparms = $this->GetEditParms($params,'charttab',$message);
 		$this->Redirect($id,'addedit_comp',$returnid,$newparms);
 	}
