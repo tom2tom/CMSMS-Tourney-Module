@@ -620,17 +620,10 @@ EOS;
 			//for popup calendars
 			$nextm = $mod->Lang('nextm');
 			$prevm = $mod->Lang('prevm');
-			$mnames = <<< EOS
-'{$mod->Lang('mthjan')}','{$mod->Lang('mthfeb')}','{$mod->Lang('mthmar')}','{$mod->Lang('mthapr')}','{$mod->Lang('mthmay')}','{$mod->Lang('mthjun')}',
-'{$mod->Lang('mthjul')}','{$mod->Lang('mthaug')}','{$mod->Lang('mthsep')}','{$mod->Lang('mthoct')}','{$mod->Lang('mthnov')}','{$mod->Lang('mthdec')}'
-EOS;
-		$dnames = <<< EOS
-'{$mod->Lang('daysun')}','{$mod->Lang('daymon')}','{$mod->Lang('daytue')}','{$mod->Lang('daywed')}','{$mod->Lang('daythu')}','{$mod->Lang('dayfri')}','{$mod->Lang('daysat')}'
-EOS;
-		$sdnames = <<< EOS
-'{$mod->Lang('sdsun')}','{$mod->Lang('sdmon')}','{$mod->Lang('sdtue')}','{$mod->Lang('sdwed')}','{$mod->Lang('sdthu')}','{$mod->Lang('sdfri')}','{$mod->Lang('sdsat')}'
-EOS;
-		$jsloads[] = <<< EOS
+			$mnames = $mod->Lang('longmonths');
+			$dnames = $mod->Lang('longdays');
+			$sdnames = $mod->Lang('shortdays');
+			$jsloads[] = <<< EOS
  $('.pickdate').each(function() {
    $(this).Pikaday({
     container: this.parentNode,

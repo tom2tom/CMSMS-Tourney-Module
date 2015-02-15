@@ -279,25 +279,25 @@ $lang['name_abandoned']='Abandoned';
 //$lang['tab_user_comp']='Frontend View';
 //$lang['tab_admin_comp']='Admin View';
 
-//time intervals
-//NOTE for translators - these values are expected to be all lower-case, will be capitalised on demand
-$lang['minute']='minute';
-$lang['minutes']='minutes';
-$lang['hour']='hour';
-$lang['hours']='hours';
-$lang['day']='day';
-$lang['days']='days';
-$lang['week']='week';
-$lang['weeks']='weeks';
-$lang['month']='month';
-$lang['months']='months';
-$lang['year']='year';
-$lang['years']='years';
+//time interval names - singular & plural
+//names are expected to be all lower-case, will be capitalised on demand,
+//must be ordered shortest..longest, comma-separated, no whitespace
+$lang['periods']='minute,hour,day,week,month,year';
+$lang['multiperiods']='minutes,hours,days,weeks,months,years';
+
 //popup calendar titles
 //$lang['title_month']='Month';
 $lang['nextm']='Next Month';
 $lang['prevm']='Previous Month';
 //$lang['title_year']='Year';
+//longform daynames - must be Sunday first, comma-separated, no whitespace
+$lang['longdays']='Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday';
+//shortform daynames - must be Sunday first, comma-separated, no whitespace 
+$lang['shortdays']='Sun,Mon,Tue,Wed,Thu,Fri,Sat';
+//longform monthnames - must be January first, comma-separated, no whitespace
+$lang['longmonths']='January,February,March,April,May,June,July,August,September,October,November,December';
+//shortform monthnames - must be January first, comma-separated, no whitespace
+$lang['shortmonths']='Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec';
 
 //specific tournament
 
@@ -430,35 +430,6 @@ EOS;
 */
 $lang['help_same_time']='Blank means no limit';
 $lang['help_selection']='No selection means no restriction';
-//longform daynames
-$lang['daysun']='Sunday';
-$lang['daymon']='Monday';
-$lang['daytue']='Tuesday';
-$lang['daywed']='Wednesday';
-$lang['daythu']='Thursday';
-$lang['dayfri']='Friday';
-$lang['daysat']='Saturday';
-//shortform daynames
-$lang['sdsun']='Sun';
-$lang['sdmon']='Mon';
-$lang['sdtue']='Tue';
-$lang['sdwed']='Wed';
-$lang['sdthu']='Thu';
-$lang['sdfri']='Fri';
-$lang['sdsat']='Sat';
-//month names
-$lang['mthjan']='January';
-$lang['mthfeb']='February';
-$lang['mthmar']='March';
-$lang['mthapr']='April';
-$lang['mthmay']='May';
-$lang['mthjun']='June';
-$lang['mthjul']='July';
-$lang['mthaug']='August';
-$lang['mthsep']='September';
-$lang['mthoct']='October';
-$lang['mthnov']='November';
-$lang['mthdec']='December';
 
 $lang['title_place_gap']='Expected match duration';
 $lang['help_place_gap']='Minimum interval between matches at the same venue. The number need not be whole.';
