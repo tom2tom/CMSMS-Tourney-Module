@@ -171,7 +171,7 @@ class tmtCalendar
 		}
 		unset($one);
 		//sort
-		if($count($parts) > 1)
+		if(count($parts) > 1)
 			usort($parts, array('tmtCalendar','_cmp_periods'));
 		//coalesce
 		$blocks = array(array(-1,-1)); //always have something to compare
@@ -321,7 +321,7 @@ class tmtCalendar
 			}
 		}
 		unset($one);
-		if($count($parts) > 1)
+		if(count($parts) > 1)
 			usort($parts, array('tmtCalendar','_cmp_times'));
 		//coalesce
 //	$tvals = array(0,0,0,1,1,date("Y")); //start of current year (CHECKME or 1970?)
@@ -749,21 +749,24 @@ class tmtCalendar
 		{
 			foreach($days as $k=>&$one)
 			{
-				$times = $daytimes[$k];
-				if(!$times)
-					$times = array(0,86399); //whole day's worth of seconds
-				foreach($times as &$range)
+				if($one)
 				{
-					$base = stampfunc($one);
-					$from = MAX($start,($base+$range[0]));
-					if(($base+$range[1]) >= ($from+$length))
+					$times = (isset($daytimes[$k]))?$daytimes[$k]:FALSE;
+					if(!$times)
+						$times = array(0,86399); //whole day's worth of seconds
+					foreach($times as &$range)
 					{
-						unset($one);
-						unset($range);
-						return TRUE;
+						$base = stampfunc($one);
+						$from = MAX($start,($base+$range[0]));
+						if(($base+$range[1]) >= ($from+$length))
+						{
+							unset($one);
+							unset($range);
+							return TRUE;
+						}
 					}
+					unset($range);
 				}
-				unset($range);
 			}
 			unset($one);
 		}
@@ -795,21 +798,24 @@ class tmtCalendar
 		{
 			foreach($days as $k=>&$one)
 			{
-				$times = $daytimes[$k];
-				if(!$times)
-					$times = array(0,86399); //whole day's worth of seconds
-				foreach($times as &$range)
+				if($one)
 				{
-					$base = stampfunc($one);
-					$ret = MAX($start,($base+$range[0]));
-					if(($base+$range[1]) >= ($ret+$length))
+					$times = (isset($daytimes[$k]))?$daytimes[$k]:FALSE;
+					if(!$times)
+						$times = array(0,86399); //whole day's worth of seconds
+					foreach($times as &$range)
 					{
-						unset($one);
-						unset($range);
-						return $ret;
+						$base = stampfunc($one);
+						$ret = MAX($start,($base+$range[0]));
+						if(($base+$range[1]) >= ($ret+$length))
+						{
+							unset($one);
+							unset($range);
+							return $ret;
+						}
 					}
+					unset($range);
 				}
-				unset($range);
 			}
 			unset($one);
 		}
