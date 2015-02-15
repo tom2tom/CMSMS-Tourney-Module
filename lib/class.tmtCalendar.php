@@ -382,27 +382,27 @@ class tmtCalendar
 			$p = strpos($one,'@');
 			if($p !== -1)
 			{
-				$days[] = self:_ParsePeriod(substr($one,0,$p),$start,$later); //midnight-stamps
-				$times[] = self:_ParseTime(substr($one,$p+1),$sunstuff); //seconds-blocks rel some base
+				$days[] = self::_ParsePeriod(substr($one,0,$p),$start,$later); //midnight-stamps
+				$times[] = self::_ParseTime(substr($one,$p+1),$sunstuff); //seconds-blocks rel some base
 			}
 			else //[p] or [t]
 			{
 				//if contains date,monthname,dayname,'week',maybe nos > 24
 				if(0) //period
 				{
-					$days[] = self:_ParsePeriod($one,$start,$later);
+					$days[] = self::_ParsePeriod($one,$start,$later);
 					$times[] = FALSE;
 				}
 				else //time contains only numbers,':',sunrise/set,+-
 				{
 					$days[] = array($dstart,$dstart+$later);
-					$times[] = self:_ParseTime($one,$sunstuff);
+					$times[] = self::_ParseTime($one,$sunstuff);
 				}
 			}
 		}
 		if($days)
 			return array($days,$daytimes);
-		return array(FALSE,FALSE)
+		return array(FALSE,FALSE);
 	}
 
 	//Get array of 'cleaned' condition(s) in $avail (i.e. split on outside-bracket commas)
@@ -472,7 +472,7 @@ class tmtCalendar
 			 'lat'=>$lat,
 			 'long'=>$long,
 			 'zone'=>$zone,
-			 'day'=>floor($start/3600)*3600;
+			 'day'=>(floor($start/3600)*3600)
 			);
 		}
 		else
