@@ -382,7 +382,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 	@type: gap-type enum 0 = none, 1 = second .. 5 = month
 	@count: no. of @type in the gap
 	*/
-	private function GapCount($type,$count)
+	private function GapSeconds($type,$count)
 	{
 		switch($type)
 		{
