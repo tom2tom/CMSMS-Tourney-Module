@@ -391,43 +391,33 @@ $lang['title_days']='Day(s)';
 $lang['title_weeks']='Week(s)';
 $lang['title_calendar']='Calendar identifier';
 $lang['help_calendar']='Schedule matches in accordance with reservations under this name, and if necessary, revert to days/times specified below.';
-/*$lang['title_match_on']='Matches may be scheduled on';
-$lang['help_match_days']= <<< EOS
-One or more (in which case, comma-separated) day descriptors, like<br />
-&#8226; for day(s)-of-month: 1 or -2 or 1..10 or 2..-1 or -3..-1<br />
+$lang['title_available']='Match scheduling conditions';
+$lang['help_available'] = <<< EOS
+One or more (in which case, comma-separated) conditions like 'P@T', where<br />
+&#8226; (optional) 'P' represents a period-descriptor<br />
+&#8226; (optional) 'T' represents a time-descriptor for period P<br />
+&#8226; separator '@' is needed only if both P and T are present<br />
+If T is not present for a P, all times are available for the days which match P.<br />
+If P is not present for a T, the times apply to all days.<br />
+Any P or T can be<br />
+&#8226; a single value<br />
+&#8226; a bracket-enclosed and comma-separated sequence of values (in any order)<br />
+&#8226; a '..' separated range of sequential values<br />
+For dates, month and day, or just day, are optional. Times are 24-hour, minutes are optional, 
+the minute-separator must be ':'. Non-ranged times each represent one hour. Other numeric values may be < 0, meaning count backwards.<br />
+Examples:<br />
+&#8226; 2000 or 2000..2005 or 2000-6 or 2000-10..2001-3 or 2000-9-1 or 2000-10-1..2000-12-31<br />
+&#8226; January or November..December<br />
+&#8226; for week(s)-of-any-month (some of which may not be 7-days): 2(week) or -1(week) or 2..3(week)<br />
+&#8226; for week(s)-of-named-month: 2(week(March)) or or 1..3(week(July,August)) or (-2,-1)(week(April..July))<br />
+&#8226; for day(s)-of-month: 1 or -2 or or 1..10 or 2..-1 or -3..-1<br />
 &#8226; for day(s)-of-month: 1(Sunday) or -1(Wednesday..Friday) or 1..3(Friday,Saturday)<br />
+&#8226; for days(s)-of-named-month: 2(March) or or 1..3(July,August) or (-2,-1)(April..July) or 2(Sunday(July..September))<br />
 &#8226; for day(s)-of-week: Monday or Wednesday..Friday<br />
-Day-names are not abbreviated.
+&#8226; for times: 9 or 12..23 or 6:30..15:30 or sunrise..16 or 9..sunset-3:30<br />
+{$lang['help_use_smarty']}
 EOS;
-$lang['help_daysend']= <<< EOS
-{$lang['help_use_smarty']}<br />
-If multiple conditions are specified, it will be sufficient for any of them to be satisfied.
-If blank, all days are available.
-EOS;
-$lang['title_anyday']='Any day';
-*/
-$lang['title_match_on']='Match scheduling conditions';
-$lang['help_available']= <<< EOS
-See module help for information on calendar availability language.
-EOS;
-$lang['help_daysend']= <<< EOS
-{$lang['help_use_smarty']}<br />
-If blank, all days and times are available.
-EOS;
-//$lang['title_weekdays']='Selected days of any week';
-//$lang['title_monthdays']='Selected days of any month';
-//$lang['title_monthweeks']='Selected weeks of any month';
-/*$lang['title_match_times']='On any match day, suitable times are';
-$lang['help_match_times']= <<< EOS
-One or more (in which case, comma-separated) time descriptors, like<br />
-&#8226; 9 or 12..23 or 6:30..15:30 or sunrise..16 or 9..sunset-3:30
-EOS;
-$lang['help_timesend']= <<< EOS
-{$lang['help_use_smarty']}<br />
-If multiple conditions are specified, it will be sufficient for any of them to be satisfied.
-If blank, all times are available.
-EOS;
-*/
+
 $lang['help_same_time']='Blank means no limit';
 $lang['help_selection']='No selection means no restriction';
 
