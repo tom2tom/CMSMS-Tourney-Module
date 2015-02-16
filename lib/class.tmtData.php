@@ -340,7 +340,7 @@ class tmtData
 			$data->sametime = '';
 			$data->calendarid = '';
 			$data->playgap = 1;
-			$data->playgaptype = 0;
+			$data->playgaptype = 2;
 			$data->available = '';
 			$data->latitude = '';
 			$data->longitude = '';
