@@ -10,69 +10,74 @@ Class: tmtCalendar
 /**
 Calendar Availability Language
 
-Availability constraints are specified in a string of the form condition[,condition2...]
-If more than 1 condition is specified, their order is irrelevant. Whitespace and
-newlines in the string are ignored.
+Availability constraints are specified in a string of the form
+ condition[,condition2...]
+Whitespace and newlines in the string are ignored. If more than one condition is
+specified, their order is irrelevant. 
 
-Each condition in the string is of the form [period][@][time]
-The separator '@' is mandatory if both period and time are specified.
+Each condition in the string is of the form
+ [PERIOD][@][TIME]
+The separator '@' is mandatory if both PERIOD and TIME are specified. It may
+otherwise be used i.e. PERIOD@ or @TIME, to clarify ambiguous data.
 
-The period and/or time may be
+PERIOD and/or TIME may be
  a 'singleton' value; or
- x,y[,...] which specifies a sequence of individual values, in any order, all of
- which are valid; or
- x..y which specifies an inclusive range of values, all of which are valid, and
- normally y should be chronologically after x (except when spanning a period-end
- e.g. 23:30..2:30 or Friday..Sunday or December..February).
+ (X,Y[,...]) which specifies a sequence of individual values, in any order, all
+ of which are valid; or
+ X..Y which specifies an inclusive range of sequential values, all of which are
+ valid, and normally Y should be chronologically after X (except when spanning a
+ time-period-end e.g. 23:30..2:30 or Friday..Sunday or December..February).
 
-Merely numeric sequences and ranges are supported, and in that case, y must be
-greater than x.
+Ordinary numeric sequences and ranges are supported, and for such ranges, Y must
+be greater than X.
 
-Any singleton value may be preceded by a bracketed scope-expander of any of the
-above types.
-Any sequence or range of values may itelf be bracketed and preceded by a bracketed
-scope-expander of any of the above types.
+Any value, sequence or range may itelf be bracketed and preceded by a qualifier,
+being a single value, or scope-expander of any of the above types. Such
+qualification may be nested/recursed.
 
 A value which is a date is expected to be formatted as yyyy[-[m]m[-[d]d]] i.e.
 month and day are optional, and leading 0 is not needed for month or day value.
-A value which is a month- or day-name is expected to be formatted in accord with
-a specified, or the default, locale. Month- and/or day-names may be abbreviated
-if the relevant option is specified.
 
-The term 'week' isn't system-pollable, and must be translated manually.
+A value which is a month- or day-name is expected to be in accord with the default,
+or a specified, locale. Month- and/or day-names may be abbreviated. The term
+'week' isn't system-pollable, and must be translated manually. Weeks always start
+on Sunday.
 
 A value which is a time is expected to be formatted as [h]h[:[m]m] i.e. 24-hour
-format, leading '0' optional, minutes optional but if present, the separator is ':'.
-A time-value which is not a range is assumed to represent a range of 1-hour less 1-second.
-Sunrise/sunset-related times are supported, if relevant latitude and longitude
-data are provided. Time-values like sunrise/sunset +/- time-interval are also supported.
+format, leading '0' optional, minutes optional but if present, the separator is
+':'. In some contexts, [h]h:00 may be needed instead of just [h]h, to reliably
+distinguish between hours-of-day and days-of-month. Sunrise/sunset times are
+supported, if relevant latitude and longitude data are provided. Times like
+sunrise/sunset +/- interval are also supported.  A time-value which is not a
+range is assumed to represent a range of 1-hour less 1-second.
 
-Negative-value parameters count backwards from next-longest-period-end.
+Negative-value parameters count backwards from next-longest-interval-end.
 
-If multiple conditions are specified, specific date(s) prevail over everything else,
-named month(s) prevail over unqualified years, named week(s) prevail over
-unqualified months, and so on down the time scale.
+If multiple conditions are specified, specific date(s) prevail over everything
+else, named month(s) prevail over unqualified years, named week(s) prevail over
+unqualified months, and so on down the time-scale.
 
 It will be sufficient for any combination of conditions to be satisfied.
 If no condition is specified, no constraint applies.
 
 Examples:
 Date descriptors
- 2000 or 2020,2024 or 2000..2005 or 2000-6 or 2000-10..2001-3 or 2000-9-1
+ 2000 or (2020,2024) or 2000..2005 or 2000-6 or 2000-10..2001-3 or 2000-9-1
    or 2000-10-1..2000-12-31
- for month(s)-of-any-year: January or March,September or July..December
+ for month(s)-of-any-year: January or (March,September) or July..December
+ for month(s)-of-specfic-year: January(2000) (otherwise as 2000-1)
+   or (March,September)(2000) or July..December(2000)
 Week descriptors
  for week(s)-of-any-month (some of which may not be 7-days): 2(week) or -1(week)
-   or (2..3)(week)
- for week(s)-of-named-month: 2(week(March)) or or (1..3)(week(July,August))
+   or 2..3(week)
+ for week(s)-of-named-month: 2(week(March)) or or 1..3(week(July,August))
    or (-2,-1)(week(April..July))
 Day descriptors
- for day(s)-of-any-month: 1 or -2 or 15,18,-1 or 1..10 or 2..-1 or -3..-1 or
-    1(Sunday) or -1(Wednesday..Friday) or (1..3)(Friday,Saturday)
- for day(s)-of-any-week: Monday or Monday,Wednesday,Friday or Wednesday..Friday
+ for day(s)-of-any-month: 1 or -2 or (15,18,-1) or 1..10 or 2..-1 or -3..-1 or
+    1(Sunday) or -1(Wednesday..Friday) or 1..3(Friday,Saturday)
+ for day(s)-of-any-week: Monday or (Monday,Wednesday,Friday) or Wednesday..Friday
 Time descriptors
- 9 or 2:30 or 9,12,15:15 or 12..23 or 6..15:30 or sunrise..16 or 9..sunset-3:30
-
+ 9 or 2:30 or (9,12,15:15) or 12..23 or 6..15:30 or sunrise..16 or 9..sunset-3:30
 */
 
 class tmtCalendar
@@ -130,19 +135,19 @@ class tmtCalendar
 		if(is_array($a))
 		{
 			if(is_array($b))
-				return func($a[0],$b[0]);
+				return funcTODO($a[0],$b[0]);
 			elseif($a[0] === $b)
 				return 1; //range-arrays last
-			return func($a[0],$b);
+			return funcTODO($a[0],$b);
 		}
 		elseif(is_array($b))
 		{
 			if($a === $b[0])
 				return -1; //range-arrays last
-			return func($a,$b[0]);
+			return funcTODO($a,$b[0]);
 		}
 		else
-			return func($a,$b);
+			return funcTODO($a,$b);
 	}
 
 	/**
@@ -225,10 +230,10 @@ class tmtCalendar
 	@sunstuff =	array(
 	 'rise'=>translated 'sunrise' string
 	 'set'=>translated 'sunset' string
+	 'day'=>timestamp for day being processed
 	 'lat'=>latitude for calc
 	 'long'=>longitude for calc
 	 'zone'=>name of timezone (for calc GMT offset)
-	 'day'=>timestamp for day being processed
 	)
 	or FALSE
 	*/
@@ -252,15 +257,25 @@ class tmtCalendar
 		{
 			if(strpos($str,$sunstuff['rise']) === 0)
 			{
-					$offs = 0; //TODO calc timezone offset func($sunstuff['zone']) +/- custom offset
-					return date_sunrise($sunstuff['day'],SUNFUNCS_RET_STRING,
-						$sunstuff['lat'],$sunstuff['long'],90+(50/60),$offs);
+				$time = new DateTime($TODO, new DateTimeZone($sunstuff['zone']));
+				$stamp = date_sunrise(
+					$time->getTimestamp(),
+					SUNFUNCS_RET_TIMESTAMP,$sunstuff['lat'],$sunstuff['long'],90+(50/60),
+					$time->getOffset() / 3600
+				);
+				//TODO calc any offset
+				return date('G:i',$stamp);
 			}
-			if(strpos($str,$sunstuff['rise']) === 0)
+			if(strpos($str,$sunstuff['set']) === 0)
 			{
-					$offs = 0; //TODO calc timezone offset func($sunstuff['zone']) +/- custom offset
-					return date_sunrise($sunstuff['day'],SUNFUNCS_RET_STRING,
-						$sunstuff['lat'],$sunstuff['long'],90+(50/60),$offs);
+				$time = new DateTime($TODO, new DateTimeZone($sunstuff['zone']));
+				$stamp = date_sunset(
+					$time->getTimestamp(),
+					SUNFUNCS_RET_TIMESTAMP,$sunstuff['lat'],$sunstuff['long'],90+(50/60),
+					$time->getOffset() / 3600
+				);
+				//TODO calc any offset
+				return date('G:i',$stamp);
 			}
 		}
 		return $str; //TODO better error handling
@@ -277,10 +292,10 @@ class tmtCalendar
 	array(
 		'rise'=>translated 'sunrise' string as would appear in module parameter value
 		'set'=>translated 'sunset' string as would appear in module parameter value
+		'day'=>timestamp for day being processed
 		'lat'=>latitude for calc
 		'long'=>longitude for calc
 		'zone'=>name of timezone (for calc GMT offset)
-		'day'=>timestamp for day being processed
 	)
 	*/
 	private function _ParseTime($str,$sunstuff=FALSE)
@@ -301,15 +316,10 @@ class tmtCalendar
 					$e = self::_CleanTime($e,$sunstuff);
 				if(strcmp($s,$e) < 0)
 					$one = array($s,$e);
+				elseif(0) //TODO midnight-span
+					$one = array($s,$e);
 				elseif(strcmp($s,$e) > 0)
-				{
-					if (1)
-						$one = array($e,$s);
-					else
-					{
-						//TODO support midnight-span
-					}
-				}
+					$one = array($e,$s);
 				else
 					$one = $s;
 			}
@@ -324,31 +334,17 @@ class tmtCalendar
 		if(count($parts) > 1)
 			usort($parts, array('tmtCalendar','_cmp_times'));
 		//coalesce
-//	$tvals = array(0,0,0,1,1,date("Y")); //start of current year (CHECKME or 1970?)
-//	$base = mktime($tvals);
-		$base = mktime(0,0,0,1,1);
 		$blocks = array(array(-1,-1)); //always have something to compare
 		foreach($parts as &$one)
 		{
 			if(is_array($one))
 			{
-/*			$tvals[0] = func($one[0]); //hour
-				$tvals[1] = func($one[0]); //minute
-				$stamp = mktime($tvals) - $base;
-				$tvals[0] = func($one[1]);
-				$tvals[1] = func($one[1]);
-				$stend = mktime($tvals) - 1 - $base;
-*/
-				$stamp = strtotime($one[0],$base); //no need for time localisation?
-				$stend = strtotime($one[1],$base);
+				$stamp = strtotime($one[0],0); //time-localisation not supported
+				$stend = strtotime($one[1],0);
 			}
 			else
 			{
-/*			$tvals[0] = func($one); //hour
-				$tvals[1] = func($one); //minute
-				$stamp = mktime($tvals) - $base;
-*/
-				$stamp = strtotime($one,$base);
+				$stamp = strtotime($one,0);
 				$stend = $stamp + 3599;
 			}
 			$blend = end($blocks);
@@ -370,42 +366,239 @@ class tmtCalendar
 
 	@conds: reference to array of availability-descriptor strings
 	@sunstuff: reference to array of sunrise/sunset calc parameters, or FALSE
+	@slothours: no. in {0.0..24.0}, representing the actual or notional slot-length,
+	 	to help distinguish ambiguous hour- and day-numbers
 	@start: preferred start time (bracket-local timestamp)
 	@later: no. of extra days to check after the one including @start
 	*/
-	private function _ParseConditions(&$conds,&$sunstuff,$start,$later)
+	private function _ParseConditions(&$conds,&$sunstuff,$slothours,$start,$later)
 	{
 		$days = array();
 		$daytimes = array();
+		$repeat = FALSE;
+		$shortdays = FALSE;
+		$longdays = FALSE;
+		$shortmonths = FALSE;
+		$longmonths = FALSE;
+		$week = FALSE;
+		$suns = FALSE;
 		foreach($conds as $one)
 		{
-			$p = strpos($one,'@');
-			if($p !== -1)
+			$p = strpos($one,'@'); //PERIOD-TIME separator present?
+			if($p !== FALSE)
 			{
-				$days[] = self::_ParsePeriod(substr($one,0,$p),$start,$later); //midnight-stamps
-				$times[] = self::_ParseTime(substr($one,$p+1),$sunstuff); //seconds-blocks rel some base
-			}
-			else //[p] or [t]
-			{
-				//if contains date,monthname,dayname,'week',maybe nos > 24
-				if(0) //period
+				$e = (strlen($one) == ($p+1)); //trailing '@'
+				if($p == 0 && !$e)
 				{
-					$days[] = self::_ParsePeriod($one,$start,$later);
-					$times[] = FALSE;
+					$days[] = ''; //distinguish from FALSE, cuz corresponding $daytimes[] is real
+					$daytimes[] = self::_ParseTime(substr($one,$p+1),$sunstuff); //seconds-blocks rel. 0 (midnight 1/1/1970 GMT)
 				}
-				else //time contains only numbers,':',sunrise/set,+-
+				else //$p > 0 || $e
+					if($p > 0 && $e)
+				{
+					$days[] = self::_ParsePeriod(substr($one,0,$p),$start,$later); //day-indices rel. 0 (1/1/1970)
+					$daytimes[] = FALSE;
+				}
+				elseif($p > 0)
+				{
+					$days[] = self::_ParsePeriod(substr($one,0,$p),$start,$later);
+					$daytimes[] = self::_ParseTime(substr($one,$p+1),$sunstuff);
+				}
+			}
+			else //PERIOD OR TIME
+			{
+				$condtype = 0; //0=undecided 1=time 2=time
+				if(!$shortdays) $shortdays = self::AdminDayNames(range(1,7),FALSE);
+				foreach($shortdays as &$n)
+				{
+					if(strpos($one,$n) !== FALSE)
+					{
+						$condtype = 2;
+						break;
+					}
+				}
+				unset($n);
+				if($condtype == 0)
+				{
+					if(!$shortmonths) $shortmonths = self::AdminMonthNames(range(1,12),FALSE);
+					foreach($shortmonths as &$n)
+					{
+						if(strpos($one,$n) !== FALSE)
+						{
+							$condtype = 2;
+							break;
+						}
+					}
+					unset($n);
+				}
+				if($condtype == 0)
+				{
+					if(!$longdays) $longdays = self::AdminDayNames(range(1,7));
+					foreach($longdays as &$n)
+					{
+						if(strpos($one,$n) !== FALSE)
+						{
+							$condtype = 2;
+							break;
+						}
+					}
+					unset($n);
+				}
+				if($condtype == 0)
+				{
+					if(!$longmonths) $longmonths = self::AdminMonthNames(range(1,12));
+					foreach($longmonths as &$n)
+					{
+						if(strpos($one,$n) !== FALSE)
+						{
+							$condtype = 2;
+							break;
+						}
+					}
+					unset($n);
+				}
+				if($condtype == 0)
+				{
+					if (!$week) $week = $mod->Lang('week');
+					if(strpos($one,$week) !== FALSE)
+							$condtype = 2;
+				}
+				if($condtype == 0)
+				{
+					//check these before numbers, in case have sun*-H:M
+					if(!$suns) $suns = array($mod->Lang('sunrise'),$mod->Lang('sunset'));
+					foreach($suns as &$n)
+					{
+						if(strpos($one,$n) !== FALSE)
+						{
+							$condtype = 1;
+							break;
+						}
+					}
+					unset($n);
+				}
+				if($condtype == 0)
+				{
+					//catch many dates and numbers (<0(incl. date-separator), >24)
+					$n = preg_match_all('~[-:]?\d+~',$one,$matches);
+					if($n)
+					{
+						foreach($matches[0] as $n)
+						{
+							if($n[0] == ':' || $n == 0) //have minutes, day-of-month never 0
+							{
+								$condtype = 1;
+								break;
+							}
+							elseif($n > 24 || $n < 0)
+							{
+								$condtype = 2;
+								break;
+							}
+						}
+					}
+				}
+				//end of analysis, for now
+				if ($condtype == 1) //time
 				{
 					$days[] = array($dstart,$dstart+$later);
-					$times[] = self::_ParseTime($one,$sunstuff);
+					$daytimes[] = self::_ParseTime($one,$sunstuff);
+				}
+				elseif($condtype == 2) //period
+				{
+					$days[] = self::_ParsePeriod($one,$start,$later);
+					$daytimes[] = FALSE;
+				}
+				else //could be either - re-consider, after all are known
+				{
+					$repeat = TRUE;
+					$days[] = FALSE;
+					$daytimes[] = $one;
 				}
 			}
+		}
+		if($repeat)
+		{
+			//small number(s) logged, may be for hour(s) or day(s)
+			$useday = FALSE;
+			//if any PERIOD recorded, assume all 'bare' numbers are days-of-month
+			foreach($days as &$one)
+			{
+				if($one) //NOT !== FALSE, match FALSE or ''
+				{
+					$useday = TRUE;
+					break;
+				}
+			}
+			unset($one);
+			//if still not sure, interpret values in $conds[]
+			if(!$useday)
+			{
+				//calc min. non-zero difference between small numeric values
+				$one = implode(' ',$cond);
+				$n = preg_match_all('~(?<![-:(\d])[0-2]?\d(?![\d()])~',$one,$matches);
+				if($n > 1)
+				{
+					$mindiff = 25.0; //> 24 hours
+					$n--; //for 0-base compares
+					sort($matches[0],SORT_NUMERIC);
+					foreach($matches[0] as $k=>$one)
+					{
+						if($k < $n)
+						{
+							$diff = (float)($matches[$k+1] - $one);
+							if ($diff > -0.001 && $diff < 0.001)
+							{
+								$useday = TRUE; //numbers repeated only in PERIOD-descriptors
+								break;
+							}
+							elseif($diff < $mindiff)
+								$mindiff = $diff;
+						}
+					}
+					if (!$useday && $mindiff < $slothours)
+						$useday = TRUE;
+				}
+				elseif($n)
+				{
+					$n = $matches[0][0];
+					if($slothours >= 1.0)
+						$useday = ($n < $slothours);
+					else
+					 	$useday = ($n < 7 || $n > 19); //arbitrary choice for a single number
+				}
+				else
+					$useday = TRUE; //should never get here
+			}
+			//now cleanup the logged values
+			foreach($days as $k=>&$one)
+			{
+				if ($one === FALSE) //NOT ==
+				{
+					if($useday)
+					{
+						//treat this as a day-value
+						$one = self::_ParsePeriod($daytimes[$k],$start,$later);
+						$daytimes[$k] = FALSE;
+					}
+					else
+					{
+						//$n(s) <7 or >19 more likely to be a day-value ?
+						$one = array($dstart,$dstart+$later);
+						$daytimes[$k] = self::_ParseTime($daytimes[$k],$sunstuff);
+					}
+				}
+				elseif ($one === '')
+					$one = FALSE; //now we can clear that distinction
+			}
+			unset($one);
 		}
 		if($days)
 			return array($days,$daytimes);
 		return array(FALSE,FALSE);
 	}
 
-	//Get array of 'cleaned' condition(s) in $avail (i.e. split on outside-bracket commas)
+	//Get array of 'cleaned' condition(s) from $avail (i.e. split on outside-bracket commas)
 	private function _GetConditions($avail)
 	{
 		$clean = str_replace(array(' ',"\n"),array('',''),$avail);
@@ -440,6 +633,7 @@ class tmtCalendar
 		return $parts;
 	}
 
+	//No checks here for valid parameters - assumed done before
 	private function _GetSunData(&$mod,&$bdata)
 	{
 		$cond = $bdata['available'];
@@ -453,33 +647,48 @@ class tmtCalendar
 			{
 				$zone = $mod->GetPreference('time_zone','');
 				if(!zone)
-					$zone = 'Europe/London'; //TODO BETTER
+					$zone = 'Europe/London'; //TODO BETTER e.g. func($bdata['locale'])
 			}
-			if($bdata['latitude'] && $bdata['longitude'])
-			{
-				$lat = $bdata['latitude'];
-				$long = $bdata['longitude'];
-			}
-			else
-			{
-				//TODO BETTER e.g. func($zone)
-				$lat = 0.0;
-				$long = 0.0;
-			}
-			$sunstuff = array(
+			$lat = $bdata['latitude']; //maybe 0.0
+			$long = $bdata['longitude']; //ditto
+/* TODO not the hour c.f.
+			$time = new DateTime('now', new DateTimeZone($sunstuff['zone']));
+			$stamp = date_sunset($time->getTimestamp(),
+*/
+			$day = floor($start/3600)*3600;
+			return array (
 			 'rise'=>$rise,
 			 'set'=>$set,
+			 'day'=>$day,
 			 'lat'=>$lat,
 			 'long'=>$long,
-			 'zone'=>$zone,
-			 'day'=>(floor($start/3600)*3600)
+			 'zone'=>$zone
 			);
 		}
-		else
-			$sunstuff = FALSE;
-		return $sunstuff;
+		return FALSE;
 	}
 
+	//Get no. in {0.0..24.0} representing the actual or notional slot-length
+	private function _GetSlotHours(&$bdata)
+	{
+		if(!$bdata['placegap'])
+			return 0.0;
+		switch($bdata['placegaptype'])
+		{
+			case 1: //minute
+				return MIN($bdata['placegap']/60,24.0);
+			case 2: //hour
+				return MIN((float)$bdata['placegap'],24.0);
+			case 3: //>= day
+			case 4:
+			case 5:
+			case 6:
+				return 24.0;
+			default:
+				return 0.0;
+		}
+	}
+	
 	//========== PUBLIC FUNCS ===========
  
 	/**
@@ -559,62 +768,22 @@ class tmtCalendar
 	*/
 	function MonthNames(&$mod,$which,$short=FALSE)
 	{
-		$ret = array();
+		$k = ($short) ? 'shortmonths' : 'longmonths';
+		$all = explode(',',$mod->Lang($k));
+
 		if (!is_array($which))
-			$which = array($which);
-		foreach($which as $month)
 		{
-			switch($month)
-			{
-				case 1:
-				 $k = 'jan'; //part of Lang() key
-				 break;
-				case 2:
-				 $k = 'feb';
-				 break;
-				case 3:
-				 $k = 'mar';
-				 break;
-				case 4:
-				 $k = 'apr';
-				 break;
-				case 5:
-				 $k = 'may';
-				 break;
-				case 6:
-				 $k = 'jun';
-				 break;
-				case 7:
-				 $k = 'jul';
-				 break;
-				case 8:
-				 $k = 'aug';
-				 break;
-				case 9:
-				 $k = 'sep';
-				 break;
-				case 10:
-				 $k = 'oct';
-				 break;
-				case 11:
-				 $k = 'nov';
-				 break;
-				case 12:
-				 $k = 'dec';
-				 break;
-				default:
-				 $k = FALSE;
-				 break;
-			}
-			if($k)
-			{
-				$k = ($short) ? 'sm'.$k : 'mth'.$k;
-				$ret[$month] = $mod->Lang($k);
-			}
+			if ($which > 0 && $which < 13)
+				return $all[$which-1];
+			return '';
 		}
-		if (count($which) > 1)
-			return $ret;
-		return(reset($ret));
+		$ret = array();
+		foreach ($which as $month)
+		{
+			if ($month > 0 && $month < 13)
+				$ret[$month] = $all[$month-1];
+		}
+		return $ret;
 	}
 
 	/**
@@ -628,47 +797,22 @@ class tmtCalendar
 	*/
 	function DayNames(&$mod,$which,$short=FALSE)
 	{
-		$ret = array();
+		$k = ($short) ? 'shortdays' : 'longdays';
+		$all = explode(',',$mod->Lang($k));
+
 		if (!is_array($which))
-			$which = array($which);
-		foreach($which as $day)
 		{
-			switch($day)
-			{
-				case 1:
-				 $k = 'sun'; //part of Lang() key
-				 break;
-				case 2:
-				 $k = 'mon';
-				 break;
-				case 3:
-				 $k = 'tue';
-				 break;
-				case 4:
-				 $k = 'wed';
-				 break;
-				case 5:
-				 $k = 'thu';
-				 break;
-				case 6:
-				 $k = 'fri';
-				 break;
-				case 7:
-				 $k = 'sat';
-				 break;
-				default:
-				 $k = FALSE;
-				 break;
-			}
-			if($k)
-			{
-				$k = ($short) ? 'sd'.$k : 'day'.$k;
-				$ret[$day] = $mod->Lang($k);
-			}
+			if ($which > 0 && $which < 8)
+				return $all[$which-1];
+			return '';
 		}
-		if (count($which) > 1)
-			return $ret;
-		return(reset($ret));
+		$ret = array();
+		foreach ($which as $day)
+		{
+			if ($day > 0 && $day < 8)
+				$ret[$day] = $all[$day-1];
+		}
+		return $ret;
 	}
 
 	/**
@@ -683,48 +827,26 @@ class tmtCalendar
 	*/
 	function IntervalNames(&$mod,$which,$plural=FALSE,$cap=FALSE)
 	{
+		$k = ($plural) ? 'multiperiods' : 'periods';
+		$all = explode(',',$mod->Lang($k));
+		array_unshift($all,$mod->Lang('none'));
+
 		if (!is_array($which))
-			$which = array($which);
+		{
+			if ($which >= 0 && $which < 7)
+				return $all[$which];
+			return '';
+		}
 		$ret = array();
 		foreach($which as $period)
 		{
-			switch($period)
+			if ($period >= 0 && $period < 7)
 			{
-			case 0:
-				$k = 'none'; //Lang() key
-				break;
-			case 1:
-				$k = 'minute';
-				break;
-			case 2:
-				$k = 'hour';
-				break;
-			case 3:
-				$k = 'day';
-				break;
-			case 4:
-				$k = 'week';
-				break;
-			case 5:
-				$k = 'month';
-				break;
-			case 6:
-				$k = 'year';
-				break;
-			default:
-				continue;
+				$ret[$period] = ($cap) ? ucfirst($all[$period]): //for current locale
+					$all[$period];
 			}
-			if($plural && ($period > 0))
-				$k .= 's';
-			$v = $mod->Lang($k);
-			if($cap)
-				$ret[$k] = ucfirst($v); //for current locale
-			else
-				$ret[$k] = $v;
 		}
-		if (count($which) > 1)
-			return $ret;
-		return(reset($ret));
+		return $ret;
 	}
 
 	/**
@@ -744,7 +866,8 @@ class tmtCalendar
 			return TRUE;
 		$conds = self::_GetConditions($bdata['available']);
 		$sunstuff = self::_GetSunData($mod,$bdata);
-		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$start,365); //check up to a year ahead
+		$maxhours = self::_GetSlotHours($bdata);
+		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$maxhours,$start,365); //check up to a year ahead
 		if($days)
 		{
 			foreach($days as $k=>&$one)
@@ -756,7 +879,7 @@ class tmtCalendar
 						$times = array(0,86399); //whole day's worth of seconds
 					foreach($times as &$range)
 					{
-						$base = stampfunc($one);
+						$base = stampfuncTODO($one);
 						$from = MAX($start,($base+$range[0]));
 						if(($base+$range[1]) >= ($from+$length))
 						{
@@ -793,7 +916,8 @@ class tmtCalendar
 			return $start;
 		$conds = self::_GetConditions($bdata['available']);
 		$sunstuff = self::_GetSunData($mod,$bdata);
-		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$start,$later);
+		$maxhours = self::_GetSlotHours($bdata);
+		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$maxhours,$start,$later);
 		if($days)
 		{
 			foreach($days as $k=>&$one)
@@ -805,7 +929,7 @@ class tmtCalendar
 						$times = array(0,86399); //whole day's worth of seconds
 					foreach($times as &$range)
 					{
-						$base = stampfunc($one);
+						$base = stampfuncTODO($one);
 						$ret = MAX($start,($base+$range[0]));
 						if(($base+$range[1]) >= ($ret+$length))
 						{
