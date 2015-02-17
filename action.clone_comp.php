@@ -24,13 +24,14 @@ $bdata['name'] .= ' '.$c;
 if($bdata['alias'])
 	$bdata['alias'] .= '_'.strtolower($c);
 //check for date(s) > local current date
-$dt = new DateTime ('now',new DateTimeZone($bdata['timezone']));
+$tz = new DateTimeZone($bdata['timezone']);
+$dt = new DateTime ('now',$tz);
 $stamp = $dt->getTimestamp();
-$sdt = new DateTime ($bdata['startdate']);
+$sdt = new DateTime ($bdata['startdate'],$tz);
 $sstamp = $sdt->getTimestamp();
 if ($stamp >= $sstamp)
 	$bdata['startdate'] = null;
-$sdt = new DateTime ($bdata['enddate']);
+$sdt = new DateTime ($bdata['enddate'],$tz);
 $sstamp = $sdt->getTimestamp();
 if ($stamp >= $sstamp)
 	$bdata['enddate'] = null;
