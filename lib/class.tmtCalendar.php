@@ -159,9 +159,9 @@ class tmtCalendar
 
 	@str: the string to be parsed
 	@start: timestamp for period being matched
-	@later: no. of days to process after the day of @start
+	@laterdays: no. of days to process after the day of @start
 	*/
-	private function _ParsePeriod($str,$start,$later)
+	private function _ParsePeriod($str,$start,$laterdays)
 	{
 		$parts = self::_SplitCondition($str);
 		//clean
@@ -369,19 +369,14 @@ class tmtCalendar
 	@slothours: no. in {0.0..24.0}, representing the actual or notional slot-length,
 	 	to help distinguish ambiguous hour- and day-numbers
 	@start: preferred start time (bracket-local timestamp)
-	@later: no. of extra days to check after the one including @start
+	@laterdays: no. of extra days to check after the one including @start
 	*/
-	private function _ParseConditions(&$conds,&$sunstuff,$slothours,$start,$later)
+	private function _ParseConditions(&$conds,&$sunstuff,$slothours,$start,$laterdays)
 	{
+		$dstart = floor($start/86400); //1970/0-based index of $start's day 
 		$days = array();
 		$daytimes = array();
 		$repeat = FALSE;
-		$shortdays = FALSE;
-		$longdays = FALSE;
-		$shortmonths = FALSE;
-		$longmonths = FALSE;
-		$week = FALSE;
-		$suns = FALSE;
 		foreach($conds as $one)
 		{
 			$p = strpos($one,'@'); //PERIOD-TIME separator present?
@@ -396,89 +391,25 @@ class tmtCalendar
 				else //$p > 0 || $e
 					if($p > 0 && $e)
 				{
-					$days[] = self::_ParsePeriod(substr($one,0,$p),$start,$later); //day-indices rel. 0 (1/1/1970)
+					$days[] = self::_ParsePeriod(substr($one,0,$p),$start,$laterdays); //day-indices rel. 0 (1/1/1970)
 					$daytimes[] = FALSE;
 				}
 				elseif($p > 0)
 				{
-					$days[] = self::_ParsePeriod(substr($one,0,$p),$start,$later);
+					$days[] = self::_ParsePeriod(substr($one,0,$p),$start,$laterdays);
 					$daytimes[] = self::_ParseTime(substr($one,$p+1),$sunstuff);
 				}
 			}
 			else //PERIOD OR TIME
 			{
-				$condtype = 0; //0=undecided 1=time 2=time
-				if(!$shortdays) $shortdays = self::AdminDayNames(range(1,7),FALSE);
-				foreach($shortdays as &$n)
+				if(preg_match('~[DMW]~',$one))
+					$condtype = 2; //=period
+				//check sunrise/set before numbers, in case have sun*-H:M
+				elseif(preg_match('~[SR]~',$one))
+					$condtype = 1; //=time
+				else
 				{
-					if(strpos($one,$n) !== FALSE)
-					{
-						$condtype = 2;
-						break;
-					}
-				}
-				unset($n);
-				if($condtype == 0)
-				{
-					if(!$shortmonths) $shortmonths = self::AdminMonthNames(range(1,12),FALSE);
-					foreach($shortmonths as &$n)
-					{
-						if(strpos($one,$n) !== FALSE)
-						{
-							$condtype = 2;
-							break;
-						}
-					}
-					unset($n);
-				}
-				if($condtype == 0)
-				{
-					if(!$longdays) $longdays = self::AdminDayNames(range(1,7));
-					foreach($longdays as &$n)
-					{
-						if(strpos($one,$n) !== FALSE)
-						{
-							$condtype = 2;
-							break;
-						}
-					}
-					unset($n);
-				}
-				if($condtype == 0)
-				{
-					if(!$longmonths) $longmonths = self::AdminMonthNames(range(1,12));
-					foreach($longmonths as &$n)
-					{
-						if(strpos($one,$n) !== FALSE)
-						{
-							$condtype = 2;
-							break;
-						}
-					}
-					unset($n);
-				}
-				if($condtype == 0)
-				{
-					if (!$week) $week = $mod->Lang('week');
-					if(strpos($one,$week) !== FALSE)
-							$condtype = 2;
-				}
-				if($condtype == 0)
-				{
-					//check these before numbers, in case have sun*-H:M
-					if(!$suns) $suns = array($mod->Lang('sunrise'),$mod->Lang('sunset'));
-					foreach($suns as &$n)
-					{
-						if(strpos($one,$n) !== FALSE)
-						{
-							$condtype = 1;
-							break;
-						}
-					}
-					unset($n);
-				}
-				if($condtype == 0)
-				{
+					$condtype = 0; //=undecided
 					//catch many dates and numbers (<0(incl. date-separator), >24)
 					$n = preg_match_all('~[-:]?\d+~',$one,$matches);
 					if($n)
@@ -501,12 +432,12 @@ class tmtCalendar
 				//end of analysis, for now
 				if ($condtype == 1) //time
 				{
-					$days[] = array($dstart,$dstart+$later);
+					$days[] = array($dstart,$dstart+$laterdays);
 					$daytimes[] = self::_ParseTime($one,$sunstuff);
 				}
 				elseif($condtype == 2) //period
 				{
-					$days[] = self::_ParsePeriod($one,$start,$later);
+					$days[] = self::_ParsePeriod($one,$start,$laterdays);
 					$daytimes[] = FALSE;
 				}
 				else //could be either - re-consider, after all are known
@@ -535,7 +466,7 @@ class tmtCalendar
 			if(!$useday)
 			{
 				//calc min. non-zero difference between small numeric values
-				$one = implode(' ',$cond);
+				$one = implode(' ',$conds);
 				$n = preg_match_all('~(?<![-:(\d])[0-2]?\d(?![\d()])~',$one,$matches);
 				if($n > 1)
 				{
@@ -546,7 +477,7 @@ class tmtCalendar
 					{
 						if($k < $n)
 						{
-							$diff = (float)($matches[$k+1] - $one);
+							$diff = (float)($matches[0][$k+1] - $one);
 							if ($diff > -0.001 && $diff < 0.001)
 							{
 								$useday = TRUE; //numbers repeated only in PERIOD-descriptors
@@ -578,13 +509,13 @@ class tmtCalendar
 					if($useday)
 					{
 						//treat this as a day-value
-						$one = self::_ParsePeriod($daytimes[$k],$start,$later);
+						$one = self::_ParsePeriod($daytimes[$k],$start,$laterdays);
 						$daytimes[$k] = FALSE;
 					}
 					else
 					{
 						//$n(s) <7 or >19 more likely to be a day-value ?
-						$one = array($dstart,$dstart+$later);
+						$one = array($dstart,$dstart+$laterdays);
 						$daytimes[$k] = self::_ParseTime($daytimes[$k],$sunstuff);
 					}
 				}
@@ -598,10 +529,46 @@ class tmtCalendar
 		return array(FALSE,FALSE);
 	}
 
-	//Get array of 'cleaned' condition(s) from $avail (i.e. split on outside-bracket commas)
-	private function _GetConditions($avail)
+	/**
+	Get array of 'cleaned' condition(s) from @avail
+	Split on outside-bracket commas
+	All day-names aliased to D1..D7, all month-names aliased to M1..M12,
+	'sunrise' to R, 'sunset' to S, 'week' to W, whitespace & newlines gone
+	*/
+	private function _GetConditions(&$mod,$avail,$locale)
 	{
-		$clean = str_replace(array(' ',"\n"),array('',''),$avail);
+		$gets = range(1,7);
+		if($locale)
+		{
+/*		TODO set preferred locale if possible
+			$originalLocales = explode(";", setlocale(LC_ALL, 0));
+			setlocale(LC_TIME, $locale); if failed ?
+*/
+		}
+		$longdays = self::AdminDayNames($gets);
+		$shortdays = self::AdminDayNames($gets,FALSE);
+		$gets = range(1,12);
+		$longmonths = self::AdminMonthNames($gets);
+		$shortmonths = self::AdminMonthNames($gets,FALSE);
+		if(0)
+		{
+		//TODO revert locale if changed
+		}
+		unset($gets);
+
+		$daycodes = array();
+		for($i = 1; $i < 8; $i++)
+			$daycodes[] = 'D'.$i;
+		$monthcodes = array();
+		for($i = 1; $i < 13; $i++)
+			$monthcodes[] = 'M'.$i;
+		//NB long before short
+		$finds = array_merge($longdays,$shortdays,$longmonths,$shortmonths,
+			array($mod->Lang('sunrise'),$mod->Lang('sunset'), $mod->Lang('week'),' ',"\n"));
+		$repls = array_merge($daycodes,$daycodes,$monthcodes,$monthcodes,
+			array('R','S','W','',''));
+		$clean = str_replace($finds,$repls,$avail);
+
 		$l = strlen($clean);
 		$parts = array();
 		$d = 0; $s = 0;
@@ -634,11 +601,11 @@ class tmtCalendar
 	}
 
 	//No checks here for valid parameters - assumed done before
-	private function _GetSunData(&$mod,&$bdata)
+	private function _GetSunData(&$mod,&$bdata,$start)
 	{
 		$cond = $bdata['available'];
-		$rise = $mod->Lang('sunrise');
-		$set = $mod->Lang('sunset');
+		$rise = 'R'; //alias for $mod->Lang('sunrise');
+		$set = 'S'; //alias for $mod->Lang('sunset');
 		if(strpos($cond,$rise) !== FALSE || strpos($cond,$set) !== FALSE)
 		{
 			if($bdata['timezone'])
@@ -651,15 +618,11 @@ class tmtCalendar
 			}
 			$lat = $bdata['latitude']; //maybe 0.0
 			$long = $bdata['longitude']; //ditto
-/* TODO not the hour c.f.
-			$time = new DateTime('now', new DateTimeZone($sunstuff['zone']));
-			$stamp = date_sunset($time->getTimestamp(),
-*/
-			$day = floor($start/3600)*3600;
+			$daystamp = floor($start/84600)*84600; //midnight
 			return array (
 			 'rise'=>$rise,
 			 'set'=>$set,
-			 'day'=>$day,
+			 'day'=>$daystamp,
 			 'lat'=>$lat,
 			 'long'=>$long,
 			 'zone'=>$zone
@@ -671,22 +634,26 @@ class tmtCalendar
 	//Get no. in {0.0..24.0} representing the actual or notional slot-length
 	private function _GetSlotHours(&$bdata)
 	{
-		if(!$bdata['placegap'])
-			return 0.0;
-		switch($bdata['placegaptype'])
+		if($bdata['placegap'])
 		{
-			case 1: //minute
-				return MIN($bdata['placegap']/60,24.0);
-			case 2: //hour
-				return MIN((float)$bdata['placegap'],24.0);
-			case 3: //>= day
-			case 4:
-			case 5:
-			case 6:
-				return 24.0;
-			default:
-				return 0.0;
+			switch($bdata['placegaptype'])
+			{
+				case 1: //minute
+					return MIN($bdata['placegap']/60,24.0);
+				case 2: //hour
+					return MIN((float)$bdata['placegap'],24.0);
+				case 3: //>= day
+				case 4:
+				case 5:
+				case 6:
+					return 24.0;
+				default:
+					break;
+			}
 		}
+		//TODO if $bdata['startdate'] to $bdata['enddate'] short/< N days 
+		// assume nominated values are hours, return appropriate value
+		return 0.0;
 	}
 	
 	//========== PUBLIC FUNCS ===========
@@ -864,8 +831,8 @@ class tmtCalendar
 	{
 		if($bdata['available'] == FALSE)
 			return TRUE;
-		$conds = self::_GetConditions($bdata['available']);
-		$sunstuff = self::_GetSunData($mod,$bdata);
+		$conds = self::_GetConditions($mod,$bdata['available'],$bdata['locale']);
+		$sunstuff = self::_GetSunData($mod,$bdata,$start);
 		$maxhours = self::_GetSlotHours($bdata);
 		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$maxhours,$start,365); //check up to a year ahead
 		if($days)
@@ -908,16 +875,16 @@ class tmtCalendar
 	@bdata: reference to array of data for current bracket
 	@start: preferred/first start time (bracket-local timestamp)
 	@length: optional length (seconds) of time period to be discovered, default 0
-	@later: optional, no. of extra days to check after the one including @start, default 365
+	@laterdays: optional, no. of extra days to check after the one including @start, default 365
 	*/
-	function SlotStart(&$mod,&$bdata,$start,$length=0,$later=365)
+	function SlotStart(&$mod,&$bdata,$start,$length=0,$laterdays=365)
 	{
 		if($bdata['available'] == FALSE)
 			return $start;
-		$conds = self::_GetConditions($bdata['available']);
-		$sunstuff = self::_GetSunData($mod,$bdata);
+		$conds = self::_GetConditions($mod,$bdata['available'],$bdata['locale']);
+		$sunstuff = self::_GetSunData($mod,$bdata,$start);
 		$maxhours = self::_GetSlotHours($bdata);
-		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$maxhours,$start,$later);
+		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$maxhours,$start,$laterdays);
 		if($days)
 		{
 			foreach($days as $k=>&$one)
@@ -927,18 +894,40 @@ class tmtCalendar
 					$times = (isset($daytimes[$k]))?$daytimes[$k]:FALSE;
 					if(!$times)
 						$times = array(0,86399); //whole day's worth of seconds
-					foreach($times as &$range)
+					if(is_array($one))
 					{
-						$base = stampfuncTODO($one);
-						$ret = MAX($start,($base+$range[0]));
-						if(($base+$range[1]) >= ($ret+$length))
+						$nd = $one[1];
+						for ($i = $one[0]; $i <= $nd; $i++)
 						{
-							unset($one);
+							$base = $i * 86400; //days-offset >> seconds
+							foreach($times as &$range)
+							{
+								$ret = MAX($start,($base+$range[0]));
+								if(($base+$range[1]) >= ($ret+$length))
+								{
+									unset($one);
+									unset($range);
+									return $ret;
+								}
+							}
 							unset($range);
-							return $ret;
 						}
 					}
-					unset($range);
+					else
+					{
+						$base = $one * 84600;
+						foreach($times as &$range)
+						{
+							$ret = MAX($start,($base+$range[0]));
+							if(($base+$range[1]) >= ($ret+$length))
+							{
+								unset($one);
+								unset($range);
+								return $ret;
+							}
+						}
+						unset($range);
+					}
 				}
 			}
 			unset($one);
@@ -959,7 +948,7 @@ class tmtCalendar
 	{
 		if($bdata['available'] == FALSE)
 			return TRUE;
-		$conds = self::_GetConditions($bdata['available']);
+		$conds = self::_GetConditions($mod,$bdata['available'],$bdata['locale']);
 		//TODO PARSE CONDS
 		return FALSE;
 	}
