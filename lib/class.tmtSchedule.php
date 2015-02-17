@@ -303,10 +303,11 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		if(empty($bdata['startdate']) || empty($bdata['timezone']))
 			return FALSE;
 
-		$sdt = new DateTime($bdata['startdate']);
+		$tz = new DateTimeZone($bdata['timezone']);
+		$sdt = new DateTime($bdata['startdate'],$tz);
 		$sstamp = $sdt->getTimestamp(); //when the tournament start{s|ed}
 		//allow minimum leadtime before the next match
-		$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($bdata['timezone']));
+		$dt = new DateTime('+'.LEADHOURS.' hours',$tz);
 		$stamp = $dt->getTimestamp();
  		if($stamp < $sstamp)
 			$stamp = $sstamp;
@@ -321,6 +322,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$mdata = $db->GetAssoc($sql,array($bracket_id));
 		if($mdata == FALSE)
 			return FALSE;
+		$tz = new DateTimeZone($bdata['timezone']);
 		$playorder = array();
 		$allteams = array(); 
 		$sql1 = 'SELECT MAX(playwhen) AS last FROM '.$pref.'module_tmt_matches WHERE teamA=? OR teamA=?';
@@ -328,11 +330,11 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		foreach($mdata as $mid=>$mteams)
 		{
 			$t = $db->GetOne($sql1,array($mteams['teamA'],$mteams['teamB']));
-			$dt = ($t != null) ? new DateTime($t) : $sdt;
+			$dt = ($t != null) ? new DateTime($t,$tz) : $sdt;
 			$playorder[$mteams['teamA']] = $dt->getTimestamp();
 			$allteams[$mteams['teamA']] = $mid;
 			$t = $db->GetOne($sql2,array($mteams['teamA'],$mteams['teamB']));
-			$dt = ($t != null) ? new DateTime($t) : $sdt;
+			$dt = ($t != null) ? new DateTime($t,$tz) : $sdt;
 			$playorder[$mteams['teamB']] = $dt->getTimestamp();
 			$allteams[$mteams['teamB']] = $mid;
 		}
