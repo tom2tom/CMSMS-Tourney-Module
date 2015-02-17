@@ -279,6 +279,9 @@ $lang['name_abandoned']='Abandoned';
 //$lang['tab_user_comp']='Frontend View';
 //$lang['tab_admin_comp']='Admin View';
 
+$lang['sunrise']='sunrise';
+$lang['sunset']='sunset';
+$lang['week']='week'; //so we can skip parsing ['periods'] sometimes
 //time interval names - singular & plural
 //names are expected to be all lower-case, will be capitalised on demand,
 //must be ordered shortest..longest, comma-separated, no whitespace
