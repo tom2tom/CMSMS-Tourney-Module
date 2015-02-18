@@ -241,17 +241,6 @@ else
 	$smarty->assign('pagetitle',strtoupper($this->Lang('title_edit_long',$teamtitle,$name)));
 }
 
-if($isteam)
-{
-	$smarty->assign('title_teamname',$this->Lang('title_teamname'));
-	$smarty->assign('help_name',$this->Lang('help_teamname'));
-	$smarty->assign('title_sendto',$this->Lang('title_sendto'));
-	$smarty->assign('help_sendto',$this->Lang('help_sendto'));
-}
-$smarty->assign('title_seed',$this->Lang('title_seed'));
-$smarty->assign('title_order',$this->Lang('title_ordernum'));
-$smarty->assign('help_order',$this->Lang('help_order'));
-
 if($op == 1) //new team
 {
 	$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags != 2';
@@ -275,34 +264,47 @@ else
 	$main = $db->GetRow($sql,array($thistid));
 }
 
-if($pmod)
+$opts = array();
+if($isteam)
+	$opts[] = array(
+		$this->Lang('title_teamname'),
+		($pmod) ? $this->CreateInputText($id,'tem_name',$main['name'],30,64) : $main['name'],
+		$this->Lang('help_teamname')
+	);
+$opts[] = array(
+	$this->Lang('title_seed'),
+	($pmod) ? $this->CreateInputText($id,'tem_seed',$main['seeding'],2,2) : $main['seeding'],
+	$this->Lang('help_seednum')
+);
+$opts[] = array(
+	$this->Lang('title_ordernum'),
+	($pmod) ? $this->CreateInputText($id,'tem_order',$main['displayorder'],3,3) : $main['displayorder'],
+	$this->Lang('help_order')
+	);
+if($isteam)
 {
-	if($isteam)
-	{
-		$smarty->assign('input_name',$this->CreateInputText($id,'tem_name',$main['name'],30,64));
-		$getters = array($this->Lang('one')=>0,$this->Lang('all')=>1);
-		$smarty->assign('input_sendto',
-			$this->CreateInputRadioGroup($id,'tem_tellall',$getters,intval($main['contactall']),'',' '));
-	}
+	if($pmod)
+		$i = $this->CreateInputRadioGroup($id,'tem_tellall',
+			array($this->Lang('one')=>0,$this->Lang('all')=>1),
+			(int)$main['contactall'],'',' ');
+	elseif ($main['contactall'] == '0')
+		$i = $this->Lang('one');
 	else
-		$hidden .= $this->CreateInputHidden($id,'tem_tellall',0);
-	
-	$smarty->assign('input_seed',$this->CreateInputText($id,'tem_seed',$main['seeding'],2,2));
-	$smarty->assign('input_order',$this->CreateInputText($id,'tem_order',$main['displayorder'],3,3));
+		$i = $this->Lang('all');
+	$opts[] = array(
+		$this->Lang('title_sendto'),
+		$i,
+		$this->Lang('help_sendto')
+	);
 }
-else
-{
-	if($isteam)
-	{
-		$smarty->assign('input_name',$main['name']);
-		if($main['contactall']=='0')
-			$smarty->assign('input_sendto',$this->Lang('one'));
-		else
-			$smarty->assign('input_sendto',$this->Lang('all'));
-	}
-	$smarty->assign('input_seed',$main['seeding']);
-	$smarty->assign('input_order',$main['displayorder']);
-}
+elseif($pmod)
+	$hidden .= $this->CreateInputHidden($id,'tem_tellall',0);
+
+$smarty->assign('opts',$opts);
+$theme = cmsms()->get_variable('admintheme');
+$iconinfo = $theme->DisplayImage('icons/system/info.gif',$this->Lang('showhelp'),'','','systemicon tipper');
+$smarty->assign('showtip',$iconinfo);
+
 //table column-headings
 $smarty->assign('nametext',$this->Lang('title_player'));
 $smarty->assign('contacttext',$this->Lang('title_contact'));
