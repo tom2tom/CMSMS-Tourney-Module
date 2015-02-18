@@ -416,6 +416,19 @@ EOS;
 			array_search($data->seedtype,$options).(($pmod)?$mod->CreateInputHidden($id,'tmt_seedtype',$data->seedtype):''),
 			$mod->Lang('help_seedtype')
 		);
+		$options = array(
+			$mod->Lang('fix_none')=>0,
+			$mod->Lang('fix_adjacent')=>1,
+			$mod->Lang('fix_balanced')=>2,
+			$mod->Lang('fix_unbalanced')=>3
+		);
+		$main[] = array(
+			$mod->Lang('title_fixtype'),
+			($pmod && !$this->committed) ?
+			$mod->CreateInputDropdown($id,'tmt_fixtype',$options,'',$data->fixtype):
+			array_search($data->fixtype,$options).(($pmod)?$mod->CreateInputHidden($id,'tmt_fixtype',$data->fixtype):''),
+			$mod->Lang('help_fixtype')
+		);
 		$main[] = array(
 			$mod->Lang('title_owner'),
 			($pmod) ?

@@ -25,6 +25,7 @@ $flds = "
 	twtfrom C(18),
 	feu_editgroup C(48),
 	seedtype I(1),
+	fixtype I(1) DEFAULT 0,
 	teamsize I(1) DEFAULT 1,
 	sametime I(1) DEFAULT 0,
 	playgap N(6.2),

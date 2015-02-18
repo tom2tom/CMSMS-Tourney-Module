@@ -58,6 +58,7 @@ if ($add)
 	'bracket_id' => $data->bracket_id,
 	'type' => KOTYPE, //$data-> is empty string
 	'seedtype' => $data->seedtype,
+	'fixtype' => $data->fixtype,
 	'teamsize' => $data->teamsize,
 	'final' => $data->final,
 	'semi' => $data->semi,

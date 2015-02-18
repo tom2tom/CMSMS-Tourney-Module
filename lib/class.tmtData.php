@@ -80,6 +80,7 @@ class tmtData
 		if (isset ($params['tmt_feu_editgroup']))
 			$data->feu_editgroup = $params['tmt_feu_editgroup'];
 		$data->seedtype = intval($params['tmt_seedtype']);
+		$data->fixtype = intval($params['tmt_fixtype']);
 		$data->teamsize = self::GetIntegerFor($params['tmt_teamsize']);
 		if ($data->teamsize == 0)
 			$data->teamsize = 1;
@@ -304,6 +305,7 @@ class tmtData
 			$data->description = '';
 			$data->alias = '';
 			$data->seedtype = 0; //random allocation of seed-matches
+			$data->fixtype = 0; //no special-case allocation
 			$data->teamsize = 1;
 			$data->owner = '';
 			$data->contact = '';
@@ -377,6 +379,7 @@ class tmtData
 			$data->description = $row['description'];
 			$data->alias = $row['alias'];
 			$data->seedtype = intval($row['seedtype']);
+			$data->fixtype = intval($row['fixtype']);
 			$data->teamsize = intval($row['teamsize']);
 			$data->owner = $row['owner'];
 			$data->contact = $row['contact'];

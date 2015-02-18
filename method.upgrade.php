@@ -48,6 +48,7 @@ switch ($oldversion)
 		return FALSE;
 	}
 	$flds = "
+	fixtype I(1) DEFAULT 0,
 	locale C(12),
 	twtfrom C(18),
 	calendarid C(24),

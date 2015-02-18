@@ -38,7 +38,6 @@ $lang['noname']='name missing';
 $lang['tab_items']='Tournaments';
 $lang['tab_config']='Settings';
 
-$lang['title_teamname']='Team name';
 $lang['title_name']='Name';
 $lang['title_tag']='Page Tag';
 $lang['title_status']='Status';
@@ -383,7 +382,7 @@ $lang['help_date']='Enter date in a format that php\'s strtotime() will recognis
 $lang['title_play_gap']='Minimum period between matches';
 $lang['help_play_gap']='Recovery time for competitors. The number need not be whole.';
 
-$lang['title_locale']='Locale identifier for localising displayed date/time';
+$lang['title_locale']='Locale identifier for localising administrative date/time parameters';
 $lang['help_locale']='
 A "locale" is an identifier which can be used to get language-specific terms. Examples are "en_US" and "cs_CZ.UTF-8" and "zh_Hant_TW".
 Refer to <a href="https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html">this reference</a> for more details.
@@ -435,6 +434,13 @@ $lang['seed_toponly']='Random except 1,2';
 $lang['seed_balanced']='More-equal matches eg 1v3';
 $lang['seed_unbalanced']='Less-equal matches eg 1v4';
 $lang['help_seedtype']='Determines how seeds are allocated among initial matches';
+
+$lang['title_fixtype']='Arrangement of other selected competitors';
+$lang['fix_none']='None';
+$lang['fix_adjacent']='Most-equal matches e.g.-1v-2';
+$lang['fix_balanced']='More-equal matches eg -1v-3';
+$lang['fix_unbalanced']='Less-equal matches eg -1v-4';
+$lang['help_fixtype']='Determines how players seeded < 0 are assigned to first-round matches';
 
 $lang['title_order']='Order';
 $lang['title_player']='Player';
@@ -490,11 +496,21 @@ $lang['title_result']='Result';
 
 //===========================
 
+$lang['title_teamname']='Team name';
 $lang['help_teamname']='If blank, the name of the first-listed player will be used';
 $lang['title_ordernum']='Order number';
-$lang['help_order']='Competitors are ordered by this number, on the tournament\'s competitors tab.<br />
-You may enter -1 to place this competitor first, leave blank to place it last.<br />
-The displayed order has no effect on opponent selection, but may effect scheduling.';
+//$lang['title_seednum']=; see title_seed
+$lang['help_seednum']=<<<EOS
+Optional number, 1 .. whatever or -1 .. -whatever.
+When determining first-match opponents, competitors assigned a seed < 0
+are collectively treated as an independent sub-section of the tournament,
+and in accord with its 'other selected competitors' setting.
+EOS;
+$lang['help_order']=<<<EOS
+Competitors are ordered by this number, on the tournament's competitors tab.
+You may enter -1 to place this competitor first, leave blank to place it last.
+The displayed order has no effect on opponent determination, but may effect scheduling.
+EOS;
 $lang['title_sendto']='Give match-related notices to';
 $lang['help_sendto']='If \'one\', they should go to the first-listed player having usable contact-details';
 $lang['deleteplayer']='Remove this player from the team';

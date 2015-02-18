@@ -42,19 +42,25 @@ class tmtSchedule
 	/**
 	OrderMatches:
 	@teamcount: the actual no. of starting competitors i.e exclude byes
-	@seedcount: no. of competitors(<= @teamcount) to be 'specially assigned' per @seedtype
+	@seedcount: no. of competitors(<= @teamcount) to be 'specially assigned'
+		per @seedtype and/or @fixtype
 	@seedtype: enum
 	 0 no special treatment of seeds
 	 1 seeds 1 & 2 in opposite halves of draw (in which case @seedcount >= 2)
-	 2 all seeds alternate,with ratings closer than for option 3
-	 3 all seeds alternate,with ratings as divergent as possible
+	 2 all seeds alternate, with ratings closer than for option 3
+	 3 all seeds alternate, with ratings as divergent as possible
+	@fixtype: enum
+	 0 any seed < 0 is just unseeded
+	 1 closest seeds < 0 play each other
+	 2 treat seeds < 0 like @seedtype 2, within the special-cases
+	 3 treat seeds < 0 like @seedtype 3, within the special-cases
 	Returns: Array of team numbers,in match-order.
 	The array keys are ascending, 1 to 0.5 * a power of 2 which is equal to
 	 @teamcount,or else the next highest power of 2 > @teamcount.
 	The corresponding values are team numbers. Any randomising must be done
 	upstream.
 	*/
-	private function OrderMatches($teamcount,$seedcount,$seedtype)
+	private function OrderMatches($teamcount,$seedcount,$seedtype,$fixtype)
 	{
 		$i = 2;
 		while($i < $teamcount) $i *= 2;
@@ -462,11 +468,16 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$numseeds = count(array_filter($allteams));
 		if($numseeds > 1)
 		{
-			$sql = 'SELECT seedtype FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
-			$stype = $db->GetOne($sql,array($bracket_id));
+			$sql = 'SELECT seedtype,fixtype FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
+			$row = $db->GetRow($sql,array($bracket_id));
+			$stype = $row['seedtype'];
+			$ftype = $row['fixtype'];
 		}
 		else
+		{
 			$stype = 0; //default to random
+			$ftype = 0; //and no special-case handling
+		}
 		$rs = FALSE;
 		switch($stype)
 		{
@@ -501,7 +512,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			$randoms = self::RandomOrder($numseeds+1,$numteams-$numseeds);
 
 		$allteams = array_keys($allteams); //convert seed-no's to teamid's
-		$order = self::OrderMatches($numteams,$numseeds,$stype);
+		$order = self::OrderMatches($numteams,$numseeds,$stype,$ftype);
 		foreach($order as $i=>$tid)
 		{
 			if($tid <= $numseeds)
@@ -647,11 +658,16 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$numseeds = count(array_filter($allteams));
 		if($numseeds > 1)
 		{
-			$sql = 'SELECT seedtype FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
-			$stype = $db->GetOne($sql,array($bracket_id));
+			$sql = 'SELECT seedtype,fixtype FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
+			$row = $db->GetRow($sql,array($bracket_id));
+			$stype = $row['seedtype'];
+			$ftype = $row['fixtype'];
 		}
 		else
+		{
 			$stype = 0; //default to random
+			$ftype = 0; //and no special-case handling
+		}
 		$rs = FALSE;
 		switch($stype)
 		{
@@ -685,7 +701,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		if($numteams > $numseeds)
 			$randoms = self::RandomOrder($numseeds+1,$numteams-$numseeds);
 		$allteams = array_keys($allteams);
-		$order = self::OrderMatches($numteams,$numseeds,$stype);
+		$order = self::OrderMatches($numteams,$numseeds,$stype,$ftype);
 		foreach($order as $i=>$tid)
 		{
 			if($tid <= $numseeds)
