@@ -481,6 +481,12 @@ EOS;
 //========= ADVANCED OPTIONS ==========
 
 		$adv = array();
+		$adv[] = array(
+			$mod->Lang('title_locale'),
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_locale',$data->locale,8,12) : $data->locale,
+			$mod->Lang('help_locale')
+		);
 		$mail = class_exists('CMSMailer',FALSE);
 		$tplhelp = array();
 		$tplhelp[] = $mod->Lang('help_template');
@@ -767,12 +773,6 @@ EOS;
 				'title="'.$mod->Lang('upload_tip').'" onclick="set_params(this);"') :
 			$data->chartcss,
 			$mod->Lang('help_cssfile')
-		);
-		$names[] = array(
-			$mod->Lang('title_locale'),
-			($pmod) ?
-			$mod->CreateInputText($id,'tmt_locale',$data->locale,8,12) : $data->locale,
-			$mod->Lang('help_locale')
 		);
 		$tplhelp = array();
 		$tplhelp[] = $mod->Lang('help_template');
