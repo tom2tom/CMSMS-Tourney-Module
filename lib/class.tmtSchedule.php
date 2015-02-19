@@ -42,25 +42,21 @@ class tmtSchedule
 	/**
 	OrderMatches:
 	@teamcount: the actual no. of starting competitors i.e exclude byes
-	@seedcount: no. of competitors(<= @teamcount) to be 'specially assigned'
-		per @seedtype and/or @fixtype
+	@seedcount: no. (<= @teamcount) of competitors to be 'specially assigned' per @seedtype
 	@seedtype: enum
 	 0 no special treatment of seeds
 	 1 seeds 1 & 2 in opposite halves of draw (in which case @seedcount >= 2)
 	 2 all seeds alternate, with ratings closer than for option 3
 	 3 all seeds alternate, with ratings as divergent as possible
-	@fixtype: enum
-	 0 any seed < 0 is just unseeded
-	 1 closest seeds < 0 play each other
-	 2 treat seeds < 0 like @seedtype 2, within the special-cases
-	 3 treat seeds < 0 like @seedtype 3, within the special-cases
-	Returns: Array of team numbers,in match-order.
+	@fixcount: 0 or even no. (<= @teamcount) of competitors to be excluded from random assignment
+	Returns: Array of team indices in match-order.
 	The array keys are ascending, 1 to 0.5 * a power of 2 which is equal to
-	 @teamcount,or else the next highest power of 2 > @teamcount.
-	The corresponding values are team numbers. Any randomising must be done
-	upstream.
+	 @teamcount, or else the next highest power of 2 > @teamcount.
+	The corresponding values are team indices in the same range, except for @fixcount
+	placeholder values (-1). Any randomising of actual team numbers associated with
+	the indices must be done upstream.
 	*/
-	private function OrderMatches($teamcount,$seedcount,$seedtype,$fixtype)
+	private function OrderMatches($teamcount,$seedcount,$seedtype,$fixcount)
 	{
 		$i = 2;
 		while($i < $teamcount) $i *= 2;
@@ -78,7 +74,7 @@ class tmtSchedule
 		for($i = 1; $i <= $seedcount; $i++)
 		{
 			//which half of draw?
-			$top = ($seedtype != 3) ?($i % 2 != 0) :(intval($i/2) % 2 == 0);
+			$top = ($seedtype != 3) ? ($i % 2 != 0) : (intval($i/2) % 2 == 0);
 			if($top)
 			{
 				$tout = !$tout; //toggle between 'ends' of the half-draw
@@ -112,8 +108,50 @@ class tmtSchedule
 					$bi++;
 			}
 		}
-		//now the rest
 		$r = $full - $seedcount;
+		//next, pairs of slots for fixers, if any
+		$fp = 1; //placement enum
+		while($fixcount)
+		{
+			//try to bias fixers' positions toward centre of bracket (maybe lower-ranked vicinity)
+			for($i = $full; $i > 0; $i--)
+			{
+				switch($fp)
+				{
+				 case 1:
+				 case 3:
+					$vs = $i - $fp - 4; //CHECKME -4 fudge-factor ??
+					if($i > ($fp-5) && $i < ($full+$fp+5) && !isset($order[$vs]) && !isset($order[$vs-1]))
+					{
+						$order[$vs] = -5; //anything < 0 will do
+						$order[$vs-1] = -5;
+						$r -= 2;
+						$fixcount -= 2;
+						if($fixcount == 0) break 2;
+						$i--;
+						if(++$fp > 4) $fp = 1;
+					}
+					break;
+				 case 2:
+				 case 4:
+					$vs = $full - $i - $fp + 1 + 4; //$fp-1 {1,3} CHECKME +4 fudge-factor ??
+					if($i > (4-$fp) && $i < ($full-$fp+4) && !isset($order[$vs]) && !isset($order[$vs-1]))
+					{
+						$order[$vs] = -10;
+						$order[$vs-1] = -10;
+						$r -= 2;
+						$fixcount -= 2;
+						if($fixcount == 0) break 2;
+						$i--;
+						if(++$fp > 4) $fp = 1;
+					}
+					break;
+				}
+			}
+			if(++$fp > 4)
+				break;	//abort after a few total fails
+		}
+		//next, the rest
 		for($i = 1; $i <= $full; $i++)
 		{
 			//split numbers between halves,to spread any further byes
@@ -457,7 +495,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
 		$sql = 'SELECT team_id,seeding FROM '.$pref.'module_tmt_teams
-WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 0 END),seeding ASC';
+WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 0 END),seeding';
 		$allteams = $db->GetAssoc($sql,array($bracket_id));
 		if($allteams == FALSE)
 			return 'info_nomatch'; //no teams means no matches
@@ -470,14 +508,68 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		{
 			$sql = 'SELECT seedtype,fixtype FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 			$row = $db->GetRow($sql,array($bracket_id));
-			$stype = $row['seedtype'];
-			$ftype = $row['fixtype'];
+			$stype = (int)$row['seedtype'];
+			$ftype = (int)$row['fixtype']; /*enum
+				0 any seed < 0 is ignored
+	 			1 closest seeds < 0 play each other
+	 			2 treat seeds < 0 like seedtype 2
+				3 treat seeds < 0 like seedtype 3
+*/
 		}
 		else
 		{
 			$stype = 0; //default to random
 			$ftype = 0; //and no special-case handling
 		}
+		//extract any seednums < 0
+		$fixteams = array();
+		$numfix = 0;
+		foreach($allteams as $seed)
+		{
+			if($seed < 0)
+				$numfix++;
+			else
+				break;
+		}
+		$numseeds -= $numfix; //= 'real' seeds
+		if($numfix > 0)
+		{
+			if($ftype == 0) //ignore them all
+				$mc = $numfix;
+			elseif($numteams - $numfix < $numseeds*2) //need at least as many non-fixers as seeds
+				$mc = $numseeds*2 - $numteams + $numfix;
+			else
+				$mc = 0;
+			$numfix -= $mc;
+			if($numfix % 2)	//need even no. of fixers
+			{
+				$mc++;
+				$numfix--;
+			}
+			while($mc > 0)
+			{
+				//migrate current 1st member of $allteams to end, as unseeded
+				reset($allteams);
+				$tid = key($allteams);
+				unset($allteams[$tid]);
+				$allteams[$tid] = '';
+				$mc--;
+			}
+			if($numfix)
+			{
+				//migrate fixers to separate array
+				for($i=0; $i<$numfix; $i++)
+				{
+					reset($allteams);
+					$tid = key($allteams);
+					unset($allteams[$tid]);
+					$fixteams[] = $tid;
+				}
+				//$allteams left with floaters only
+			}
+		}
+
+		$numteams -= $numfix; //no. of floating teams
 		$rs = FALSE;
 		switch($stype)
 		{
@@ -488,6 +580,8 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		 case 1: //randomise seeds 3 ...(if there are enough to work with)
 			if($numseeds > 3 && $numteams > 3)
 				$rs = 3;
+			else
+				$rs = 1;
 			break;
 		 case 2: //no seed randomising
 		 case 3:
@@ -496,7 +590,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			$numseeds = 0; //don't use $allteams at all
 			break;
 		}
-
+	
 		if($rs)
 		{
 			$exseeds = self::RandomOrder($rs,$numseeds - $rs);
@@ -508,14 +602,32 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			}
 		}
 
+		//shuffle $fixteams per $ftype
+		//0: already handled, 1: teams already in match-pair order
+		//2: or 3: handled here
+		if($numfix > 2 && $ftype > 1)
+		{
+			$h = $numfix/2;
+			$l = $numfix-1; //0-based count for $ftype 3
+			for($i=0; $i<$h; $i+=2)
+			{
+				$s = ($ftype == 2) ? $i+$h : $l-$i;
+				$tmp = $fixteams[$i+1];
+				$fixteams[$i+1] = $fixteams[$s];
+				$fixteams[$s] = $tmp;
+			} 							
+		}
+		$f = 0; //start with first (if any) member of $fixteams[]
+
 		if($numteams > $numseeds)
 			$randoms = self::RandomOrder($numseeds+1,$numteams-$numseeds);
-
-		$allteams = array_keys($allteams); //convert seed-no's to teamid's
-		$order = self::OrderMatches($numteams,$numseeds,$stype,$ftype);
+		$allteams = array_keys($allteams); //team-id's now values
+		$order = self::OrderMatches($numteams,$numseeds,$stype,$numfix);
 		foreach($order as $i=>$tid)
 		{
-			if($tid <= $numseeds)
+			if($tid < 0)
+				$order[$i] = $fixteams[$f++];
+			elseif($tid <= $numseeds)
 				$order[$i] = $allteams[$tid-1];
 			elseif($tid <= $numteams)
 				$order[$i] = $allteams[$randoms[$tid]-1];
@@ -647,7 +759,7 @@ WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS N
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
 		$sql = 'SELECT team_id,seeding FROM '.$pref.'module_tmt_teams
-WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 0 END),seeding ASC';
+WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 0 END),seeding';
 		$allteams = $db->GetAssoc($sql,array($bracket_id));
 		if($allteams == FALSE)
 			return 'info_nomatch';
@@ -660,14 +772,63 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		{
 			$sql = 'SELECT seedtype,fixtype FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 			$row = $db->GetRow($sql,array($bracket_id));
-			$stype = $row['seedtype'];
-			$ftype = $row['fixtype'];
+			$stype = (int)$row['seedtype'];
+			$ftype = (int)$row['fixtype']; //see explanation in InitKOMatches()
 		}
 		else
 		{
 			$stype = 0; //default to random
 			$ftype = 0; //and no special-case handling
 		}
+		//extract any seednums < 0
+		$fixteams = array();
+		$numfix = 0;
+		foreach($allteams as $seed)
+		{
+			if($seed < 0)
+				$numfix++;
+			else
+				break;
+		}
+		$numseeds -= $numfix; //= 'real' seeds
+		if($numfix > 0)
+		{
+			if($ftype == 0) //ignore them all
+				$mc = $numfix;
+			elseif($numteams - $numfix < $numseeds*2) //need at least as many non-fixers as seeds
+				$mc = $numseeds*2 - $numteams + $numfix;
+			else
+				$mc = 0;
+			$numfix -= $mc;
+			if($numfix % 2)	//need even no. of fixers
+			{
+				$mc++;
+				$numfix--;
+			}
+			while($mc > 0)
+			{
+				//migrate current 1st member of $allteams to end, as unseeded
+				reset($allteams);
+				$tid = key($allteams);
+				unset($allteams[$tid]);
+				$allteams[$tid] = '';
+				$mc--;
+			}
+			if($numfix)
+			{
+				//migrate fixers to separate array
+				for($i=0; $i<$numfix; $i++)
+				{
+					reset($allteams);
+					$tid = key($allteams);
+					unset($allteams[$tid]);
+					$fixteams[] = $tid;
+				}
+				//$allteams left with floaters only
+			}
+		}
+	
+		$numteams -= $numfix; //no. of floating teams
 		$rs = FALSE;
 		switch($stype)
 		{
@@ -678,6 +839,8 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		 case 1: //randomise seeds 3 ...(if there are enough to work with)
 			if($numseeds > 3 && $numteams > 3)
 				$rs = 3;
+			else
+				$rs = 1;
 			break;
 		 case 2: //no seed randomising
 		 case 3:
@@ -698,13 +861,32 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			}
 		}
 
+		//shuffle $fixteams per $ftype
+		//0: already handled, 1: teams already in match-pair order
+		//2: or 3: handled here
+		if($numfix > 2 && $ftype > 1)
+		{
+			$h = $numfix/2;
+			$l = $numfix-1; //0-based count for $ftype 3
+			for($i=0; $i<$h; $i+=2)
+			{
+				$s = ($ftype == 2) ? $i+$h : $l-$i;
+				$tmp = $fixteams[$i+1];
+				$fixteams[$i+1] = $fixteams[$s];
+				$fixteams[$s] = $tmp;
+			} 							
+		}
+		$f = 0; //start with first (if any) member of $fixteams[]
+
 		if($numteams > $numseeds)
 			$randoms = self::RandomOrder($numseeds+1,$numteams-$numseeds);
-		$allteams = array_keys($allteams);
-		$order = self::OrderMatches($numteams,$numseeds,$stype,$ftype);
+		$allteams = array_keys($allteams); //team-id's now values
+		$order = self::OrderMatches($numteams+$numfix,$numseeds,$stype,$numfix);
 		foreach($order as $i=>$tid)
 		{
-			if($tid <= $numseeds)
+			if($tid < 0)
+				$order[$i] = $fixteams[$f++];
+			elseif($tid <= $numseeds)
 				$order[$i] = $allteams[$tid-1];
 			elseif($tid <= $numteams)
 				$order[$i] = $allteams[$randoms[$tid]-1];
