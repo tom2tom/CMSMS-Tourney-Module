@@ -300,12 +300,11 @@ elseif(isset($params['update']))
 		if(isset($params['tsel']))
 		{
 			$sql = 'UPDATE '.$pref.'module_tmt_teams SET name=?,seeding=?,contactall=?,flags=3 WHERE team_id=?';
-			$ids = array_keys($params['tem_teamid']);
 			$funcs = new tmtData();
 			foreach($params['tsel'] as $tid)
 			{
 				list($pname,$pcontact) = $funcs->GetforFirstPlayer($tid);
-				$indx = array_search($tid,$ids);
+				$indx = array_search($tid,$params['tem_teamid']);
 				$contact = $params['tem_contact'][$indx];
 				if($contact != $pcontact)
 					$pcontact = $contact; //empty string ok
