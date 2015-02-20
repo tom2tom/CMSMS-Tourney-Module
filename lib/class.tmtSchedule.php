@@ -254,7 +254,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 	private function InitByes($bracket_id,&$db,$pref)
 	{
 		$sql = 'SELECT match_id,teamA,teamB FROM '.$pref
-		.'module_tmt_matches WHERE bracket_id=? AND (teamA=-1 OR teamB=-1) ORDER BY match_id ASC';
+		.'module_tmt_matches WHERE bracket_id=? AND (teamA=-1 OR teamB=-1) ORDER BY match_id';
 		$byes = $db->GetAssoc($sql,array($bracket_id));
 		if($byes)
 		{
@@ -634,8 +634,8 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			else
 				$order[$i] = -1; //bye
 		}
-		$numteams = count($order);
-		$LC = ((log($numteams,2)+0.0001)|0) + 1; //no. of levels
+		$numteams = count($order); //notional i.e. teams + byes (power of 2)
+		$LC = ((log($numteams,2)-0.0001)|0) + 1; //no. of levels
 		$sql = 'DELETE FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
 		$db->Execute($sql,array($bracket_id));
 
@@ -691,7 +691,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$sql1 = 'SELECT M.*,N.teamA AS nexttA,N.teamB AS nexttB
 FROM '.$pref.'module_tmt_matches M JOIN '.$pref.'module_tmt_matches N ON M.nextm=N.match_id
 WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS NULL)';
-		$so = ' ORDER BY M.match_id ASC';
+		$so = ' ORDER BY M.match_id';
 		$done = FALSE;
 		$skips = array();
 		$updates = $db->GetAll($sql1.$so,array($bracket_id));
@@ -893,7 +893,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			else
 				$order[$i] = -1; //bye
 		}
-		$numteams = count($order); //notional i.e. teams + byes
+		$numteams = count($order); //notional i.e. teams + byes (power of 2)
 
 		$sql = 'DELETE FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
 		$db->Execute($sql,array($bracket_id));
@@ -912,7 +912,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			$db->Execute($sql,array($wbase+$i,$bracket_id,$nextm,$nextlm,$order[$i*2+1],$order[$i*2+2]));
 		}
 		$sql = 'INSERT INTO '.$pref.'module_tmt_matches (match_id,bracket_id,nextm,nextlm) VALUES (?,?,?,?)';
-		$BC = ((log($numteams,2)+0.0001)|0) + 1; //winners' semi band
+		$BC = ((log($numteams,2)-0.0001)|0) + 1; //winners' semi band
 		$wbase += $i;
 		for($B=2; $B<$BC; $B++)
 		{
@@ -983,7 +983,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$sql1 = 'SELECT M.*,N.teamA AS nexttA,N.teamB as nexttB
 FROM '.$pref.'module_tmt_matches M JOIN '.$pref.'module_tmt_matches N ON M.nextm=N.match_id
 WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS NULL)';
-		$so = ' ORDER BY M.match_id ASC';
+		$so = ' ORDER BY M.match_id';
 		$done = FALSE;
 		$skips = array();
 		$updates = $db->GetAll($sql1.$so,array($bracket_id));
@@ -1058,7 +1058,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 	{
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
-		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder ASC';
+		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder';
 		$allteams = $db->GetCol($sql,array($bracket_id));
 		if($allteams == FALSE)
 			return 'info_nomatch';
@@ -1332,7 +1332,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		if(is_array($mid))
 		{
 			$fillers = str_repeat('?,',count($mid)-1).'?';
-			$sql .= ' IN ('.$fillers.') ORDER BY match_id ASC';
+			$sql .= ' IN ('.$fillers.') ORDER BY match_id';
 			$args = $mid;
 		}
 		else

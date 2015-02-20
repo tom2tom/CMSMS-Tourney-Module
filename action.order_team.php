@@ -21,7 +21,7 @@ if ($nc < 2)
 	exit;	//a single row, nothing to do
 $id = (int)$params['team_id'];
 $pref = cms_db_prefix();
-$sql = 'SELECT DISTINCT displayorder FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder ASC';
+$sql = 'SELECT DISTINCT displayorder FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
 $orders = $db->GetCol($sql,array($id));
 if ($orders === FALSE || count($orders) != $nc)
 {

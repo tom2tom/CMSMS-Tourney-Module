@@ -72,7 +72,7 @@ class tmtChartRR extends tmtChartBase
 	{
 		$pref = cms_db_prefix();
 		//grab all team identifiers (including flagged deletions maybe needed for prior-match status)
-		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? ORDER BY displayorder ASC';
+		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? ORDER BY displayorder';
 		$teams = $db->GetCol($sql,array($bdata['bracket_id']));
 		if($teams == FALSE)
 			return FALSE;
@@ -93,7 +93,7 @@ class tmtChartRR extends tmtChartBase
 .$pref.'module_tmt_teams T1 ON M.teamA = T1.team_id JOIN '
 .$pref.'module_tmt_teams T2 ON M.teamB = T2.team_id
 WHERE M.bracket_id=? AND T1.flags!=2 AND T2.flags!=2
-ORDER BY T1.displayorder ASC';
+ORDER BY T1.displayorder';
 		$matches = $db->GetAll($sql,array($bdata['bracket_id']));
 		foreach($matches as &$mdata)
 		{

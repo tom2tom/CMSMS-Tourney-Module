@@ -93,7 +93,7 @@ class tmtMail
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
-		$sql = 'SELECT name,contact FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder ASC';
+		$sql = 'SELECT name,contact FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
 		$members = $db->GetAll($sql,array($team_id));
 		if($members)
 		{

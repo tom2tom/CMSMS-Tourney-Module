@@ -121,7 +121,7 @@ class tmtCSV
 			$vals = array($team_id);
 		elseif($team_id === FALSE)
 		{
-			$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder ASC';
+			$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder';
 			$vals = $db->GetCol($sql,array($bracket_id));
 		}
 		else

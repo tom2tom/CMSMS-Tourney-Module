@@ -16,14 +16,14 @@ if(!function_exists('ExportXML'))
 	$properties = $db->GetRow($sql,array($bracket_id));
 	if($properties == FALSE)
 		return FALSE;
-	$sql = 'SELECT * FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY team_id ASC';
+	$sql = 'SELECT * FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY team_id';
 	$teams = $db->GetAll($sql,array($bracket_id));
 	if($teams)
 	{
 		$sql = 'SELECT P.* FROM '.$pref.'module_tmt_people P JOIN '.$pref.
-		'module_tmt_teams T ON P.id = T.team_id WHERE T.bracket_id=? AND T.flags!=2 AND P.flags!=2 ORDER BY P.id,P.displayorder ASC';
+		'module_tmt_teams T ON P.id = T.team_id WHERE T.bracket_id=? AND T.flags!=2 AND P.flags!=2 ORDER BY P.id,P.displayorder';
 		$people = $db->GetAll($sql,array($bracket_id));
-		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id ASC';
+		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';
 		$matches = $db->GetAll($sql,array($bracket_id));
 	}
 	else

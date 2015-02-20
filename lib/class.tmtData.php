@@ -429,7 +429,7 @@ class tmtData
 			$data->cssfile = '';
 
 			$sql = 'SELECT team_id,name,seeding,contactall,displayorder FROM '.
-				$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder ASC';
+				$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder';
 			$data->teams = $db->GetAssoc($sql,array($bracket_id));
 			if ($data->teams)
 			{
@@ -448,10 +448,10 @@ class tmtData
 				//sort cuz matches may be in database in reverse order
 				$sql = 'SELECT match_id,teamA,teamB,playwhen,place,status,score FROM '.
 					$pref.'module_tmt_matches WHERE bracket_id=? AND status<'.ANON.
-					' AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id ASC';
+					' AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id';
 			else
 				$sql = 'SELECT match_id,nextm,nextlm,teamA,teamB,playwhen,place,status,score FROM '.
-					$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id ASC';
+					$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';
 			$data->matches = $db->GetAssoc($sql,array($bracket_id));
 			if ($data->matches)
 			{
@@ -531,7 +531,7 @@ class tmtData
 			else
 				$cond = '>='.MRES; //or ANON if ??
 			$sql = 'SELECT match_id, teamA,teamB,playwhen,place,status,score FROM '.
-				$pref.'module_tmt_matches WHERE bracket_id=? AND status'.$cond.' AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id ASC';
+				$pref.'module_tmt_matches WHERE bracket_id=? AND status'.$cond.' AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id';
 			$data->results = $db->GetAssoc($sql,array($bracket_id));
 			if ($data->results)
 			{

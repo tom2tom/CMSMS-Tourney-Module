@@ -10,7 +10,7 @@ if(!function_exists('OrderTeamMembers'))
  function OrderTeamMembers(&$db,$tid)
  {
 	$pref = cms_db_prefix();
-	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder ASC';
+	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
 	$rows = $db->GetAll($sql,array($tid));
 	if($rows)
 	{
@@ -103,7 +103,7 @@ if(isset($params['submit']))
 	$db->Execute($sql,array($name,$seed,$tell,$order,$teamflags,$tid));
 	if($teamflags == 1)
 	{
-		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder ASC';
+		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder';
 		$teams = $db->GetCol($sql,array($params['bracket_id']));
 		$order = 1;
 		$sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder=? WHERE team_id=?';
@@ -326,7 +326,7 @@ switch($op)
 	);
 	break;
  case 2://starting a new edit-session
-	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder ASC';
+	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
 	$rows = $db->GetAll($sql,array($thistid));
 	break;
  case 3://add player to team
@@ -465,7 +465,7 @@ switch($op)
 	$funcs->TeamsToCSV($this,$bracket_id,$thistid,$rows);
 	return;
  default:
-	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder ASC';
+	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
 	$rows = $db->GetAll($sql,array($thistid));
 	break;
 }

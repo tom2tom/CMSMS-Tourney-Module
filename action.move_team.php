@@ -20,7 +20,7 @@ $nc = count($news);
 if ($nc < 2)
 	exit;	//a single row, nothing to do
 $pref = cms_db_prefix();
-$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder ASC';
+$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder';
 $teams = $db->GetCol($sql, array($params['bracket_id']));
 if ($teams === FALSE || count($teams) != $nc)
 {
