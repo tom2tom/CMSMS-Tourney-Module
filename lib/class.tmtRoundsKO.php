@@ -61,13 +61,13 @@ class tmtRoundsKO
 	/**
 	MatchTeamID_Mid:
 	@mod: reference to current Tourney module
-	@matches: array of all matches' data from database query
+	@matches: reference to array of all matches' data from database query
 	@mid: identifier of match being processed
 	@not: optional enumerator of match which is already known, so don't find this
 	Get identifier for a participant in match @mid, excluding match @not (if any)
 	Returns: identifier string, including prior match no. if possible
 	*/
-	function MatchTeamID_Mid(&$mod,$matches,$mid,$not=FALSE)
+	function MatchTeamID_Mid(&$mod,&$matches,$mid,$not=FALSE)
 	{
 		foreach($matches as $id=>$mdata)
 		{
