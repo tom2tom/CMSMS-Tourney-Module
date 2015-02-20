@@ -28,7 +28,7 @@ if ($teams === FALSE || count($teams) != $nc)
 	exit;
 }
 $sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder = CASE team_id ';
-foreach ($teams as $i=>$tid)
+foreach ($teams as $tid)
     $sql .= 'WHEN '.(int)$tid.' THEN ? ';
 $sql .= 'ELSE displayorder END WHERE team_id IN ('.implode(',',$teams).')';
 if ($db->Execute ($sql,$news))
