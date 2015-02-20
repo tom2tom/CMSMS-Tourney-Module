@@ -71,12 +71,12 @@ class tmtLayout
 				$wd = ($num-1) * 130;
 				break;
 			 case DETYPE:
-			 	$BC = ((log($num,2)+0.0001)|0) + 1; //last band in losers' draw
+			 	$BC = ((log($num,2)-0.0001)|0) + 1; //last band in losers' draw
 				$ht = pow(2,$BC) * 1.5 * 50;
 				$wd = ($BC*2 - 1) * 130; //cols no. = BF-(BC+1)+1, BF = 3BC-1
 			 	break;
 			 default:
-			 	$BC = ((log($num,2)+0.0001)|0) + 1; //final band
+			 	$BC = ((log($num,2)-0.0001)|0) + 1; //final band
 				$ht = pow(2,$BC) * 50;
 				$wd = $BC * 130;
 			 	break;
@@ -115,7 +115,7 @@ class tmtLayout
 		$pref = cms_db_prefix();
 		//get all matches, regardless of status, for use downstream
 		$sql = 'SELECT * FROM '.$pref.
-			'module_tmt_matches WHERE bracket_id=? ORDER BY match_id ASC';
+			'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';
 		$matches = $db->GetAssoc($sql,array($bracket_id));
 		if ($matches == FALSE)
 			return 'nomatch';

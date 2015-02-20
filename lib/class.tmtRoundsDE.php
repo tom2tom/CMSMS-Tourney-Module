@@ -16,7 +16,7 @@ class tmtRoundsDE
 /*	function LevelVals($teamscount)
 	{
 		//no. of levels in the winners' draw incl. semi-final
-		$i = ((log($teamscount,2)+0.0001)|0) + 1; //ceil-equivalent
+		$i = ((log($teamscount,2)-0.0001)|0) + 1; //ceil-equivalent
 		return array($i + 1, $i*3 - 1); //mid=i+1, max=3i-1
 	}
 */
@@ -32,7 +32,7 @@ class tmtRoundsDE
 		$ids = array_keys($matches);
 		$offset = array_search($mid,$ids);
 		//no. of levels in the winners' draw incl. semi-final
-		$i = ((log($teamscount,2)+0.0001)|0) + 1; //ceil-equivalent
+		$i = ((log($teamscount,2)-0.0001)|0) + 1; //ceil-equivalent
 		$bc = pow(2,$i); //winners' draw matches count + 1
 		if ($offset < $bc)
 		{
@@ -76,7 +76,7 @@ class tmtRoundsDE
 	*/
 	function MatchTeamID_Team(&$mod,&$bdata,$teamscount,&$matches,$mid,$level,$not=FALSE)
 	{
-		$i = ((log($teamscount,2)+0.0001)|0) + 1; //ceil-equivalent
+		$i = ((log($teamscount,2)-0.0001)|0) + 1; //ceil-equivalent
 		$BM = $i + 1;
 		$BF = $i*3 - 1;
 		if($level == $BM) //first losers-draw band
@@ -137,7 +137,7 @@ class tmtRoundsDE
 	*/
 	function MatchTeamID_Mid(&$mod,&$bdata,$teamscount,&$matches,$mid,$level,$not=FALSE)
 	{
-		$i = ((log($teamscount,2)+0.0001)|0) + 1; //ceil-equivalent
+		$i = ((log($teamscount,2)-0.0001)|0) + 1; //ceil-equivalent
 		$BM = $i + 1;
 		$BF = $i*3 - 1;
 		if($level == $BM) //first losers-draw band
@@ -197,7 +197,7 @@ class tmtRoundsDE
 	*/
 	function NamedTeams(&$mod,$teamscount,&$matches,$mid,$level,$not=FALSE)
 	{
-		$i = ((log($teamscount,2)+0.0001)|0) + 1; //ceil-equivalent
+		$i = ((log($teamscount,2)-0.0001)|0) + 1; //ceil-equivalent
 		$BM = $i + 1;
 		$BF = $i*3 - 1;
 		if($level == $BM) //first losers-draw band
@@ -268,7 +268,7 @@ class tmtRoundsDE
 	*/
 	private function AnonLevelName(&$mod,&$bdata,$teamscount,$level)
 	{
-		$i = ((log($teamscount,2)+0.0001)|0) + 1; //ceil-equivalent
+		$i = ((log($teamscount,2)-0.0001)|0) + 1; //ceil-equivalent
 		$BM = $i + 1;
 		$BF = $i*3 - 1;
 		$prev = ($level == $BM) ? 1:$level-1;
@@ -293,7 +293,7 @@ class tmtRoundsDE
 	*/
 	function LevelName(&$mod,&$bdata,$teamscount,$level)
 	{
-		$i = ((log($teamscount,2)+0.0001)|0) + 1; //ceil-equivalent
+		$i = ((log($teamscount,2)-0.0001)|0) + 1; //ceil-equivalent
 		$BM = $i + 1;
 		$ret = FALSE;
 		if($level < $BM) //in winners draw

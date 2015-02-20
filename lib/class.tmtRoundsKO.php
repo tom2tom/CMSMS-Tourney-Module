@@ -14,7 +14,7 @@ class tmtRoundsKO
 	*/
 	function LevelMax($teamscount)
 	{
-		return ((log($teamscount,2)+0.0001)|0)+1; //ceil-equivalent
+		return ((log($teamscount,2)-0.0001)|0)+1; //ceil-equivalent
 	}
 
 	/**
@@ -26,7 +26,7 @@ class tmtRoundsKO
 	{
 		$mids = array_keys($matches);
 		$offset = array_search($mid,$mids); //0-based difference between $mid and start of matches
-		$i = ((log($teamscount,2)+0.0001)|0) + 1; //ceil = no. of levels in the comp
+		$i = ((log($teamscount,2)-0.0001)|0) + 1; //ceil = no. of levels in the comp
 		$bc = pow(2,$i-1); //first round matches count
 		$mcount = $bc - 1; //last round-1 match
 		$lvl = 1;

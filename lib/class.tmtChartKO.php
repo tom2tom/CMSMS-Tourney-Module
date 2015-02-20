@@ -36,7 +36,7 @@ class tmtChartKO extends tmtChartBase
 		$bhm horz margin
 		$bvm vert margin
 */
-		$BC = ((log($teamscount,2)+0.0001)|0) + 1; //ceil-equivalent, bands count
+		$BC = ((log($teamscount,2)-0.0001)|0) + 1; //ceil-equivalent, bands count
 		$R = ($BC > 2) ? $BC-1 : $BC;//reverse-direction at this level
 		$TC = pow(2,$BC); //teams+byes in band 1
 		$bl = $lm + $bhm; //inside margin
@@ -93,7 +93,7 @@ class tmtChartKO extends tmtChartBase
 		$bracket_id = (int)$bdata['bracket_id'];
 		$pref = cms_db_prefix();
 		//grab ALL team identifiers (including flagged deletions maybe needed for prior-match status)
-		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? ORDER BY team_id ASC';
+		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? ORDER BY team_id';
 		$teams = $db->GetCol($sql,array($bracket_id));
 		if(!$teams)
 			return FALSE;
@@ -106,7 +106,7 @@ class tmtChartKO extends tmtChartBase
 		$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
 		$relations = $this->mod->ResultTemplates($bracket_id);
 
-		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id ASC';
+		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';
 		$matches = $db->GetAssoc($sql,array($bracket_id));
 		//don't use $matches internal pointer for iterating, downstream zaps that
 		$allmids = array_keys($matches); //don't assume contiguous
@@ -268,10 +268,10 @@ class tmtChartKO extends tmtChartBase
 					}
 					if($anon) //both teams unknown or bye
 					{
-						$one = $this->rnd->MatchTeamID_Mid($this->mod,$matches,$mid);
+						$one = $this->rnd->MatchTeamID_Mid($this->mod,$matches,$mid); //sets $matches internal ptr
 						$here = key($matches);
 						if($here)
-							$rel .= $one."\n".$this->rnd->MatchTeamID_Mid($this->mod,$matches,$mid,$here);
+							$rel .= $one."\n".$this->rnd->MatchTeamID_Mid($this->mod,$matches,$mid,$here-1);
 						else
 							$rel .= $this->rnd->LevelName($this->mod,$bdata,$lvl,$lvlmax);
 					}
