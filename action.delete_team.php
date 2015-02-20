@@ -27,7 +27,19 @@ if ($this->CheckAccess('admod'))
 	$db->Execute($sql,$args);
 	$sql = 'UPDATE '.$pref.'module_tmt_teams SET flags=2 WHERE team_id'.$cond;
 	$db->Execute($sql,$args);
-	//defer changes to other teams' displayorder and any consequent match-changes until comp save/cancel
+	//update remaining displayorders
+	$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder';
+	$teams = $db->GetCol($sql, array($params['bracket_id']));
+	if ($teams)
+	{
+		$o = 1;
+		$sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder = CASE team_id ';
+		foreach ($teams as $tid)
+    	$sql .= 'WHEN '.(int)$tid.' THEN '.($o++).' ';
+		$sql .= 'END';
+		$db->Execute($sql);
+	}
+	//defer any consequent match-changes until comp save/cancel
 }
 else
 	$newparms['tmt_message'] = $this->PrettyMessage('lackpermission',FALSE);
