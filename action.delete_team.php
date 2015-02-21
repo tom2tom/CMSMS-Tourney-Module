@@ -7,6 +7,18 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
 
 Mark single team, or selected team(s), as deleted (flags = 2)
 */
+if(!function_exists('OrderTeamsBatch'))
+{
+ function OrderTeamsBatch(&$db,$pref,$teams,$o)
+ {
+	$sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder = CASE team_id ';
+	foreach($teams as $tid)
+		$sql .= 'WHEN '.(int)$tid.' THEN '.($o++).' ';
+	$sql .= 'ELSE displayorder END';
+	$db->Execute($sql);
+ }
+}
+
 $newparms = $this->GetEditParms($params,'playerstab');
 if ($this->CheckAccess('admod'))
 {
@@ -29,15 +41,18 @@ if ($this->CheckAccess('admod'))
 	$db->Execute($sql,$args);
 	//update remaining displayorders
 	$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder';
-	$teams = $db->GetCol($sql, array($params['bracket_id']));
+	$teams = $db->GetCol($sql,array($params['bracket_id']));
 	if ($teams)
 	{
-		$o = 1;
-		$sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder = CASE team_id ';
-		foreach ($teams as $tid)
-    	$sql .= 'WHEN '.(int)$tid.' THEN '.($o++).' ';
-		$sql .= 'END';
-		$db->Execute($sql);
+		$adbg = array();
+		$o = 0;
+		$tl = count($teams) - 1;
+		do
+		{
+			$batch = array_slice($teams,$o,8,TRUE);
+			OrderTeamsBatch($db,$pref,$batch,$o+1);
+			$o += 8;
+		} while($o < $tl);
 	}
 	//defer any consequent match-changes until comp save/cancel
 }
@@ -46,3 +61,4 @@ else
 
 $this->Redirect($id,'addedit_comp',$returnid,$newparms);
 ?>
+
