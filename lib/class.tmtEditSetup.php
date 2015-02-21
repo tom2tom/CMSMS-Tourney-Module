@@ -258,7 +258,7 @@ EOS;
 
 		$jsloads[] = <<< EOS
  $.SSsort.addParser({
-  id: 'numberinput',
+  id: 'neglastinput',
   is: function(s,node) {
    var n = node.childNodes[0];
    if(n && n.nodeName.toLowerCase() == 'input' && n.type.toLowerCase() == 'text') {
@@ -272,11 +272,12 @@ EOS;
    var v = node.childNodes[0].value;
    if (v) {
     var n = Number(v);
-    return (isNaN(n)) ? Number.NEGATIVE_INFINITY:n;
+    if (isNaN(n) || n==0) {return 0;}
+    return (n>0) ? n:n+10000;
    } else if ((v+'').length > 0) {
     return 0;
    } else {
-    return Number.POSITIVE_INFINITY;
+    return 9000;
    }
   },
   watch: true,
@@ -449,14 +450,15 @@ EOS;
 				$help .= $mod->Lang('help_twt2',$data->twtfrom);
 			else
 				$help .= $mod->Lang('help_twt3');
-			$help .= ' '.$mod->Lang('help_twt4').'<br /><br />'.
-				$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
-					'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"');
+			$help .= ' '.$mod->Lang('help_twt4');
 		}
 		$main[] = array(
 			$mod->Lang('title_twtfrom'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16) : $data->twtfrom,
+			$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16).' '.
+			$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
+				'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"'):
+			$data->twtfrom,
 			$help
 		);
 		$ob =& $mod->GetModuleInstance('FrontEndUsers');
@@ -971,6 +973,9 @@ EOS;
 				$smarty->assign('selteams',$mod->CreateInputCheckbox($id,'t',FALSE,-1,
 					'id="teamsel" onclick="select_all_teams();"'));
 			}
+			else
+				$smarty->assign('selteams','');
+
 			$jsfuncs[] = <<< EOS
 function team_count() {
  var cb = $('#tmt_players > tbody').find('input:checked');
@@ -1263,6 +1268,8 @@ EOS;
 				$smarty->assign('selmatches',$mod->CreateInputCheckbox($id,'m',FALSE,-1,
 					'id="matchsel" onclick="select_all_matches();"'));
 			}
+			else
+				$smarty->assign('selmatches','');
 
 			$jsfuncs[] = <<< EOS
 function match_count() {
@@ -1524,6 +1531,8 @@ EOS;
 					$smarty->assign('selresults',$mod->CreateInputCheckbox($id,'r',FALSE,-1,
 						'id="resultsel" onclick="select_all_results();"'));
 				}
+				else
+					$smarty->assign('selresults','');
 
 				$smarty->assign('playedtitle',$mod->Lang('played'));
 				$smarty->assign('resulttitle',$mod->Lang('title_result'));
@@ -1588,7 +1597,7 @@ EOS;
 
 //===============================
 
-		$smarty->assign('save',$mod->CreateInputSubmit($id,'submit',$mod->Lang('save'),
+		$smarty->assign('save',$mod->CreateInputSubmitDefault($id,'submit',$mod->Lang('save'),
 			'onclick="set_action(this);"'));
 		$smarty->assign('apply',$mod->CreateInputSubmit($id,'apply',$mod->Lang('apply'),
 			'title = "'.$mod->Lang('apply_tip').'" onclick="set_params(this);"'));
@@ -1637,6 +1646,16 @@ EOS;
   onConfirm: function(){
 	 $('#{$id}real_action').val(this.name);
 	 return true;
+  }
+ });
+
+EOS;
+		//prevent immediate activation by textinput <Enter> press
+		$jsloads[] = <<< EOS
+ $('form input[type=text]').keypress(function(e){
+  if (e.which == 13) {
+	 $('input[type=submit].default').focus();
+   return false;
   }
  });
 
