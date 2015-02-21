@@ -532,10 +532,10 @@ class tmtCalendar
 	/**
 	_GetConditions:
 
-	Get array of 'cleaned' condition(s) from @avail
-	Split on outside-bracket commas
+	Get array of 'cleaned' condition(s) from @avail. Returns FALSE upon error.
+	Split on outside-bracket commas.
 	All day-names aliased to D1..D7, all month-names aliased to M1..M12,
-	'sunrise' to R, 'sunset' to S, 'week' to W, whitespace & newlines gone
+	'sunrise' to R, 'sunset' to S, 'week' to W, whitespace & newlines gone.
 
 	@mod: reference to current module-object
 	@available: availability-condition string
@@ -574,7 +574,8 @@ class tmtCalendar
 		$repls = array_merge($daycodes,$daycodes,$monthcodes,$monthcodes,
 			array('R','S','W','',''));
 		$clean = str_replace($finds,$repls,$avail);
-
+		if(preg_match('/[^\dDMRSW@:+-.,()]/',$clean))
+			return FALSE;
 		$l = strlen($clean);
 		$parts = array();
 		$d = 0; $s = 0;
@@ -586,9 +587,8 @@ class tmtCalendar
 				$d++;
 				break;
 			 case ')':
-				$d--;
-				if($d < 0)
-					$d = 0;
+				if(--$d < 0)
+					return FALSE;
 				break;
 			 case ',':
 				if($d == 0)
@@ -826,7 +826,8 @@ class tmtCalendar
 	SlotComplies:
 
 	Determine whether the interval @start to @start + @length satisfies constraints
-	specified in	relevant fields in @bdata.
+	specified in relevant fields in @bdata. Also returns FALSE if the
+	availability-descriptor string is malformed.
 
 	@mod: reference to current module-object
 	@bdata: reference to array of data for current bracket 	
@@ -838,6 +839,8 @@ class tmtCalendar
 		if($bdata['available'] == FALSE)
 			return TRUE;
 		$conds = self::_GetConditions($mod,$bdata['available'],$bdata['locale']);
+		if(!$conds)
+			return FALSE;
 		$sunstuff = self::_GetSunData($mod,$bdata,$start);
 		$maxhours = self::_GetSlotHours($bdata);
 		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$maxhours,$start,365); //check up to a year ahead
@@ -875,7 +878,8 @@ class tmtCalendar
 	Get start-time (timestamp) matching constraints specified in relevant fields in
 	@bdata, and	starting no sooner than @start, or ASAP within @later days after
 	the one including @start, and where the available time is at least @length.
-	Returns FALSE if no such time is available within the specified interval.
+	Returns FALSE if no such time is available within the specified interval, or
+	the availability-descriptor string is malformed.
 
 	@mod: reference to current module-object
 	@bdata: reference to array of data for current bracket
@@ -888,6 +892,8 @@ class tmtCalendar
 		if($bdata['available'] == FALSE)
 			return $start;
 		$conds = self::_GetConditions($mod,$bdata['available'],$bdata['locale']);
+		if(!$conds)
+			return FALSE;
 		$sunstuff = self::_GetSunData($mod,$bdata,$start);
 		$maxhours = self::_GetSlotHours($bdata);
 		list($days,$daytimes) = self::_ParseConditions($conds,$sunstuff,$maxhours,$start,$laterdays);
