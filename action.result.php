@@ -292,7 +292,7 @@ $smarty->assign('hidden',
 $smarty->assign('start_form',$this->CreateFormStart($id,'result',$returnid));
 $smarty->assign('end_form',$this->CreateFormEnd());
 
-$smarty->assign('send', $this->CreateInputSubmit($id,'send',$this->Lang('submit'),
+$smarty->assign('send', $this->CreateInputSubmitDefault($id,'send',$this->Lang('submit'),
 	'onclick="return validate(event,this)"'));
 //'cancel' action-name is used by other form(s)
 $smarty->assign('cancel', $this->CreateInputSubmit($id,'nosend',$this->Lang('cancel')));

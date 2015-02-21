@@ -521,7 +521,7 @@ if($rows)
 			$one->input_name = $row['name'];
 			$one->input_contact = $row['contact'];
 		}
-		$one->selected = $this->CreateInputCheckbox($id,'psel[]',$row['displayorder'],-1,'class="pagecheckbox"');
+		$one->selected = $this->CreateInputCheckbox($id,'psel[]',$row['displayorder'],-1);
 		$players[] = $one;
 		($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
 		$indx++;
@@ -691,6 +691,8 @@ EOS;
 	$smarty->assign('selectall',$this->CreateInputCheckbox($id,'p',FALSE,-1,
 		'id="playsel" onclick="select_all_players();"'));
 } //end $pc > 1
+else
+	$smarty->assign('selectall','');
 
 $jsfuncs[] = <<< EOS
 function player_selected() {
@@ -731,9 +733,18 @@ EOS;
 		$smarty->assign('add',$this->CreateInputLinks($id,'addplayer','newobject.gif',TRUE,
 			$this->Lang('title_add',strtolower($this->Lang('title_player')))));
 	}
-	$smarty->assign('submit',$this->CreateInputSubmit($id,'submit',$this->Lang('save')));
+	$smarty->assign('submit',$this->CreateInputSubmitDefault($id,'submit',$this->Lang('save')));
 	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('cancel')));
 
+	$jsloads[] = <<< EOS
+ $('form input[type=text]').keypress(function(e){
+  if (e.which == 13){
+	 $('input[type=submit].default').focus();
+   return false;
+  }
+ });
+
+EOS;
 	switch($op)
 	{
 	 case 2:
