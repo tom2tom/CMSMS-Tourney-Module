@@ -32,7 +32,7 @@ switch ($oldversion)
 	if(!$dict->ExecuteSQLArray($sql))
 	{
 		//UI error message too?
-		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','change fields'));
+		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('err_upgrade','change fields'));
 		return FALSE;
 	}
 
@@ -44,7 +44,7 @@ switch ($oldversion)
 	if(!$dict->ExecuteSQLArray($sql))
 	{
 		//UI error message too?
-		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('upgradefail','delete field \'admin_editgroup\''));
+		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('err_upgrade','delete field \'admin_editgroup\''));
 		return FALSE;
 	}
 	$flds = "

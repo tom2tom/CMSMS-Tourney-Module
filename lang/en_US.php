@@ -6,7 +6,7 @@ $lang['confirm_uninstall']='You\'re sure you want to uninstall the Tournament mo
 $lang['uninstalled']='Module uninstalled.';
 $lang['installed']='Module version %s installed.';
 $lang['upgraded']='Module upgraded to version %s.';
-$lang['upgradefail']='Module upgrade aborted, error when attempting to %s';
+$lang['err_upgrade']='Module upgrade aborted, error when attempting to %s';
 
 $lang['perm_admin']='Modify Tournament-module Settings';
 $lang['perm_mod']='Modify Tournament Brackets';
