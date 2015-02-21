@@ -530,30 +530,36 @@ class tmtCalendar
 	}
 
 	/**
+	_GetConditions:
+
 	Get array of 'cleaned' condition(s) from @avail
 	Split on outside-bracket commas
 	All day-names aliased to D1..D7, all month-names aliased to M1..M12,
 	'sunrise' to R, 'sunset' to S, 'week' to W, whitespace & newlines gone
+
+	@mod: reference to current module-object
+	@available: availability-condition string
+	@locale: locale identifier string, for localising day/month names
+	  possibly present in @available
 	*/
 	private function _GetConditions(&$mod,$avail,$locale)
 	{
 		$gets = range(1,7);
+		$oldloc = FALSE;
 		if($locale)
 		{
-/*		TODO set preferred locale if possible
-			$originalLocales = explode(";", setlocale(LC_ALL, 0));
-			setlocale(LC_TIME, $locale); if failed ?
-*/
+			$oldloc = setlocale(LC_TIME,"0");
+			if(!setlocale(LC_TIME,$locale))
+				$oldloc = FALSE;
 		}
+		//NB some of these may be wrong, due to race on threaded web-server
 		$longdays = self::AdminDayNames($gets);
 		$shortdays = self::AdminDayNames($gets,FALSE);
 		$gets = range(1,12);
 		$longmonths = self::AdminMonthNames($gets);
 		$shortmonths = self::AdminMonthNames($gets,FALSE);
-		if(0)
-		{
-		//TODO revert locale if changed
-		}
+		if($oldloc)
+			setlocale(LC_TIME,$oldloc);
 		unset($gets);
 
 		$daycodes = array();
@@ -564,7 +570,7 @@ class tmtCalendar
 			$monthcodes[] = 'M'.$i;
 		//NB long before short
 		$finds = array_merge($longdays,$shortdays,$longmonths,$shortmonths,
-			array($mod->Lang('sunrise'),$mod->Lang('sunset'), $mod->Lang('week'),' ',"\n"));
+			array($mod->Lang('sunrise'),$mod->Lang('sunset'),$mod->Lang('week'),' ',"\n"));
 		$repls = array_merge($daycodes,$daycodes,$monthcodes,$monthcodes,
 			array('R','S','W','',''));
 		$clean = str_replace($finds,$repls,$avail);
@@ -938,19 +944,71 @@ class tmtCalendar
 	/**
 	CheckConstraint:
 
-	Determine whether bracket calendar-constraint has correct syntax.
-	Returns TRUE if no constraint exists.
+	Determine whether calendar-constraint @available has (approximately) correct syntax.
+	Returns TRUE if no constraint applies.
 
 	@mod: reference to current module-object
-	@bdata: reference to array of data for current bracket
+	@available: availability-condition string
+	@locale: locale identifier string, for localising day/month names
+	  possibly present in @available
 	*/
-	function CheckCondition(&$mod,&$bdata)
+	function CheckCondition(&$mod,$available,$locale)
 	{
-		if($bdata['available'] == FALSE)
+		if($available == FALSE)
 			return TRUE;
-		$conds = self::_GetConditions($mod,$bdata['available'],$bdata['locale']);
-		//TODO PARSE CONDS
-		return FALSE;
+		$gets = range(1,7);
+		$oldloc = FALSE;
+		if($locale)
+		{
+			$oldloc = setlocale(LC_TIME,"0");
+			if(!setlocale(LC_TIME,$locale))
+				$oldloc = FALSE;
+		}
+		//NB some of these may be wrong, due to race on threaded web-server
+		$longdays = self::AdminDayNames($gets);
+		$shortdays = self::AdminDayNames($gets,FALSE);
+		$gets = range(1,12);
+		$longmonths = self::AdminMonthNames($gets);
+		$shortmonths = self::AdminMonthNames($gets,FALSE);
+		if($oldloc)
+			setlocale(LC_TIME,$oldloc);
+		unset($gets);
+		//NB long before short
+		$finds = array_merge($longdays,$shortdays,$longmonths,$shortmonths,
+			array($mod->Lang('sunrise'),$mod->Lang('sunset'),$mod->Lang('week'),' ',"\n"));
+		$repls = array_fill(0,(14+24+5),'');
+		$clean = str_replace($finds,$repls,$available);
+		if(preg_match('/[^\d@:+-.,()]/',$clean))
+			return FALSE;
+		$l = strlen($clean);
+		$d = 0;
+		for($p=0; $p<$l; $p++)
+		{
+			switch($clean[$p])
+			{
+			 case '(':
+				$d++;
+				break;
+			 case ')':
+				if(--$d < 0) break 2;
+				break;
+			 case '.':
+				if($p < ($l-1) && $clean[$p+1] == '.')
+				{
+					$p++;
+					break;
+				}
+				else
+				{
+					$d = 1;
+					break 2;
+				}
+			}
+		}
+		if($d != 0)
+			return FALSE;
+		//TODO more checks: suitable commas etc
+		return TRUE;
 	}
 }
 
