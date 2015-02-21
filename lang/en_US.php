@@ -331,8 +331,8 @@ Twitter account handle. If left blank, @CMSMSTourney will be used.
 Anything else will require authorisation by the account owner, before first use.
 Module help has more details.
 EOS;
-$lang['help_twt2']='You can refresh the current authorisation for <strong>%s</strong>, or initiate a change, by clicking the button below.';
-$lang['help_twt3']='You can initiate authorisation by clicking the button below.';
+$lang['help_twt2']='You can refresh the current authorisation for <strong>%s</strong>, or initiate a change, by clicking the \'Visit\' button.';
+$lang['help_twt3']='You can initiate authorisation by clicking the \'Visit\' button.';
 $lang['help_twt4']='<strong>Ensure all wanted data are saved</strong>, before departing.';
 
 $lang['title_chttemplate']='Front-end chart display template';
