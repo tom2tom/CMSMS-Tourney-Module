@@ -464,7 +464,7 @@ EOS;
 		$ob =& $mod->GetModuleInstance('FrontEndUsers');
 		if($ob)
 		{
-			//TODO filter on permitted groups only c.f. MBVFaq
+			//TODO if possible for feu, filter on permitted groups only c.f. MBVFaq
 			if($pmod)
 				$grpnames = $ob->GetGroupList();
 			unset($ob);
@@ -642,13 +642,17 @@ EOS;
 
 EOS;
 		}
-
-		$sched[] = array(
-			$mod->Lang('title_calendar').' (NOT YET WORKING)',
-			($pmod) ?
-			$mod->CreateInputText($id,'tmt_calendarid',$data->calendarid,15,20) : $data->calendarid,
-			$mod->Lang('help_calendar')
-		);
+		$ob =& $mod->GetModuleInstance('Bookings');
+		if($ob)
+		{
+			unset($ob);
+			$sched[] = array(
+				$mod->Lang('title_calendar').' (NOT YET WORKING)',
+				($pmod) ?
+				$mod->CreateInputText($id,'tmt_calendarid',$data->calendarid,15,20) : $data->calendarid,
+				$mod->Lang('help_calendar')
+			);
+		}
 		$sched[] = array(
 			$mod->Lang('title_available').' (NOT YET WORKING)',
 			($pmod) ?
