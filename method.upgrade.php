@@ -6,7 +6,8 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
 
-if (! $this->CheckAccess('admin')) return;
+if (! $this->CheckAccess('admin'))
+	return $this->Lang('lackpermission');
 
 $pref = cms_db_prefix();
 $taboptarray = array('mysql' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci',
@@ -31,9 +32,9 @@ switch ($oldversion)
 	$sql = $dict->AlterColumnSQL($pref.'module_tmt_brackets',$flds);
 	if(!$dict->ExecuteSQLArray($sql))
 	{
-		//UI error message too?
-		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('err_upgrade','change fields'));
-		return FALSE;
+		$msg = $this->Lang('err_upgrade','change fields');
+		$this->Audit(0, $this->Lang('friendlyname'), $msg);
+		return $msg;
 	}
 
 	$flds = "
@@ -43,9 +44,9 @@ switch ($oldversion)
 	$sql = $dict->DropColumnSQL($pref.'module_tmt_brackets',$flds);
 	if(!$dict->ExecuteSQLArray($sql))
 	{
-		//UI error message too?
-		$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('err_upgrade','delete field \'admin_editgroup\''));
-		return FALSE;
+		$msg = $this->Lang('err_upgrade','delete field \'admin_editgroup\'');
+		$this->Audit(0, $this->Lang('friendlyname'), $msg);
+		return $msg;
 	}
 	$flds = "
 	fixtype I(1) DEFAULT 0,
