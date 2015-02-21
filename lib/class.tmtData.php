@@ -103,10 +103,18 @@ class tmtData
 			break;
 		}
 		$data->playgaptype = $tmp;
-		$data->available = $params['tmt_available'];
-		if($data->available == FALSE)
+		$tmp = trim($params['tmt_available']);
+		if($tmp == FALSE)
 			$data->available = NULL;
-
+		else
+		{
+			$cal = new tmtCalendar();
+			if($cal->CheckCondition($mod,$tmp,$data->locale))
+				$data->available = $tmp;
+			else
+				$data->available = $mod->Lang('err_value').' >> '.$tmp;
+			unset($cal);
+		}
 		$tmp = $params['tmt_latitude'] + 0; //strip trailing 0
 		if($tmp == FALSE)
 			$tmp = NULL;
