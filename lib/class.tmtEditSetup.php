@@ -642,7 +642,7 @@ EOS;
 
 EOS;
 		}
-		$ob =& $mod->GetModuleInstance('Bookings');
+		$ob =& $mod->GetModuleInstance('Booker');
 		if($ob)
 		{
 			unset($ob);
