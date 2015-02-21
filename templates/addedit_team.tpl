@@ -14,7 +14,7 @@
 	  <th class="{ldelim}sss:'textinput'{rdelim}">{$contacttext}</th>
 {if $canmod}{if $pc > 1}<th class="updown {ldelim}sss:false{rdelim}">{$movetext}</th>{/if}
 	  <th class="pageicon {ldelim}sss:false{rdelim}">&nbsp;</th>{/if}
-	  <th class="checkbox {ldelim}sss:false{rdelim}" style="width:20px;">{if $pc > 1}{$selectall}{/if}</th>
+	  <th class="checkbox {ldelim}sss:false{rdelim}" style="width:20px;">{$selectall}</th>
 	 </tr></thead>
 	 <tbody>
  {foreach from=$items item=entry}
