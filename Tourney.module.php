@@ -739,6 +739,15 @@ Europe/Vilnius'
 		}
 		return $ret;
 	}
+	/**
+	CreateInputSubmitDefault:
+	Generate xhtml like CreateInputSubmit, but with extra class "default"
+	*/
+	function CreateInputSubmitDefault($id, $name, $value = '', $addttext = '', $image = '', $confirmtext = '')
+	{
+		$s = $this->CreateInputSubmit($id,$name,$value,$addttext,$image,$confirmtext);
+		return str_replace('class="','class="default ',$s);
+	}
 
 	//for admin-display only
 	function PrettyMessage($text, $success=TRUE, $faillink=FALSE, $key = TRUE)

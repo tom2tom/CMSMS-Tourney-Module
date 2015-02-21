@@ -160,7 +160,7 @@ $smarty->assign('end_form',$this->CreateFormEnd());
 $smarty->assign('hidden',$this->GetHiddenParms($id,$params,'playerstab'));
 $smarty->assign('title',$this->Lang('title_teamimport',$params['tmt_name']));
 $smarty->assign('chooser',$this->CreateInputFile($id, 'csvfile', 'text/csv', 25));
-$smarty->assign('import', $this->CreateInputSubmit($id, 'import', $this->Lang('upload')));
+$smarty->assign('import', $this->CreateInputSubmitDefault($id, 'import', $this->Lang('upload')));
 $smarty->assign('cancel', $this->CreateInputSubmit($id, 'cancel', $this->Lang('cancel')));
 $smarty->assign('help',$this->Lang('help_teamimport'));
 

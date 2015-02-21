@@ -161,6 +161,7 @@ if ($comps)
 	$smarty->assign('comps',$comps);
 	$smarty->assign('modname',$this->GetName());
 	$smarty->assign('candev',$pdev);
+
 	if ($pmod)
 	{
 		//for popup confirmation
@@ -168,15 +169,22 @@ if ($comps)
 		$smarty->assign('yes',$this->Lang('yes'));
 		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.min.js"></script>';
 		$jsfuncs[] = <<< EOS
-$(document).ready(function() {
+$(document).ready(function(){
  $('.{$id}delete_comp').modalconfirm({
   overlayID: 'confirm',
   preShow: function(d){
    var name = \$('td:first > a', $(this).closest('tr')).text();
-   if (name.search(' ') > -1)
+   if (name.search(' ') > -1){ 
     name = '"'+name+'"';
+   }
    var para = d.children('p:first')[0];
    para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+  }
+ });
+ $('form input[type=text]').keypress(function(e){
+  if (e.which == 13){
+   $('input[type=submit].default').focus();
+   return false;
   }
  });
 });
@@ -271,7 +279,7 @@ if ($padm)
 	$smarty->assign('misc',$misc);
 
 	$smarty->assign('save',
-		$this->CreateInputSubmit($id, 'tmt_submit', $this->Lang('save')));
+		$this->CreateInputSubmitDefault($id, 'tmt_submit', $this->Lang('save')));
 	$smarty->assign('cancel',
 		$this->CreateInputSubmit($id, 'tmt_cancel', $this->Lang('cancel')));
 }

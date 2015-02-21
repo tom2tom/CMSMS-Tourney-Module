@@ -204,7 +204,7 @@ if($bdata['contact'])
 		//check for valid address for results
 		$funcs = new tmtComm($this);
 		if($funcs->ValidateAddress($bdata['contact']))
-			$submit = $this->CreateInputSubmit($id,'result',$this->Lang('submit2'));
+			$submit = $this->CreateInputSubmitDefault($id,'result',$this->Lang('submit2'));
 	}
 }
 unset($sch);
