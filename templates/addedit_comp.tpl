@@ -51,8 +51,8 @@
 	 <thead><tr>
 	  <th class="{if $canmod}{ldelim}sss:false{rdelim}{else}ord{/if}">{$ordertitle}</th>
 	  <th class="{ldelim}sss:'textinput'{rdelim}">{$teamtitle}</th>
-	  <th class="{ldelim}sss:'numberinput'{rdelim}">{$seedtitle}</th>
-	  <th class="{ldelim}sss:false{rdelim}">{$contacttitle}</th>
+	  <th class="{ldelim}sss:'neglastinput'{rdelim}">{$seedtitle}</th>
+	  <th class="{ldelim}sss:'textinput'{rdelim}">{$contacttitle}</th>
 {if $canmod}<th class="updown {ldelim}sss:false{rdelim}">{$movetitle}</th>
 	  <th class="pageicon {ldelim}sss:false{rdelim}">&nbsp;</th>
 	  <th class="pageicon {ldelim}sss:false{rdelim}">&nbsp;</th>{/if}
