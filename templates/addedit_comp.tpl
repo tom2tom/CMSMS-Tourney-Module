@@ -93,12 +93,12 @@
 <table id="tmt_matches" style="margin:0 auto; border-collapse:collapse">
  <thead><tr>
 {if $plan}<th>{$idtitle}</th>{/if}
-  <th class="{ldelim}sorter:'isoinput'{rdelim}">{$scheduledtitle}</th>
+  <th class="{ldelim}sss:'isoinput'{rdelim}">{$scheduledtitle}</th>
   <th>{$placetitle}</th>
   <th>{$teamtitle}</th>
   <th>{$teamtitle}</th>
-  <th class="{ldelim}sorter:false{rdelim}">{$statustitle}</th>
-  <th class="checkbox {ldelim}sorter:false{rdelim}" style="width:20px;">{$selmatches}</th>
+  <th class="{ldelim}sss:false{rdelim}">{$statustitle}</th>
+  <th class="checkbox {ldelim}sss:false{rdelim}" style="width:20px;">{$selmatches}</th>
  </tr></thead>
  <tbody>
  {foreach from=$matches item=entry}
@@ -128,13 +128,13 @@
 <div style="padding-right:10px; padding-bottom:10px; overflow:auto;">
 <table id="tmt_results" style="margin:0 auto; border-collapse:collapse">
  <thead><tr>
-  <th class="{ldelim}sorter:false{rdelim}">{$scheduledtitle}</th>
-  <th class="{ldelim}sorter:'isoinput'{rdelim}">{$playedtitle}</th>
+  <th class="{ldelim}sss:false{rdelim}">{$scheduledtitle}</th>
+  <th class="{ldelim}sss:'isoinput'{rdelim}">{$playedtitle}</th>
   <th>{$teamtitle}</th>
   <th>{$teamtitle}</th>
-  <th class="{ldelim}sorter:false{rdelim}">{$resulttitle}</th>
-  <th class="{ldelim}sorter:false{rdelim}">{$scoretitle}</th>
-  <th class="checkbox {ldelim}sorter:false{rdelim}" style="width:20px;">{$selresults}</th>
+  <th class="{ldelim}sss:false{rdelim}">{$resulttitle}</th>
+  <th class="{ldelim}sss:false{rdelim}">{$scoretitle}</th>
+  <th class="checkbox {ldelim}sss:false{rdelim}" style="width:20px;">{$selresults}</th>
  </tr></thead>
  <tbody>
  {foreach from=$results item=entry}
