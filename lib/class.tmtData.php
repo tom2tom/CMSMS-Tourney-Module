@@ -112,7 +112,13 @@ class tmtData
 			if($cal->CheckCondition($mod,$tmp,$data->locale))
 				$data->available = $tmp;
 			else
-				$data->available = $mod->Lang('err_value').' >> '.$tmp;
+			{
+				$msg = $mod->Lang('err_value');
+				if(strpos($tmp,$msg)===FALSE)
+					$data->available = $msg.' >> '.$tmp;
+				else
+					$data->available = $tmp;
+			}
 			unset($cal);
 		}
 		$tmp = $params['tmt_latitude'] + 0; //strip trailing 0
