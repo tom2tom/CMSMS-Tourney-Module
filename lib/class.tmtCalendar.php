@@ -82,10 +82,9 @@ Time descriptors
 
 class tmtCalendar
 {
-	private $dayblocks = FALSE; //cached array of day-ranges, or FALSE
-	private $timeblocks = FALSE; //cached array of time-ranges, or FALSE
-/*
-	__construct()
+//	private $dayblocks = FALSE; //cached array of day-ranges, or FALSE
+//	private $timeblocks = FALSE; //cached array of time-ranges, or FALSE
+/*__construct()
 	{
 	}
 */
@@ -104,6 +103,185 @@ class tmtCalendar
 		}
 		unset($one);
 		return $parts;
+	}
+
+	//No brackets around $str
+	//Returns 3-member array(L,'.',H) or single value L(==H) or FALSE
+	private function _ParseRange($str)
+	{
+		$parts = explode('..',$str,2);
+		while($parts[1][0] == '.')
+			$parts[1] = substr($parts[1],1);
+		if($parts[0] === '' || $parts[1] === '')
+			return FALSE;
+		if($parts[0] == $parts[1])
+			return $parts[0];
+		//order the pair
+		$swap = FALSE;
+		$dateptn = '/^([12][0-9]{3})-(1[0-2]|0?[1-9])(-(3[01]|0?[1-9]|[12][0-9]))?$/';
+/* $pattern matches
+'2001-10-12' >> array
+  0 => string '2001-10-12'
+	1 => string '2001'
+  2 => string '10'
+  3 => string '-12'
+  4 => string '12'
+'2001-10' >> array
+  0 => string '2001-10'
+	1 => string '2001'
+  2 => string '10'
+'2001' >> empty array() 	
+*/
+		if(preg_match($dateptn,$parts[0],$loparts) && preg_match($dateptn,$parts[1],$hiparts))
+		{
+			$swap = (($hiparts[1] < $loparts[1])
+			|| ($hiparts[1] == $loparts[1] && $hiparts[2] < $loparts[2]));
+			if($swap)
+			{
+				if(!isset($hiparts[4]))
+					$hiparts[4] = '1';
+				if(!isset($loparts[4]))
+				{
+					$stamp = mktime(0,0,0,(int)$loparts[2],15,(int)$loparts[1]);				
+					$loparts[4] = date('t',$stamp); //last day of specified month
+				}
+			}
+			else
+			{
+				if(!isset($loparts[4]))
+					$loparts[4] = '1';
+				if(!isset($hiparts[4]))
+				{
+					$stamp = mktime(0,0,0,(int)$hiparts[2],15,(int)$hiparts[1]);				
+					$hiparts[4] = date('t',$stamp); //last day of specified month
+				}
+				if($hiparts[4] < $loparts[4])
+					$swap = TRUE;
+			}
+			$parts[0] = $loparts[1].'-'.$loparts[2].'-'.$loparts[4];
+			$parts[1] = $hiparts[1].'-'.$hiparts[2].'-'.$hiparts[4];
+		}
+		elseif(is_numeric($parts[0]) && is_numeric($parts[1]))
+		{
+			$s = (int)$parts[0];
+			$e = (int)$parts[1];
+			$swap = ($s > $e && $e > 0);
+		}
+		else
+		{
+			//both should be D* or M*
+			if($parts[0][0] != $parts[1][0])
+				return FALSE;
+			$s = (int)substr($parts[0],1);
+			$e = (int)substr($parts[1],1);
+			$swap = ($s > $e && $e > 0);
+		}
+		if($swap)
+		{
+			$t = $parts[0];
+			$parts[0] = $parts[1];
+			$parts[1] = $t;
+		}
+		return array($parts[0],'.',$parts[1]);
+	}
+
+	//Compare numbers such that -ve's last and increasing
+	private function _cmp_numbers($a,$b)
+	{
+		if(($a >= 0 && $b < 0) || ($a < 0 && $b >= 0)) 
+			return ($b-$a);
+		return ($a-$b);
+	}
+
+	//Compare date-strings like YYYY[-[M]M[-[D]D]]
+	private function _cmp_dates($a,$b)
+	{
+		//bare years don't work correctly
+		$s = (strpos($a,'-')!=FALSE) ? $a:$a.'-1-1';
+		$stA = strtotime($s);
+		$s = (strpos($b,'-')!=FALSE) ? $b:$b.'-1-1';
+		$stB = strtotime($s);
+		return ($stA-$stB);
+	}
+
+	//No brackets around $str
+	//Returns N-member, no-duplicates, array(L,..,H) or single value L(==all others) or FALSE
+	//Any trailing @T is stripped
+	private function _ParseSequence($str)
+	{
+		$parts = explode(',',$str);
+		if(count($parts) == 1)
+			return $str;
+		//assume all values are the same type as the 1st
+		$val = $parts[0];
+		//trim any @T
+		$p = strpos($val,'@');
+		if($p !== FALSE)
+			$val = substr($val,0,$p);
+		$dateptn = '/^([12][0-9]{3})(-(1[0-2]|0?[1-9])(-(3[01]|0?[1-9]|[12][0-9]))?)?$/';
+		if(preg_match($dateptn,$val))
+			$type = 3;
+		elseif(is_numeric($val))
+			$type = 1;
+		else
+			$type = 2;
+
+		foreach($parts as &$val)
+		{
+			//trim any @T
+			$p = strpos($val,'@');
+			if($p !== FALSE)
+				$val = substr($val,0,$p);
+			switch ($type)
+			{
+			 case 1:
+				if(is_numeric($val))
+				{
+					break;
+				}
+				else
+				{
+					$parts = FALSE;
+					break 2;
+				}
+			 case 2:
+				if(1) //TODO same type of non-numeric
+				{
+					break;
+				}
+				else
+				{
+					$parts = FALSE;
+					break 2;
+				}
+			 case 3:
+				if(preg_match($dateptn,$val,$matches))
+				{
+					//populate any missing part(s)? NO
+					break;
+				}
+				else
+				{
+					$parts = FALSE;
+					break 2;
+				}
+			}
+		}
+		//sort
+		switch ($type)
+		{
+		 case 1:
+			usort($parts,array('tmtCalendar','_cmp_numbers'));
+		 case 2:
+		 	sort($parts,SORT_STRING);
+			break;
+		 case 3:
+			usort($parts,array('tmtCalendar','_cmp_dates'));
+			break;
+		}
+		//remove dups
+		$parts = array_flip($parts);
+		return array_flip($parts);
 	}
 
 	/**
@@ -533,7 +711,7 @@ class tmtCalendar
 	_GetConditions:
 
 	Get array of 'cleaned' condition(s) from @avail. Returns FALSE upon error.
-	Split on outside-bracket commas.
+	Un-necessary brackets are excised. Split on outside-bracket commas.
 	All day-names aliased to D1..D7, all month-names aliased to M1..M12,
 	'sunrise' to R, 'sunset' to S, 'week' to W, whitespace & newlines gone.
 
@@ -578,23 +756,69 @@ class tmtCalendar
 			return FALSE;
 		$l = strlen($clean);
 		$parts = array();
-		$d = 0; $s = 0;
+		$d = 0;
+		$s = 0;
+		$b = -1;
+		$xclean = FALSE;
 		for($p=0; $p<$l; $p++)
 		{
 			switch ($clean[$p])
 			{
 			 case '(':
-				$d++;
+				if(++$d == 1)
+					$b = $p;
 				break;
 			 case ')':
 				if(--$d < 0)
 					return FALSE;
+				//strip inappropriate brackets
+				if($d == 0)
+				{
+					if($p < $l-1) //before end, want pre- or post-qualifier
+					{
+						//check post-
+						$n = $clean[$p+1];
+						if($n == '@') // ')' N/A for d = 0 ?
+						{
+							$b = -1;
+							break;
+						}
+					}
+					//at end, or no post-qualifier, want pre-qualifier
+					if($b > $s)
+					{
+						$n = $clean[$b-1];
+						if($n == ')' || ($n >='0' && $n <= '9')) // '(' N/A for d = 0 ?
+						{
+							$b = -1;
+							break;
+						}
+					}
+					if($b >= $s)
+					{
+						$clean[$p] = ' ';
+						$clean[$b] = ' ';
+						$b = -1;
+						$xclean = TRUE;
+					}
+					else
+						return FALSE;
+				}
 				break;
 			 case ',':
 				if($d == 0)
 				{
 					if($p > $s && $clean[$p-1] != ',')
-						$parts[] = substr($clean,$s,$p-$s);
+					{
+						$tmp = substr($clean,$s,$p-$s);
+						if ($xclean)
+						{
+							$parts[] = str_replace(' ','',$tmp);
+							$xclean = FALSE;
+						}
+						else
+							$parts[] = $tmp;
+					}
 					$s = $p+1;
 				}
 			 default:
@@ -602,7 +826,13 @@ class tmtCalendar
 			}
 		}
 		if($p > $s)
-			$parts[] = substr($clean,$s,$p-$s); //last (or entire) part
+		{
+			$tmp = substr($clean,$s,$p-$s); //last (or entire) part
+			if ($xclean)
+				$parts[] = str_replace(' ','',$tmp);
+			else
+				$parts[] = $tmp;
+		}
 		return $parts;
 	}
 
