@@ -346,7 +346,9 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			return FALSE;
 		if(empty($bdata['startdate']) || empty($bdata['timezone']))
 			return FALSE;
-
+		$cal = new tmtCalendar($mod);
+		if(!$cal->ParseCondition($bdata['available'],$bdata['locale']))
+			return FALSE;
 		$tz = new DateTimeZone($bdata['timezone']);
 		$sdt = new DateTime($bdata['startdate'],$tz);
 		$sstamp = $sdt->getTimestamp(); //when the tournament start{s|ed}
@@ -355,7 +357,8 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$stamp = $dt->getTimestamp();
  		if($stamp < $sstamp)
 			$stamp = $sstamp;
-		$at = self::GetNextSlot($mod,$bdata,$stamp,FALSE); //find 1st slot
+
+		$at = self::GetNextSlot($cal,$bdata,$stamp,FALSE); //find 1st slot
 		if($at == FALSE)
 			return FALSE;
 		
@@ -407,7 +410,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 					{
 						if(--$slotcount == 0)
 						{
-							$at = self::GetNextSlot($mod,$bdata,$at,TRUE);
+							$at = self::GetNextSlot($cal,$bdata,$at,TRUE);
 							if($at == FALSE)
 								return FALSE;
 							$save = strftime('%F %R',$at);
@@ -459,14 +462,14 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 
 	/**
 	GetNextSlot:
-	@mod: reference to module object
+	@cal: reference to tmtCalendar object including parsed availability-conditions
 	@bdata: reference to array of bracket data
-	@stamp: timestamp expressed for local timezone
+	@stamp: timestamp expressed for bracket timezone
 	@withgap: optional, whether to append bracket's placegap to @stamp, default FALSE
 	@later: optional, no. of days-ahead to scan for the slot, default 14
 	Returns: timestamp or 0
 	*/
-	private function GetNextSlot(&$mod,&$bdata,$stamp,$withgap=FALSE,$later=14)
+	private function GetNextSlot(&$cal,&$bdata,$stamp,$withgap=FALSE,$later=14)
 	{
 		if($withgap)
 		{
@@ -475,9 +478,9 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		}
 		$slotlen = self::GapSeconds($bdata['playgaptype'],$bdata['playgap']);
 
-		$funcs = new tmtCalendar();
-		$at = $funcs->SlotStart($mod,$bdata,$stamp,$slotlen,$later);
-		$at = floor($at/60)*60; //ensure 0 sec
+		$at = $cal->NextSlotStart($bdata,$stamp,$slotlen,$later);
+		if($at)
+			$at = floor($at/60)*60; //ensure 0 sec
 		return $at;
 	}
 
