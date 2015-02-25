@@ -107,31 +107,6 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		}
 	}
 
-	//TODO this is also in tmtCalendar class
-	function IntervalNames(&$mod,$which,$plural=FALSE,$cap=FALSE)
-	{
-		$k = ($plural) ? 'multiperiods' : 'periods';
-		$all = explode(',',$mod->Lang($k));
-		array_unshift($all,$mod->Lang('none'));
-
-		if (!is_array($which))
-		{
-			if ($which >= 0 && $which < 7)
-				return $all[$which];
-			return '';
-		}
-		$ret = array();
-		foreach($which as $period)
-		{
-			if ($period >= 0 && $period < 7)
-			{
-				$ret[$period] = ($cap) ? ucfirst($all[$period]): //for current locale
-					$all[$period];
-			}
-		}
-		return $ret;
-	}
-
 	function Setup(&$mod,&$smarty,&$data,$id,$returnid,$activetab='',$message='')
 	{
 		$gCms = cmsms();
@@ -679,7 +654,9 @@ EOS;
 			$mod->Lang('help_same_time'),
 		);
 
-		$opts = $this->IntervalNames($mod,array(0,1,2,3,4),TRUE); //choices up to weeks
+		$cal = new Calendar(mod);
+		$opts = $cal->IntervalNames(array(0,1,2,3,4),TRUE); //plural choices up to weeks
+		$unset($cal);
 		if($pmod)
 			$opts = array_flip($opts); //selector needs other form of array
 
