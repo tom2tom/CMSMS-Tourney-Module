@@ -108,9 +108,11 @@ class tmtData
 			$data->available = NULL;
 		else
 		{
-			$cal = new tmtCalendar();
-			if($cal->CheckCondition($mod,$tmp,$data->locale))
-				$data->available = $tmp;
+			$cal = new Calendar($mod);
+			$clean = $cal->CheckCondition($tmp,$data->locale);
+			unset($cal);
+			if($clean)
+				$data->available = $clean;
 			else
 			{
 				$msg = $mod->Lang('err_value');
