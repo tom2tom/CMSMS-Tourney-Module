@@ -96,54 +96,109 @@ Time descriptors
 class Calendar
 {
 	protected $mod; //reference to current module-object
-	protected $cleaned;	//cached clean version of string which $conds represents
 	/*
-	$conds will be sorted, first on ascending priority-level (see below) and
-	within each level, on ascending date, or first-date, in the case of sequences
-	and ranges. Negative values are sorted after positives, but not interpreted
-	to corresponding actual values.
-	Priority levels:
-	1 no period (time-only)
-	2 unqualified year
-	3 unqualified month
-	4 unqualified week
-	5 unqualified day
-	6 qualified month
-	7 qualified week
-	8 qualified month
-	9 qualified month
-	10 specfic day
+	Each member of $conds is an array (
+	0 => 'focus'-level (as below) to assist interpeting PERIOD value
+		1 no period (time-only)
+		2 unqualified year
+		3 unqualified month
+		4 unqualified week
+		5 unqualified day
+		6 qualified month
+		7 qualified week
+		8 qualified month
+		9 qualified month
+		10 specfic day
+	1 => FALSE or PERIOD = TODO
+	2 => FALSE or TIME = array of strings representing time-values and/or time-value-ranges,
+		with sun-related ones first, others ordered by increasing value/range-start
+	);
+	$conds will be sorted, first on [0] ascending, then on [1] TODO, then on
+	[2][0][0] ascending. Negative values in [1] are sorted after positives, but not
+	interpreted to corresponding actual values. Sun-related times in [2] are not
+	interpreted.
 	*/
-	protected $conds; //cached array of interpreted calendar-conditions, or FALSE
+	protected $conds;
 //private $ob; //'(' for ltr, ')' for rtl
 //private $cb; //')' for ltr, '(' for rtl
 	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		$this->cleaned = '';
 		$this->conds = FALSE;
 	}
 
-	private function _SplitCondition($str)
+	//$offset points to opening bracket in $str
+	private function MatchBracket($str,$offset)
 	{
-		$parts = explode(',',$str);
-		foreach($parts as &$one)
+		$p = $offset;
+		$d = 0;
+		$l = strlen($str);
+		While ($p < $l)
 		{
-			if (strpos($one,'..') !== FALSE)
+			$c = $str[$p++];
+			if($c == '(')
+				$d++; //should go to 1 immediately
+			elseif($c == ')')
 			{
-				$one = explode('..',$one,2);
-				//in case the user mistakenly added more dots ....
-				while($one[1][0] == '.')
-					$one[1] = substr($one[1],1);
+				if(--$d == 0)
+					return $p-1;
+				elseif($d < 0)
+					return -1;
 			}
 		}
-		unset($one);
-		return $parts;
+		return -1;
 	}
 
-	//No brackets around $str
-	//Returns 3-member array(L,'.',H) or single value L(==H) or FALSE
-	private function _ParseRange($str)
+	//$offset points to initial '.' in $str
+	private function _StartRange($str,$offset)
+	{
+		$d = 0;
+		$p = $offset;
+		While ($p >= 0)
+		{
+			$c = $str[$p--];
+			if($c == '.')
+			{
+				if(++$d > 2)	//should never happen
+					return -1;
+			}
+			elseif(0) //TODO not a range-char
+				return $p+1;
+		}
+		return -1;
+	}
+
+	//$offset points to initial '.' in $str
+	private function _EndRange($str,$offset)
+	{
+		$d = 0;
+		$p = $offset;
+		$l = strlen($str);
+		While ($p < $l)
+		{
+			$c = $str[$p++];
+			if($c == '.')
+			{
+				if(++$d > 2)
+					return -1;
+			}
+			elseif(0) //TODO not a range-char
+				return $p-1;
+		}
+		return -1;
+	}
+
+	/**
+	_ParseRange:
+
+	If @getstr = FALSE, may return 3-member array(L,'.',H) or single value L(==H)
+	or FALSE upon error.
+	Second/middle '.'	is flag, for further processors, that array represents a range
+
+	@str: string to be parsed, containing '..' (and no surrounding brackets, of course)
+	@getstr: optional, whether to return re-constituted string, default TRUE
+	*/
+	private function _ParseRange($str,$getstr=TRUE)
 	{
 		$parts = explode('..',$str,2);
 		while($parts[1][0] == '.')
@@ -154,54 +209,95 @@ class Calendar
 			return $parts[0];
 		//order the pair
 		$swap = FALSE;
-		$dateptn = '/^([12][0-9]{3})-(1[0-2]|0?[1-9])(-(3[01]|0?[1-9]|[12][0-9]))?$/';
+		$dateptn = '/^([12][0-9]{3})(-(1[0-2]|0?[1-9])(-(3[01]|0?[1-9]|[12][0-9]))?)?$/';
 /* $pattern matches
 '2001-10-12' >> array
   0 => string '2001-10-12'
 	1 => string '2001'
-  2 => string '10'
-  3 => string '-12'
-  4 => string '12'
+	2 => string '-10-12'
+  3 => string '10'
+  4 => string '-12'
+  5 => string '12'
 '2001-10' >> array
   0 => string '2001-10'
 	1 => string '2001'
-  2 => string '10'
-'2001' >> empty array() 	
+	2 => string '-10'
+  3 => string '10'
+'2001' >> array
+	0 => string '2001'
+	1 => string '2001'
 */
 		if(preg_match($dateptn,$parts[0],$loparts) && preg_match($dateptn,$parts[1],$hiparts))
 		{
-			$swap = (($hiparts[1] < $loparts[1])
-			|| ($hiparts[1] == $loparts[1] && $hiparts[2] < $loparts[2]));
+			$swap = ($hiparts[1] < $loparts[1]);
 			if($swap)
 			{
-				if(!isset($hiparts[4]))
-					$hiparts[4] = '1';
-				if(!isset($loparts[4]))
+				if(!isset($hiparts[3]))
+					$hiparts[3] = '1';
+				if(!isset($hiparts[5]))
+					$hiparts[5] = '1';
+				if(!isset($loparts[3]))
+					$loparts[3] = '12';
+				if(!isset($loparts[5]))
 				{
-					$stamp = mktime(0,0,0,(int)$loparts[2],15,(int)$loparts[1]);				
-					$loparts[4] = date('t',$stamp); //last day of specified month
+					$stamp = mktime(0,0,0,(int)$loparts[3],15,(int)$loparts[1]);				
+					$loparts[5] = date('t',$stamp); //last day of specified month
 				}
 			}
 			else
 			{
-				if(!isset($loparts[4]))
-					$loparts[4] = '1';
-				if(!isset($hiparts[4]))
+				$swap = ($hiparts[1] == $loparts[1]) && (!isset($hiparts[3]) ||
+					(isset($loparts[3]) && $hiparts[3] < $loparts[3]));
+				if($swap)
 				{
-					$stamp = mktime(0,0,0,(int)$hiparts[2],15,(int)$hiparts[1]);				
-					$hiparts[4] = date('t',$stamp); //last day of specified month
+					if(!isset($hiparts[3]))
+						$hiparts[3] = '1';
+					if(!isset($hiparts[5]))
+						$hiparts[5] = '1';
+					if(!isset($loparts[3]))
+						$loparts[3] = '12';
+					if(!isset($loparts[5]))
+					{
+						$stamp = mktime(0,0,0,(int)$loparts[3],15,(int)$loparts[1]);				
+						$loparts[5] = date('t',$stamp); //last
+					}
 				}
-				if($hiparts[4] < $loparts[4])
-					$swap = TRUE;
+				else
+				{
+					if(!isset($loparts[5]))
+					{
+						if(!isset($hiparts[5]) || $hiparts[5] != '1')
+							$loparts[5] = '1';
+						else
+						{
+							$stamp = mktime(0,0,0,(int)$hiparts[3],15,(int)$hiparts[1]);				
+							$loparts[5] = date('t',$stamp); //last
+						}
+					}
+					if(!isset($hiparts[5]))
+					{
+						$stamp = mktime(0,0,0,(int)$hiparts[3],15,(int)$hiparts[1]);
+						$tmp = date('t',$stamp); //last
+						if($loparts[5] != tmp)
+							$hiparts[5] = $tmp;
+						else
+							$hiparts[5] = '1';
+					}
+					if($hiparts[5] < $loparts[5])
+						$swap = TRUE;
+				}
 			}
-			$parts[0] = $loparts[1].'-'.$loparts[2].'-'.$loparts[4];
-			$parts[1] = $hiparts[1].'-'.$hiparts[2].'-'.$hiparts[4];
+			$parts[0] = $loparts[1].'-'.$loparts[3].'-'.$loparts[5];
+			$parts[1] = $hiparts[1].'-'.$hiparts[3].'-'.$hiparts[5];
 		}
 		elseif(is_numeric($parts[0]) && is_numeric($parts[1]))
 		{
 			$s = (int)$parts[0];
 			$e = (int)$parts[1];
-			$swap = ($s > $e && $e > 0);
+			if(($s > 0 && $e > 0)||($s < 0 && $e < 0))
+				$swap = ($s > $e);
+			else
+				$swap = ($s < $e);
 		}
 		else
 		{
@@ -210,7 +306,10 @@ class Calendar
 				return FALSE;
 			$s = (int)substr($parts[0],1);
 			$e = (int)substr($parts[1],1);
-			$swap = ($s > $e && $e > 0);
+			if(($s > 0 && $e > 0)||($s < 0 && $e < 0))
+				$swap = ($s > $e);
+			else
+				$swap = ($s < $e);
 		}
 		if($swap)
 		{
@@ -218,15 +317,30 @@ class Calendar
 			$parts[0] = $parts[1];
 			$parts[1] = $t;
 		}
-		return array($parts[0],'.',$parts[1]);
+		if($getstr)
+			return $parts[0].'..'.$parts[1];
+		else
+			return array($parts[0],'.',$parts[1]);
 	}
 
-	//Compare numbers such that -ve's last and increasing
+	//Compare numbers such that -ve's last
 	private static function _cmp_numbers($a,$b)
 	{
 		if(($a >= 0 && $b < 0) || ($a < 0 && $b >= 0)) 
 			return ($b-$a);
 		return ($a-$b);
+	}
+
+	//Compare strings like D* or M*
+	private static function _cmp_named($a,$b)
+	{
+		$sa = $a[0];
+		$sb = $b[0];
+		if($sa != $sb)
+			return ($sa - $sb); //should never happen
+		$sa = (int)substr($a,1);
+		$sb = (int)substr($b,1);
+		return ($sa - $sb);
 	}
 
 	//Compare date-strings like YYYY[-[M]M[-[D]D]]
@@ -239,35 +353,44 @@ class Calendar
 		$stB = strtotime($s);
 		return ($stA-$stB);
 	}
+	
+	/**
+	_ParseSequence:
 
-	//No brackets around $str
-	//Returns N-member, no-duplicates, array(L,..,H) or single value L(==all others) or FALSE
-	//Any trailing @T is stripped
-	private function _ParseSequence($str)
+	Expects all values are the same type as the 1st in @str, otherwise error. NO TIMES.
+	If @getstr = FALSE, may return N-member, ascending-sorted, no-duplicates,
+	not-necessarily-contiguous-keyed array(L...H) or single value L(==all others) or FALSE.
+
+	@str: string to be parsed, containing 0 or more ','s and no surrounding brackets
+	@getstr: optional, whether to return re-constituted string, default TRUE
+	*/
+	private function _ParseSequence($str,$getstr=TRUE)
 	{
 		$parts = explode(',',$str);
 		if(count($parts) == 1)
 			return $str;
-		//assume all values are the same type as the 1st
+		$dateptn = '/^([12]\d{3})(-(1[0-2]|0?[1-9])(-(3[01]|0?[1-9]|[12]\d))?)?$/';
 		$val = $parts[0];
-		//trim any @T
-		$p = strpos($val,'@');
-		if($p !== FALSE)
-			$val = substr($val,0,$p);
-		$dateptn = '/^([12][0-9]{3})(-(1[0-2]|0?[1-9])(-(3[01]|0?[1-9]|[12][0-9]))?)?$/';
 		if(preg_match($dateptn,$val))
+		{
+			//TODO handle range
 			$type = 3;
+			$cmp = '_cmp_dates';
+		}
 		elseif(is_numeric($val))
+		{
 			$type = 1;
+			$cmp = '_cmp_numbers';
+		}
 		else
+		{
+			//TODO handle range
 			$type = 2;
+		 	$cmp = '_cmp_named';
+		}
 
 		foreach($parts as &$val)
 		{
-			//trim any @T
-			$p = strpos($val,'@');
-			if($p !== FALSE)
-				$val = substr($val,0,$p);
 			switch ($type)
 			{
 			 case 1:
@@ -293,7 +416,7 @@ class Calendar
 			 case 3:
 				if(preg_match($dateptn,$val,$matches))
 				{
-					//populate any missing part(s)? NO
+					//CHECKME omit any date within scope of another less-focused one?
 					break;
 				}
 				else
@@ -303,460 +426,296 @@ class Calendar
 				}
 			}
 		}
-		//sort
-		switch ($type)
-		{
-		 case 1:
-			usort($parts,array('tmtCalendar','_cmp_numbers'));
-		 case 2:
-		 	sort($parts,SORT_STRING);
-			break;
-		 case 3:
-			usort($parts,array('tmtCalendar','_cmp_dates'));
-			break;
-		}
-		//remove dups
+		unset($val);
+		if($parts == FALSE)
+			return '';
+		//remove dup's without sorting
 		$parts = array_flip($parts);
-		return array_flip($parts);
-	}
-
-	/**
-	_CleanPeriod:
-
-	Get suitably-adjusted form of @str.
-
-	@str: the string to be parsed
-	*/
-	private function _CleanPeriod($str)
-	{
-		if($str[0] == '-')
+		if(count($parts) > 1)
 		{
-			preg_match('/ TODO /',$str,$matches,0,1);
-			if($matches[0])
-			{
-				//TODO
-			}
-			return substr($str,1); //TODO better error handling
-
-		}
-		//TODO
-		return $str;
-	}
-
-	//Sort array in which any member(s) may be a range-array. All strings, caseless.
-	private static function _cmp_periods($a,$b)
-	{
-		if(is_array($a))
-		{
-			if(is_array($b))
-				return funcTODO($a[0],$b[0]);
-			elseif($a[0] === $b)
-				return 1; //range-arrays last
-			return funcTODO($a[0],$b);
-		}
-		elseif(is_array($b))
-		{
-			if($a === $b[0])
-				return -1; //range-arrays last
-			return funcTODO($a,$b[0]);
+			$parts = array_flip($parts);
+			usort($parts,array('Calendar',$cmp)); //keys now contiguous
+			if($getstr)
+				return '('.implode(',',$parts).')';
+			else
+				return $parts;
 		}
 		else
-			return funcTODO($a,$b);
+			return key($parts);
 	}
 
-	/**
-	_ParsePeriod:
-	
-	Get array of [midnight timestamps CHECKME] for each day in the range day-of- @start to
-	that day plus @later days, inclusive, and which complies with @str.
-	Assumes no whitespace in @str.
-
-	@str: the string to be parsed
-	@start: timestamp for period being matched
-	@laterdays: no. of days to process after the day of @start
-	*/
-	private function _ParsePeriod($str,$start,$laterdays)
-	{
-		$parts = $this->_SplitCondition($str);
-		//clean
-		foreach($parts as &$one)
-		{
-			if(is_array($one))
-			{
-			}
-			else
-			{
-			}
-		}
-		unset($one);
-		//sort
-		if(count($parts) > 1)
-			usort($parts, array('tmtCalendar','_cmp_periods'));
-		//coalesce
-		$blocks = array(array(-1,-1)); //always have something to compare
-		foreach($parts as &$one)
-		{
-			if(is_array($one))
-			{
-			}
-			else
-			{
-			}
-/*		$blend = end($blocks);
-			if ($stamp > $blend[1] + 1)
-				$blocks[] = array($stamp,$stend);
-			elseif($stend > $blend[1])
-				$blend[1] = $stend;
-*/
-		}
-		unset($one);
-		array_shift($blocks);
-		return $blocks;
-	}
-
-	//Sort array in which any member(s) may be a range-array. All strings, case-specific.
+	//Compare time-strings like [sun*[+-]][h]h[:[m]m]] without expensive
+	//time-conversions and with all sun* before all others
 	private static function _cmp_times($a,$b)
 	{
-		if(is_array($a))
+		$sa = strpos($a,'..');
+		if($sa !== FALSE)
+			$a = substr($a,0,$sa);		
+		$sb = strpos($b,'..');
+		if($sb !== FALSE)
+			$b = substr($b,0,$sb);
+		$ra = strpos($a,'R');
+		$rb = strpos($b,'R');
+		if($ra !== FALSE)
 		{
-			if(is_array($b))
-				return strcmp($a[0],$b[0]);
-			elseif($a[0] === $b)
-				return 1; //range-arrays last
-			return strcmp($a[0],$b);
+			if($rb === FALSE)
+				return -1; //sunrise always before
+			else
+			{
+				$ma = (strlen($a) > $ra+1);
+				if($ma) $na = $a[$ra+1];
+				$mb = (strlen($b) > $rb+1);
+				if($mb) $nb = $a[$rb+1];
+				if($ma && $mb)
+				{
+					if($na != $nb)
+						return ($nb-$na); //'+' < '-' so reverse
+					elseif($na == '+')
+					{
+						$a = substr($a,$ra+2);
+						$b = substr($b,$rb+2);
+						goto plaintimes;
+					}
+					elseif($na == '-')
+					{
+						$a = substr($b,$rb+2); //swapped
+						$b = substr($a,$ra+2);
+						goto plaintimes;
+					}
+					else
+						return FALSE;
+				}
+				elseif($ma && !$mb)
+					return ($na=='+') ? 1:-1;
+				elseif($mb && !$ma)
+					return ($nb=='+') ? -1:1;
+				return 0;
+			}
 		}
-		elseif(is_array($b))
+		$sa = strpos($a,'S');
+		$sb = strpos($b,'S');
+		if($sa !== FALSE)
 		{
-			if($a === $b[0])
-				return -1; //range-arrays last
-			return strcmp($a,$b[0]);
+			if($sb === FALSE)
+				return -1; //sunset always before
+			else
+			{
+				$ma = (strlen($a) > $sa+1);
+				if($ma) $na = $a[$sa+1];
+				$mb = (strlen($b) > $sb+1);
+				if($mb) $nb = $a[$sb+1];
+				if($ma && $mb)
+				{
+					if($na != $nb)
+						return ($nb-$na); //'+' < '-' so reverse
+					elseif($na == '+')
+					{
+						$a = substr($a,$sa+2);
+						$b = substr($b,$sb+2);
+						//fall through to compare $a,$b
+					}
+					elseif($na == '-')
+					{
+						$a = substr($b,$sb+2); //swapped
+						$b = substr($a,$sa+2);
+						//fall through to compare $a,$b
+					}
+					else
+						return FALSE;
+				}
+				elseif($ma && !$mb)
+					return ($na=='+') ? 1:-1;
+				elseif($mb && !$ma)
+					return ($nb=='+') ? -1:1;
+				return 0;
+			}
+		}
+		elseif($rb !== FALSE)
+			return ($sa !== FALSE) ? 1 : -1; //sunset after sunrise, before others
+		elseif($sb !== FALSE)
+			return -1; //ditto $ra irrelevant
+		//now just time-values
+plaintimes:
+		$sa = strpos($a,':');
+		$sb = strpos($b,':');
+		if($sa === FALSE)
+		{
+			if($sb === FALSE)
+				return ($a-$b);
+			else //$b has minutes
+			{
+				$h = substr($b,0,$sb) + 0;
+				return ($a-$h);
+			}
+		}
+		elseif($sb === FALSE) //and $a has minutes
+		{
+			$h = substr($a,0,$sa) + 0;
+			return ($h-$b);	
 		}
 		else
-			return strcmp($a,$b);
+		{
+			$h = substr($a,0,$sa) + 0;
+			$h2 = substr($b,0,$sb) + 0;
+			if($h == $h2)
+			{
+				$h = substr($a,$sa+1) + 0;
+				$h2 = substr($b,$sb+1) + 0;
+			}
+			return ($h-$h2);
+		}
 	}
 
 	/**
-	_CleanTime:
-
-	Get suitably-adjusted form of @str.
-
-	@str: the string to be parsed
-	@sunstuff =	array(
-	 'rise'=>translated 'sunrise' string
-	 'set'=>translated 'sunset' string
-	 'day'=>timestamp for day being processed
-	 'lat'=>latitude for calc
-	 'long'=>longitude for calc
-	 'zone'=>name of timezone (for calc GMT offset)
-	)
-	or FALSE
+	@str is PERIOD component of a condition
+	Depending on @report, returns sanitised variant of @str or array, or in either
+	case FALSE upon error;
 	*/
-	private function _CleanTime($str,$sunstuff)
+	private function _PeriodClean($str,$report)
 	{
-		if($str[0] == '-')
+		$clean = '';
+		$s = -1; $e = -1; $l = strlen(str);
+/*	for($p = 0; $p < $l; $p++)
 		{
-			preg_match('/(2[0-3]|[0-1]?[0-9])(:[0-5]?[0-9])?/',$str,$matches,0,1);
-			if($matches[0])
+			switch ($str[$p])
 			{
-				$adj = 24 - $matches[0];
-				while ($adj < 0)
-					$adj += 24;
-				if($matches[1])
-					$adj .= $matches[1];
-				return $adj;
-			}
-			return substr($str,1); //TODO better error handling
-		}
-		if($sunstuff)
-		{
-			if(strpos($str,$sunstuff['rise']) === 0)
-			{
-				$time = new DateTime($TODO, new DateTimeZone($sunstuff['zone']));
-				$stamp = date_sunrise(
-					$time->getTimestamp(),
-					SUNFUNCS_RET_TIMESTAMP,$sunstuff['lat'],$sunstuff['long'],90+(50/60),
-					$time->getOffset() / 3600
-				);
-				//TODO calc any offset
-				return date('G:i',$stamp);
-			}
-			if(strpos($str,$sunstuff['set']) === 0)
-			{
-				$time = new DateTime($TODO, new DateTimeZone($sunstuff['zone']));
-				$stamp = date_sunset(
-					$time->getTimestamp(),
-					SUNFUNCS_RET_TIMESTAMP,$sunstuff['lat'],$sunstuff['long'],90+(50/60),
-					$time->getOffset() / 3600
-				);
-				//TODO calc any offset
-				return date('G:i',$stamp);
+			 case :
+				break;
+			 case :
+				break;
+			 case :
+				break;
+			 case :
+				break;
 			}
 		}
-		return $str; //TODO better error handling
+*/
+		$focus = $N;
+		return array($focus,$clean);
 	}
 
 	/**
-	_ParseHourCondition:
-
-	Get array of seconds-range(s), each value therein a timestamp relative to start
-	of current year. Assumes no whitespace in @str.
-
-	@str: the string to be parsed
-	@sunstuff: optional array of sunrise/set calculation parameters as below, default FALSE
-	array(
-		'rise'=>translated 'sunrise' string as would appear in module parameter value
-		'set'=>translated 'sunset' string as would appear in module parameter value
-		'day'=>timestamp for day being processed
-		'lat'=>latitude for calc
-		'long'=>longitude for calc
-		'zone'=>name of timezone (for calc GMT offset)
-	)
+	@str is TIME component of a condition
+	Depending on @report, returns sanitised variant of @str or array of timevalues,
+	with sun-related values first, rest sorted ascending by value or start of range
+	where relevant, or in either case FALSE upon error
 	*/
-	private function _ParseTime($str,$sunstuff=FALSE)
+	private function _TimeClean($str,$report)
 	{
-		$parts = $this->_SplitCondition($str);
-		//cleanup
-		foreach($parts as &$one)
+		$parts = array();
+		$clean = '';
+		$s = 0; $e = 0; $d = 0; $l = strlen(str);
+		for($p = 0; $p < $l; $p++)
 		{
-			if(is_array($one))
+			$c = $str[$p];
+			switch ($c)
 			{
-				$s = $one[0];
-				$f = $s[0];
-				if($f < '0' || $f > '9')
-					$s = $this->_CleanTime($s,$sunstuff);
-				$e = $one[1];
-				$f = $e[0];
-				if($f < '0' || $f > '9')
-					$e = $this->_CleanTime($e,$sunstuff);
-				if(strcmp($s,$e) < 0)
-					$one = array($s,$e);
-				elseif(0) //TODO midnight-span
-					$one = array($s,$e);
-				elseif(strcmp($s,$e) > 0)
-					$one = array($e,$s);
+			 case '(':
+			 	if(++$d == 1)
+				{
+					$e = self::MatchBracket($str,$p); //matching brace (in case nested)
+					if($e != -1)
+					{
+						$s = $p+1;
+						$t = self::_TimeClean(substr($str,$s,$e-1-$s),FALSE); //recurse
+						if(is_array($t))
+							$parts = array_merge($parts,$t);
+						elseif($t !== FALSE)
+							$parts[] = $t;
+						else
+							return FALSE;
+						$d = 0;
+						$p = $e; //resume after closing bracket
+						break;
+					}
+					return FALSE;
+				}
+				break;
+ 			 case ')': //nested ) should never happen in this context
+			 	if(--$d < 0)
+					return FALSE;
+				break;
+			 case '.':
+			  $s = self::_StartRange($str,$p);
+				$e = self::_EndRange($str,$p);
+				if($s != -1 && $e != -1)
+				{
+					$t = self::_ParseRange(substr($str,$s,$e-$s+1),TRUE);
+					if($t !== FALSE)
+					{
+						$parts[] = $t;
+						$p = $e;
+						break;
+					}
+				}
+				return FALSE;
+			 case ':':
+ 			  if($p > $e)
+				{
+					$c = $str[$p-1];
+					if($c<'0' || $c>'9')
+						$clean .= '0';
+				}
+			  if($p < $l-1)
+				{
+					$c = $str[$p+1];
+					if($c<'0' || $c>'9')
+						$clean .= ':0';
+					else
+						$clean .= ':';
+				}
 				else
-					$one = $s;
-			}
-			else
-			{
-				$f = $one[0];
-				if($f < '0' || $f > '9')
-					$one = $this->_CleanTime($one,$sunstuff);
+					$clean .= ':0';
+				break;
+		  default:
+				if ($p < $l-1 && $c != ',')
+				  $clean .= $c;
+				else
+				{
+				  $parts[] = $clean;
+					$clean = '';
+				}
+				break;
 			}
 		}
-		unset($one);
+		if($parts == FALSE)
+			return '';
+		//remove dup's without sorting
+		$parts = array_flip($parts);
 		if(count($parts) > 1)
-			usort($parts, array('tmtCalendar','_cmp_times'));
-		//coalesce
-		$blocks = array(array(-1,-1)); //always have something to compare
-		foreach($parts as &$one)
 		{
-			if(is_array($one))
-			{
-				$stamp = strtotime($one[0],0); //time-localisation not supported
-				$stend = strtotime($one[1],0);
-			}
+			$parts = array_flip($parts);
+			usort($parts,array('Calendar','_cmp_times')); //keys now contiguous
+			if($report)
+				return '('.implode(',',$parts).')';
 			else
-			{
-				$stamp = strtotime($one,0);
-				$stend = $stamp + 3599;
-			}
-			$blend = end($blocks);
-			if ($stamp > $blend[1] + 1)
-				$blocks[] = array($stamp,$stend);
-			elseif($stend > $blend[1])
-				$blend[1] = $stend;
+				return $parts;
 		}
-		unset($one);
-		array_shift($blocks);
-		return $blocks;
+		else
+			return key($parts);
 	}
 
 	/**
-	_ParseConditions:
-	
-	Parse each member of @conds[] (as [p][@][t]) into arrays of days and related
-	times.
+	_CreateConditions:
 
-	@conds: reference to array of availability-descriptor strings
-	@sunstuff: reference to array of sunrise/sunset calc parameters, or FALSE
-	@slothours: no. in {0.0..24.0}, representing the actual or notional slot-length,
-	 	to help distinguish ambiguous hour- and day-numbers
-	@start: preferred start time (bracket-local timestamp)
-	@laterdays: no. of extra days to check after the one including @start
-	*/
-	private function _ParseConditions(&$conds,&$sunstuff,$slothours,$start,$laterdays)
-	{
-		$dstart = floor($start/86400); //1970/0-based index of $start's day 
-		$days = array();
-		$daytimes = array();
-		$repeat = FALSE;
-		foreach($conds as $one)
-		{
-			$p = strpos($one,'@'); //PERIOD-TIME separator present?
-			if($p !== FALSE)
-			{
-				$e = (strlen($one) == ($p+1)); //trailing '@'
-				if($p == 0 && !$e)
-				{
-					$days[] = ''; //distinguish from FALSE, cuz corresponding $daytimes[] is real
-					$daytimes[] = $this->_ParseTime(substr($one,$p+1),$sunstuff); //seconds-blocks rel. 0 (midnight 1/1/1970 GMT)
-				}
-				else //$p > 0 || $e
-					if($p > 0 && $e)
-				{
-					$days[] = $this->_ParsePeriod(substr($one,0,$p),$start,$laterdays); //day-indices rel. 0 (1/1/1970)
-					$daytimes[] = FALSE;
-				}
-				elseif($p > 0)
-				{
-					$days[] = $this->_ParsePeriod(substr($one,0,$p),$start,$laterdays);
-					$daytimes[] = $this->_ParseTime(substr($one,$p+1),$sunstuff);
-				}
-			}
-			else //PERIOD OR TIME
-			{
-				if(preg_match('~[DMW]~',$one))
-					$condtype = 2; //=period
-				//check sunrise/set before numbers, in case have sun*-H:M
-				elseif(preg_match('~[SR]~',$one))
-					$condtype = 1; //=time
-				else
-				{
-					$condtype = 0; //=undecided
-					//catch many dates and numbers (<0(incl. date-separator), >24)
-					$n = preg_match_all('~[-:]?\d+~',$one,$matches);
-					if($n)
-					{
-						foreach($matches[0] as $n)
-						{
-							if($n[0] == ':' || $n == 0) //have minutes, day-of-month never 0
-							{
-								$condtype = 1;
-								break;
-							}
-							elseif($n > 24 || $n < 0)
-							{
-								$condtype = 2;
-								break;
-							}
-						}
-					}
-				}
-				//end of analysis, for now
-				if ($condtype == 1) //time
-				{
-					$days[] = array($dstart,$dstart+$laterdays);
-					$daytimes[] = $this->_ParseTime($one,$sunstuff);
-				}
-				elseif($condtype == 2) //period
-				{
-					$days[] = $this->_ParsePeriod($one,$start,$laterdays);
-					$daytimes[] = FALSE;
-				}
-				else //could be either - re-consider, after all are known
-				{
-					$repeat = TRUE;
-					$days[] = FALSE;
-					$daytimes[] = $one;
-				}
-			}
-		}
-		if($repeat)
-		{
-			//small number(s) logged, may be for hour(s) or day(s)
-			$useday = FALSE;
-			//if any PERIOD recorded, assume all 'bare' numbers are days-of-month
-			foreach($days as &$one)
-			{
-				if($one) //NOT !== FALSE, match FALSE or ''
-				{
-					$useday = TRUE;
-					break;
-				}
-			}
-			unset($one);
-			//if still not sure, interpret values in $conds[]
-			if(!$useday)
-			{
-				//calc min. non-zero difference between small numeric values
-				$one = implode(' ',$conds);
-				$n = preg_match_all('~(?<![-:(\d])[0-2]?\d(?![\d()])~',$one,$matches);
-				if($n > 1)
-				{
-					$mindiff = 25.0; //> 24 hours
-					$n--; //for 0-base compares
-					sort($matches[0],SORT_NUMERIC);
-					foreach($matches[0] as $k=>$one)
-					{
-						if($k < $n)
-						{
-							$diff = (float)($matches[0][$k+1] - $one);
-							if ($diff > -0.001 && $diff < 0.001)
-							{
-								$useday = TRUE; //numbers repeated only in PERIOD-descriptors
-								break;
-							}
-							elseif($diff < $mindiff)
-								$mindiff = $diff;
-						}
-					}
-					if (!$useday && $mindiff < $slothours)
-						$useday = TRUE;
-				}
-				elseif($n)
-				{
-					$n = $matches[0][0];
-					if($slothours >= 1.0)
-						$useday = ($n < $slothours);
-					else
-					 	$useday = ($n < 7 || $n > 19); //arbitrary choice for a single number
-				}
-				else
-					$useday = TRUE; //should never get here
-			}
-			//now cleanup the logged values
-			foreach($days as $k=>&$one)
-			{
-				if ($one === FALSE) //NOT ==
-				{
-					if($useday)
-					{
-						//treat this as a day-value
-						$one = $this->_ParsePeriod($daytimes[$k],$start,$laterdays);
-						$daytimes[$k] = FALSE;
-					}
-					else
-					{
-						//$n(s) <7 or >19 more likely to be a day-value ?
-						$one = array($dstart,$dstart+$laterdays);
-						$daytimes[$k] = $this->_ParseTime($daytimes[$k],$sunstuff);
-					}
-				}
-				elseif ($one === '')
-					$one = FALSE; //now we can clear that distinction
-			}
-			unset($one);
-		}
-		if($days)
-			return array($days,$daytimes);
-		return array(FALSE,FALSE);
-	}
-
-	/**
-	_GetConditions:
-
-	Get array of 'cleaned' condition(s) from @avail. Returns FALSE upon error.
-	Un-necessary brackets are excised. Split on outside-bracket commas.
+	Process condition(s) from @avail into $this->conds, and if @report is TRUE,
+	construct a 'sanitised' variant of @avail.
+	Depending on @report, returns TRUE or the cleaned variant, or in either case
+	FALSE upon error.
+	Un-necessary brackets are excised. @avail split on outside-bracket commas.
 	All day-names aliased to D1..D7, all month-names aliased to M1..M12,
 	'sunrise' to R, 'sunset' to S, 'week' to W, whitespace & newlines gone.
 
 	@available: availability-condition string
 	@locale: locale identifier string, for localising day/month names
 	  possibly present in @available
+	@report: optional, whether to construct a cleaned variant of @avail after parsing,
+		default FALSE
 	*/
-	private function _GetConditions($avail,$locale)
+	private function _CreateConditions($avail,$locale,$report=FALSE)
 	{
+		$this->conds = FALSE;
+	
 		$gets = range(1,7);
 		$oldloc = FALSE;
 		if($locale)
@@ -782,8 +741,11 @@ class Calendar
 		for($i = 1; $i < 13; $i++)
 			$monthcodes[] = 'M'.$i;
 		//NB long before short
+		$rise = $this->mod->Lang('sunrise');
+		$set = $this->mod->Lang('sunset');
+		$week = $this->mod->Lang('week');
 		$finds = array_merge($longdays,$shortdays,$longmonths,$shortmonths,
-			array($this->mod->Lang('sunrise'),$this->mod->Lang('sunset'),$this->mod->Lang('week'),' ',"\n"));
+			array($rise,$set,$week,' ',"\n"));
 		$repls = array_merge($daycodes,$daycodes,$monthcodes,$monthcodes,
 			array('R','S','W','',''));
 		$clean = str_replace($finds,$repls,$avail);
@@ -868,7 +830,187 @@ class Calendar
 			else
 				$parts[] = $tmp;
 		}
-		return $parts;
+
+		$repeat = FALSE;
+		foreach($parts as &$one)
+		{
+			$parsed = array();
+			$p = strpos($one,'@'); //PERIOD-TIME separator present?
+			if($p !== FALSE)
+			{
+				$e = (strlen($one) == ($p+1)); //trailing '@'
+				if($p == 0 && !$e)
+				{
+					$parsed[0] = 1; //enum for only-time-specified
+					$parsed[1] = FALSE;
+					$parsed[2] = self::_TimeClean($one,$report);
+				}
+				else //$p > 0 || $e
+					if($p > 0 && $e)
+				{
+					list($parsed[0],$parsed[1]) = self::_PeriodClean($one,$report);
+					$parsed[2] = FALSE;
+				}
+				elseif($p > 0)
+				{
+					list($parsed[0],$parsed[1]) = self::_PeriodClean(substr($one,0,$p),$report);
+					$parsed[2] = self::_TimeClean(substr($one,$p+1),$report);
+				}
+			}
+			else //PERIOD OR TIME
+			{
+				if(preg_match('~[DMW]~',$one))
+					$condtype = 2; //=period
+				//check sunrise/set before numbers, in case have sun*-H:M
+				elseif(preg_match('~[SR]~',$one))
+					$condtype = 1; //=time
+				else
+				{
+					$condtype = 0; //=undecided
+					//catch many dates and numbers (<0(incl. date-separator), >24)
+					$n = preg_match_all('~[-:]?\d+~',$one,$matches);
+					if($n)
+					{
+						foreach($matches[0] as $n)
+						{
+							if($n[0] == ':' || $n == 0) //have minutes, day-of-month never 0
+							{
+								$condtype = 1;
+								break;
+							}
+							elseif($n > 24 || $n < 0)
+							{
+								$condtype = 2;
+								break;
+							}
+						}
+					}
+				}
+				//end of analysis, for now
+				if ($condtype == 1) //time
+				{
+					$parsed[0] = 1;
+					$parsed[1] = FALSE;
+					$parsed[2] = self::_TimeClean($one,$report);
+				}
+				elseif($condtype == 2) //period
+				{
+					list($parsed[0],$parsed[1]) = self::_PeriodClean($one,$report);
+					$parsed[2] = FALSE;
+				}
+				else //could be either - re-consider, after all are known
+				{
+					$repeat = TRUE;
+					//park as a time-value, unset parsed[0] signals reconsideration needed
+					$parsed[1] = FALSE;
+					$parsed[2] = $one;
+				}
+			}
+			$this->conds[] = $parsed;
+		}
+		unset($one);
+//
+		if($repeat)
+		{
+			//small number(s) logged, may be for hour(s) or day(s)
+			$useday = FALSE;
+			//if any PERIOD recorded, assume all 'bare' numbers are days-of-month
+			foreach($this->conds as &$one)
+			{
+				if($one[1])
+				{
+					$useday = TRUE;
+					break;
+				}
+			}
+			unset($one);
+			//if still not sure, interpret values in $parts[]
+			if(!$useday)
+			{
+				//calc min. non-zero difference between small numeric values
+				$one = implode(' ',$parts); //'higher-quality' than $clean
+				$n = preg_match_all('~(?<![-:(\d])[0-2]?\d(?![\d()])~',$one,$matches);
+				if($n > 1)
+				{
+					$mindiff = 25.0; //> 24 hours
+					$n--; //for 0-base compares
+					sort($matches[0],SORT_NUMERIC);
+					foreach($matches[0] as $k=>$one)
+					{
+						if($k < $n)
+						{
+							$diff = (float)($matches[0][$k+1] - $one);
+							if ($diff > -0.001 && $diff < 0.001)
+							{
+								$useday = TRUE; //numbers repeated only in PERIOD-descriptors
+								break;
+							}
+							elseif($diff < $mindiff)
+								$mindiff = $diff;
+						}
+					}
+					if (!$useday && $mindiff < $slothours)
+						$useday = TRUE;
+				}
+				elseif($n)
+				{
+					$n = $matches[0][0];
+					if($slothours >= 1.0)
+						$useday = ($n < $slothours);
+					else
+						$useday = ($n < 7 || $n > 19); //arbitrary choice for a single number
+				}
+				else
+					$useday = TRUE; //should never get here
+			}
+			//now cleanup the logged values
+			foreach($this->conds as &$one)
+			{
+				if (!isset($one[0]))
+				{
+					if($useday)
+					{
+						//treat this as a day-value
+						$one[0] = 5;
+						$one[1] = $one[2];
+						$one[2] = FALSE;
+					}
+					else //time-only
+					{
+						$one[0] = 1;
+					}
+				}
+			}
+			unset($one);
+		}
+
+		if($report)
+		{
+			//re-merge parsed array
+			$p = 0;
+			$s = '';
+			foreach($this->conds as &$one)
+			{
+				if($p === 0)
+					$p = 1;
+				else
+					$s .= ',';
+				if($one[1])
+				{
+					$s .= $one[1];
+					if($one[2])
+						$s .= '@'.$one[2];
+				}
+				elseif($one[2])
+					$s .= $one[2];
+			}
+			unset($one);
+			$finds = array_merge($daycodes,$monthcodes,array('R','S','W'));
+			$repls = array_merge($shortdays,$shortmonths,array($rise,$set,$week));
+			return str_replace($finds,$repls,$s);
+		}
+		else
+			return TRUE;
 	}
 
 	//========== PUBLIC FUNCS ===========
@@ -1032,8 +1174,9 @@ class Calendar
 	ParseCondition:
 
 	Parse calendar-constraint @available and store result in $this->conds.
-	Returns TRUE upon success (or if no constraint applies).
-	This must be called before any poll for a period or check for a match.
+	Returns TRUE upon success, or if no constraint applies, otherwise FALSE.
+	This (or CheckCondition()) must be called before any poll for a suitable period,
+	or check for a matching period.
 
 	@available: availability-condition string
 	@locale: optional, locale identifier string for localising day/month names
@@ -1041,22 +1184,23 @@ class Calendar
 	*/
 	function ParseCondition($available,$locale='')
 	{
-		if($available == FALSE)
+		if(!$available)
+		{
+			$this->conds = FALSE;
 			return TRUE;
-		$this->conds = FALSE;
-		$conds = $this->_GetConditions($available,$locale);
-		if(!$conds)
-			return FALSE;
-		//TODO
-		return FALSE;
+		}
+		return self::_CreateConditions($available,$locale);
 	}
 
 	/**
 	CheckCondition:
 
 	Determine whether calendar-constraint @available has correct syntax.
-	Returns TRUE if no constraint applies, or else a 'cleaned' version of @available,
-	or FALSE if @available is bad.
+	Returns '' if @available is FALSE (no constraint applies), or a cleaned-up
+	variant of @available, or FALSE if @available is bad.
+	Also stores the parsed @available in $this->conds. This (or ParseCondition())
+	must be called before any poll for a suitable period, or check for a matching
+	period.
 
 	@available: availability-condition string
 	@locale: optional, locale identifier string for localising day/month names
@@ -1064,17 +1208,12 @@ class Calendar
 	*/
 	function CheckCondition($available,$locale='')
 	{
-		if($available == FALSE)
-			return TRUE;
-		$s1 = $this->conds;
-		$s2 = $this->cleaned;
-		if($this->ParseCondition($available,$locale))
-			$ret = $this->cleaned;
-		else
-			$ret = FALSE;
-		$this->conds = $s1;
-		$this->cleaned = $s2;
-		return $ret;
+		if(!$available)
+		{
+			$this->conds = FALSE;
+			return '';
+		}
+		return self::_CreateConditions($available,$locale,TRUE);
 	}
 
 }
