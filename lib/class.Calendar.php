@@ -114,9 +114,11 @@ class Calendar
 		with sun-related ones first, others ordered by increasing value/range-start
 	);
 	$conds will be sorted, first on [0] ascending, then on [1] TODO, then on
-	[2][0][0] ascending. Negative values in [1] are sorted after positives, but not
-	interpreted to corresponding actual values. Sun-related times in [2] are not
-	interpreted.
+	[2][?][0] ascending. Negative values in [1] are sorted after positives, but not
+	interpreted to corresponding actual values.
+	Times in [2] are not interpreted. Other than sun-related values, they can be
+	converted to midnight-relative seconds, and any overlaps 'coalesced'. Sun-related
+	values must of course be interpreted for each specific day evaluated.
 	*/
 	protected $conds;
 //private $ob; //'(' for ltr, ')' for rtl
@@ -191,14 +193,20 @@ class Calendar
 	/**
 	_ParseRange:
 
-	If @getstr = FALSE, may return 3-member array(L,'.',H) or single value L(==H)
-	or FALSE upon error.
-	Second/middle '.'	is flag, for further processors, that array represents a range
+	This is for period-identifiers, no times are handled.
+	(TODO v.2 support e.g. Sunday@10..Monday@15:30 ?)
+	Depending on @getstr, this may return a 3-member array(L,'.',H) or a string
+	represenation of that array 'L..H'. In either case, the return may be a
+	single value L(==H) or FALSE upon error.
+	The second/middle array value '.'	is flag, for further processors, that the
+	array represents a range. L and/or H are not interpreted in any way, except that
+	incomplete date-values will be populated.
 
 	@str: string to be parsed, containing '..' (and no surrounding brackets, of course)
 	@getstr: optional, whether to return re-constituted string, default TRUE
 	*/
-	private function _ParseRange($str,$getstr=TRUE)
+//	private 
+	function _ParseRange($str,$getstr=TRUE)
 	{
 		$parts = explode('..',$str,2);
 		while($parts[1][0] == '.')
@@ -357,14 +365,18 @@ class Calendar
 	/**
 	_ParseSequence:
 
-	Expects all values are the same type as the 1st in @str, otherwise error. NO TIMES.
-	If @getstr = FALSE, may return N-member, ascending-sorted, no-duplicates,
-	not-necessarily-contiguous-keyed array(L...H) or single value L(==all others) or FALSE.
+	This is for period-identifiers, no times are handled.
+	Expects all values are the same type as the 1st in @str, otherwise error.
+	Depending on @getstr, this may return a N-member, ascending-sorted, no-duplicates,
+	contiguous-keyed array(L,...,H), or a bracket-enclosed, comma-separated string
+	represenation of that array. In either case, this may also return a single value
+	L(==all others) or FALSE upon error.
 
 	@str: string to be parsed, containing 0 or more ','s and no surrounding brackets
 	@getstr: optional, whether to return re-constituted string, default TRUE
 	*/
-	private function _ParseSequence($str,$getstr=TRUE)
+//	private 
+	function _ParseSequence($str,$getstr=TRUE)
 	{
 		$parts = explode(',',$str);
 		if(count($parts) == 1)
@@ -459,85 +471,136 @@ class Calendar
 		if($ra !== FALSE)
 		{
 			if($rb === FALSE)
-				return -1; //sunrise always before
+			{
+//	$dbg = ($sa !== FALSE) ? 1 : -1;
+//	$this->DoNothing();
+//	return ($sa !== FALSE) ? 1 : -1;
+				return -1;
+			}
 			else
 			{
 				$ma = (strlen($a) > $ra+1);
 				if($ma) $na = $a[$ra+1];
 				$mb = (strlen($b) > $rb+1);
-				if($mb) $nb = $a[$rb+1];
+				if($mb) $nb = $b[$rb+1];
 				if($ma && $mb)
 				{
 					if($na != $nb)
-						return ($nb-$na); //'+' < '-' so reverse
+					{
+//	$dbg = ord($nb)-ord($na);
+//	$this->DoNothing();
+						return (ord($nb)-ord($na)); //'+' < '-' so reverse
+					}
 					elseif($na == '+')
 					{
 						$a = substr($a,$ra+2);
 						$b = substr($b,$rb+2);
+//	$this->DoNothing();
 						goto plaintimes;
 					}
 					elseif($na == '-')
 					{
-						$a = substr($b,$rb+2); //swapped
+						$t = substr($b,$rb+2); //swapped
 						$b = substr($a,$ra+2);
+						$a = $t;
+//	$this->DoNothing();
 						goto plaintimes;
 					}
 					else
+					{
+//	$this->DoNothing();
 						return FALSE;
+					}
 				}
 				elseif($ma && !$mb)
+				{
+//	$this->DoNothing();
 					return ($na=='+') ? 1:-1;
+				}
 				elseif($mb && !$ma)
+				{
+//	$this->DoNothing();
 					return ($nb=='+') ? -1:1;
+				}
 				return 0;
 			}
+//	$this->DoNothing();
 		}
 		$sa = strpos($a,'S');
 		$sb = strpos($b,'S');
 		if($sa !== FALSE)
 		{
 			if($sb === FALSE)
-				return -1; //sunset always before
+			{
+//QQQ
+	$dbg = ($ra !== FALSE) ? -1 : 1;
+//	$this->DoNothing();
+	return ($ra !== FALSE) ? -1 : 1; //sunset after sunrise, before others
+//			return -1; //sunset after sunrise, before others
+			}
 			else
 			{
 				$ma = (strlen($a) > $sa+1);
 				if($ma) $na = $a[$sa+1];
 				$mb = (strlen($b) > $sb+1);
-				if($mb) $nb = $a[$sb+1];
+				if($mb) $nb = $b[$sb+1];
 				if($ma && $mb)
 				{
 					if($na != $nb)
-						return ($nb-$na); //'+' < '-' so reverse
+					{
+//	$this->DoNothing();
+						return (ord($nb)-ord($na)); //'+' < '-' so reverse
+					}
 					elseif($na == '+')
 					{
 						$a = substr($a,$sa+2);
 						$b = substr($b,$sb+2);
+//	$this->DoNothing();
 						//fall through to compare $a,$b
 					}
 					elseif($na == '-')
 					{
-						$a = substr($b,$sb+2); //swapped
+//	$this->DoNothing();
+						$t = substr($b,$sb+2); //swapped
 						$b = substr($a,$sa+2);
+						$a = $t;
+//	$this->DoNothing();
 						//fall through to compare $a,$b
 					}
 					else
 						return FALSE;
 				}
 				elseif($ma && !$mb)
+				{
+//	$this->DoNothing();
 					return ($na=='+') ? 1:-1;
+				}
 				elseif($mb && !$ma)
+				{
+//	$this->DoNothing();
 					return ($nb=='+') ? -1:1;
+				}
 				return 0;
 			}
+//	$this->DoNothing();
 		}
 		elseif($rb !== FALSE)
-			return ($sa !== FALSE) ? 1 : -1; //sunset after sunrise, before others
+		{
+//	$dbg = ($sa !== FALSE) ? -1 : 1;
+//	$this->DoNothing();
+			return ($sa !== FALSE) ? -1 : 1; //sunset after sunrise, before others
+		}
 		elseif($sb !== FALSE)
-			return -1; //ditto $ra irrelevant
+		{
+//	$dbg = ($ra !== FALSE) ? -1 : 1;
+//	$this->DoNothing();
+			return ($ra !== FALSE) ? -1 : 1; //ditto
+		}
 		//now just time-values
 plaintimes:
 		$sa = strpos($a,':');
 		$sb = strpos($b,':');
+//$this->DoNothing();
 		if($sa === FALSE)
 		{
 			if($sb === FALSE)
@@ -545,13 +608,13 @@ plaintimes:
 			else //$b has minutes
 			{
 				$h = substr($b,0,$sb) + 0;
-				return ($a-$h);
+				return ($a != $h) ? ($a-$h) : -1;	//$b later for same hour
 			}
 		}
 		elseif($sb === FALSE) //and $a has minutes
 		{
 			$h = substr($a,0,$sa) + 0;
-			return ($h-$b);	
+			return ($h != $b) ? ($h-$b) : 1; //$a later for same hour
 		}
 		else
 		{
@@ -600,11 +663,12 @@ plaintimes:
 	with sun-related values first, rest sorted ascending by value or start of range
 	where relevant, or in either case FALSE upon error
 	*/
-	private function _TimeClean($str,$report)
+//	private 
+	function _TimeClean($str,$report)
 	{
 		$parts = array();
-		$clean = '';
-		$s = 0; $e = 0; $d = 0; $l = strlen(str);
+		$one = '';
+		$s = 0; $e = 0; $d = 0; $l = strlen($str);
 		for($p = 0; $p < $l; $p++)
 		{
 			$c = $str[$p];
@@ -617,7 +681,7 @@ plaintimes:
 					if($e != -1)
 					{
 						$s = $p+1;
-						$t = self::_TimeClean(substr($str,$s,$e-1-$s),FALSE); //recurse
+						$t = self::_TimeClean(substr($str,$s,$e-$s),FALSE); //recurse
 						if(is_array($t))
 							$parts = array_merge($parts,$t);
 						elseif($t !== FALSE)
@@ -654,30 +718,32 @@ plaintimes:
 				{
 					$c = $str[$p-1];
 					if($c<'0' || $c>'9')
-						$clean .= '0';
+						$one .= '0';
 				}
 			  if($p < $l-1)
 				{
 					$c = $str[$p+1];
 					if($c<'0' || $c>'9')
-						$clean .= ':0';
+						$one .= ':0';
 					else
-						$clean .= ':';
+						$one .= ':';
 				}
 				else
-					$clean .= ':0';
+					$one .= ':0';
 				break;
 		  default:
-				if ($p < $l-1 && $c != ',')
-				  $clean .= $c;
+				if ($c != ',')
+				  $one .= $c;
 				else
 				{
-				  $parts[] = $clean;
-					$clean = '';
+				  $parts[] = $one;
+					$one = '';
 				}
 				break;
 			}
 		}
+		if($one)
+			$parts[] = $one; //last one
 		if($parts == FALSE)
 			return '';
 		//remove dup's without sorting
@@ -712,7 +778,8 @@ plaintimes:
 	@report: optional, whether to construct a cleaned variant of @avail after parsing,
 		default FALSE
 	*/
-	private function _CreateConditions($avail,$locale,$report=FALSE)
+//	private 
+	function _CreateConditions($avail,$locale,$report=FALSE)
 	{
 		$this->conds = FALSE;
 	
