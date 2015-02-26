@@ -109,9 +109,10 @@ class Calendar
 		8 qualified month
 		9 qualified month
 		10 specfic day
-	1 => FALSE or PERIOD = TODO
+	1 => FALSE or PERIOD = structure of arrays and strings representing period-values and/or
+		period-value-ranges
 	2 => FALSE or TIME = array of strings representing time-values and/or time-value-ranges,
-		with sun-related ones first, others ordered by increasing value/range-start
+		with sun-related ones first, all ordered by increasing value/range-start
 	);
 	$conds will be sorted, first on [0] ascending, then on [1] TODO, then on
 	[2][?][0] ascending. Negative values in [1] are sorted after positives, but not
@@ -214,7 +215,7 @@ class Calendar
 	@str: string to be parsed, containing '..' (and no surrounding brackets, of course)
 	@getstr: optional, whether to return re-constituted string, default TRUE
 	*/
-//	private 
+//	private
 	function _ParseRange($str,$getstr=TRUE)
 	{
 		$parts = explode('..',$str,2);
@@ -249,13 +250,13 @@ class Calendar
 			$swap = ($hiparts[1] < $loparts[1]);
 			if($swap)
 			{
-				if(!isset($hiparts[3]))
+				if(!isset($hiparts[3]) && isset($loparts[3]))
 					$hiparts[3] = '1';
-				if(!isset($hiparts[5]))
+				if(!isset($hiparts[5]) && isset($loparts[5]))
 					$hiparts[5] = '1';
-				if(!isset($loparts[3]))
+				if(!isset($loparts[3]) && isset($hiparts[3]))
 					$loparts[3] = '12';
-				if(!isset($loparts[5]))
+				if(!isset($loparts[5]) && isset($hiparts[5]))
 				{
 					$stamp = mktime(0,0,0,(int)$loparts[3],15,(int)$loparts[1]);				
 					$loparts[5] = date('t',$stamp); //last day of specified month
@@ -267,13 +268,13 @@ class Calendar
 					(isset($loparts[3]) && $hiparts[3] < $loparts[3]));
 				if($swap)
 				{
-					if(!isset($hiparts[3]))
+					if(!isset($hiparts[3]) && isset($loparts[3]))
 						$hiparts[3] = '1';
-					if(!isset($hiparts[5]))
+					if(!isset($hiparts[5]) && isset($loparts[5]))
 						$hiparts[5] = '1';
-					if(!isset($loparts[3]))
+					if(!isset($loparts[3]) && isset($hiparts[3]))
 						$loparts[3] = '12';
-					if(!isset($loparts[5]))
+					if(!isset($loparts[5]) && isset($hiparts[5]))
 					{
 						$stamp = mktime(0,0,0,(int)$loparts[3],15,(int)$loparts[1]);				
 						$loparts[5] = date('t',$stamp); //last
@@ -281,9 +282,9 @@ class Calendar
 				}
 				else
 				{
-					if(!isset($loparts[5]))
+					if(!isset($loparts[5]) && isset($hiparts[5]))
 					{
-						if(!isset($hiparts[5]) || $hiparts[5] != '1')
+						if($hiparts[5] != '1')
 							$loparts[5] = '1';
 						else
 						{
@@ -291,7 +292,7 @@ class Calendar
 							$loparts[5] = date('t',$stamp); //last
 						}
 					}
-					if(!isset($hiparts[5]))
+					if(!isset($hiparts[5]) && isset($loparts[5]))
 					{
 						$stamp = mktime(0,0,0,(int)$hiparts[3],15,(int)$hiparts[1]);
 						$tmp = date('t',$stamp); //last
@@ -304,8 +305,16 @@ class Calendar
 						$swap = TRUE;
 				}
 			}
-			$parts[0] = $loparts[1].'-'.$loparts[3].'-'.$loparts[5];
-			$parts[1] = $hiparts[1].'-'.$hiparts[3].'-'.$hiparts[5];
+			$parts[0] = $loparts[1];
+			if(isset($loparts[3]))
+				$parts[0] .= '-'.$loparts[3];
+			if(isset($loparts[5]))
+				$parts[0] .= '-'.$loparts[5];
+			$parts[1] = $hiparts[1];
+			if(isset($hiparts[3]))
+				$parts[1] .= '-'.$hiparts[3];
+			if(isset($hiparts[5]))
+				$parts[1] .= '-'.$hiparts[5];
 		}
 		elseif(is_numeric($parts[0]) && is_numeric($parts[1]))
 		{
@@ -384,17 +393,19 @@ class Calendar
 	@str: string to be parsed, containing 0 or more ','s and no surrounding brackets
 	@getstr: optional, whether to return re-constituted string, default TRUE
 	*/
-//	private 
-	function _ParseSequence($str,$getstr=TRUE)
+	private function _ParseSequence($str,$getstr=TRUE)
 	{
 		$parts = explode(',',$str);
 		if(count($parts) == 1)
-			return $str;
+		{
+			if(strpos($str,'..') === FALSE)
+				return $str;
+			return self::_ParseRange($str,$getstr);
+		}
 		$dateptn = '/^([12]\d{3})(-(1[0-2]|0?[1-9])(-(3[01]|0?[1-9]|[12]\d))?)?$/';
 		$val = $parts[0];
 		if(preg_match($dateptn,$val))
 		{
-			//TODO handle range
 			$type = 3;
 			$cmp = '_cmp_dates';
 		}
@@ -405,7 +416,6 @@ class Calendar
 		}
 		else
 		{
-			//TODO handle range
 			$type = 2;
 		 	$cmp = '_cmp_named';
 		}
@@ -419,13 +429,41 @@ class Calendar
 				{
 					break;
 				}
+				elseif(strpos($val,'..') !== FALSE)
+				{
+					$r = self::_ParseRange($val,FALSE);
+					if(is_array($r) && is_numeric($r[0]))
+						$val = $r[0].'..'.$r[2]; //no sub-array here, prior to flip/de-dup
+					elseif($r && is_numeric($r))
+						$val = $r;
+					else
+					{
+						$parts = FALSE;
+						break 2;
+					}
+					break;
+				}
 				else
 				{
 					$parts = FALSE;
 					break 2;
 				}
 			 case 2:
-				if(1) //TODO same type of non-numeric
+				if(strpos($val,'..') !== FALSE)
+				{
+					$r = self::_ParseRange($val,FALSE);
+					if(is_array($r)) //TODO && same type of non-numeric
+						$val = $r[0].'..'.$r[2]; //no sub-array here
+					elseif($r) //TODO && same type of non-numeric
+						$val = $r;
+					else
+					{
+						$parts = FALSE;
+						break 2;
+					}
+					break;
+				}
+				elseif(1) //TODO same type of non-numeric
 				{
 					break;
 				}
@@ -435,9 +473,22 @@ class Calendar
 					break 2;
 				}
 			 case 3:
-				if(preg_match($dateptn,$val,$matches))
+				if(strpos($val,'..') !== FALSE)
 				{
-					//CHECKME omit any date within scope of another less-focused one?
+					$r = self::_ParseRange($val,FALSE);
+					if(is_array($r) && preg_match($dateptn,$r[0]))
+						$val = $r[0].'..'.$r[2]; //no sub-array here
+					elseif($r && preg_match($dateptn,$r))
+						$val = $r;
+					else
+					{
+						$parts = FALSE;
+						break 2;
+					}
+					break;
+				}
+				elseif(preg_match($dateptn,$val))
+				{
 					break;
 				}
 				else
@@ -450,7 +501,7 @@ class Calendar
 		unset($val);
 		if($parts == FALSE)
 			return '';
-		//remove dup's without sorting
+		//remove dup's without sorting 
 		$parts = array_flip($parts);
 		if(count($parts) > 1)
 		{
@@ -465,33 +516,117 @@ class Calendar
 			return key($parts);
 	}
 
+	private static function _cmp_periods($a,$b)
+	{
+		$sa = $a['focus'];
+		$sb = $b['focus'];
+//		if($sa != $sb)
+			return ($sa-$sb);
+		//TODO
+//		return 0;
+	}
+
 	/**
 	@str is PERIOD component of a condition
 	Depending on @report, returns sanitised variant of @str or array, or in either
 	case FALSE upon error;
 	*/
-	private 
+//	private 
 	function _PeriodClean($str,$report)
 	{
-		$clean = '';
-		$s = -1; $e = -1; $l = strlen(str);
-/*	for($p = 0; $p < $l; $p++)
+		$parts = array();
+		$one = '';
+		$s = 0; $e = 0; $d = 0; $l = strlen($str);
+		for($p = 0; $p < $l; $p++)
 		{
-			switch ($str[$p])
+			$c = $str[$p];
+			switch ($c)
 			{
-			 case :
+			 case '(':
+			 	if(++$d == 1) //CHECKME no nesting-support?
+				{
+					$e = self::_MatchBracket($str,$p); //matching brace (in case nested)
+					if($e != -1)
+					{
+						if(0)
+						{
+							//TODO handle 'of' brackets
+							//TODO $one['of'] = 
+						}
+						else
+						{
+							//TODO $one['of'] = 
+							$s = $p+1;
+							$t = self::_ParseSequence(substr($str,$s,$e-$s),FALSE); //no nesting supported
+							if(is_array($t))
+								$parts = array_merge($parts,$t);
+							elseif($t !== FALSE)
+								$parts[] = $t;
+							else
+								return FALSE;
+							$d = 0;
+							$one = '';
+						}
+						$p = $e; //resume after closing bracket
+						break;
+					}
+					return FALSE;
+				}
 				break;
-			 case :
+ 			 case ')': //nested ) should never happen in this context
+			 	if(--$d < 0)
+					return FALSE;
 				break;
-			 case :
-				break;
-			 case :
+			 case '.':
+				$s = self::_StartRange($str,$p);
+				$e = self::_EndRange($str,$p);
+				if($s != -1 && $e != -1)
+				{
+					//cannot safely create range-array before $parts[] sort and de-dup 
+					$t = self::_ParseRange(substr($str,$s,$e-$s+1),TRUE);
+					if($t !== FALSE)
+					{
+						$parts[] = $t;
+						$one = '';
+						$p = $e;
+						break;
+					}
+				}
+				return FALSE;
+		  default:
+				if ($c != ',')
+					$one .= $c;
+				elseif($one)
+				{
+					$parts[] = $one;
+					$one = '';
+				}
 				break;
 			}
 		}
-*/
-		$focus = $N;
-		return array($focus,$clean);
+		if($one)
+		{
+//			$one['of'] = ; TODO
+			$parts[] = $one; //last one
+		}
+		elseif($parts == FALSE)
+			return '';
+		//TODO remove dup's
+		if(count($parts) > 1)
+		{
+//		usort($parts,array('Calendar','_cmp_periods')); //keys now contiguous
+			if($report)
+			{
+				return $str; //TODO reconstruct from $parts
+			}
+			else
+			{
+				//CHECKME convert ranges to arrays (L,.,H)
+				return $parts;
+			}
+		}
+		else
+			return $parts;
 	}
 
 	//Compare time-strings like [sun*[+-]][h]h[:[m]m]] without expensive
@@ -636,8 +771,7 @@ plaintimes:
 	with sun-related values first, rest sorted ascending by value or start of range
 	where relevant, or in either case FALSE upon error
 	*/
-	//private 
-	function _TimeClean($str,$report)
+	private function _TimeClean($str,$report)
 	{
 		$parts = array();
 		$one = '';
@@ -674,10 +808,11 @@ plaintimes:
 					return FALSE;
 				break;
 			 case '.':
-			  $s = self::_StartRange($str,$p);
+				$s = self::_StartRange($str,$p);
 				$e = self::_EndRange($str,$p);
 				if($s != -1 && $e != -1)
 				{
+					//cannot safely create range-array before $parts[] sort and de-dup 
 					$t = self::_ParseRange(substr($str,$s,$e-$s+1),TRUE);
 					if($t !== FALSE)
 					{
@@ -719,7 +854,7 @@ plaintimes:
 		}
 		if($one)
 			$parts[] = $one; //last one
-		if($parts == FALSE)
+		elseif($parts == FALSE)
 			return '';
 		//remove dup's without sorting
 		$parts = array_flip($parts);
@@ -730,7 +865,10 @@ plaintimes:
 			if($report)
 				return '('.implode(',',$parts).')';
 			else
+			{
+				//CHECKME convert ranges to arrays (L,.,H)
 				return $parts;
+			}
 		}
 		else
 			return key($parts);
@@ -767,11 +905,11 @@ plaintimes:
 				$oldloc = FALSE;
 		}
 		//NB some of these may be wrong, due to race on threaded web-server
-		$longdays = $this->AdminDayNames($gets);
-		$shortdays = $this->AdminDayNames($gets,FALSE);
+		$longdays = self::AdminDayNames($gets);
+		$shortdays = self::AdminDayNames($gets,FALSE);
 		$gets = range(1,12);
-		$longmonths = $this->AdminMonthNames($gets);
-		$shortmonths = $this->AdminMonthNames($gets,FALSE);
+		$longmonths = self::AdminMonthNames($gets);
+		$shortmonths = self::AdminMonthNames($gets,FALSE);
 		if($oldloc)
 			setlocale(LC_TIME,$oldloc);
 		unset($gets);
@@ -1121,95 +1259,6 @@ plaintimes:
 		if (count($which) > 1)
 			return $ret;
 		return(reset($ret));
-	}
-
-	/**
-	MonthNames:
-
-	Get one, or array of, translated month-name(s)
-
-	@which: 1 (for January) .. 12 (for December), or array of such indices
-	@short: optional, whether to get short-form name, default FALSE
-	*/
-	function MonthNames($which,$short=FALSE)
-	{
-		$k = ($short) ? 'shortmonths' : 'longmonths';
-		$all = explode(',',$this->mod->Lang($k));
-
-		if (!is_array($which))
-		{
-			if ($which > 0 && $which < 13)
-				return $all[$which-1];
-			return '';
-		}
-		$ret = array();
-		foreach ($which as $month)
-		{
-			if ($month > 0 && $month < 13)
-				$ret[$month] = $all[$month-1];
-		}
-		return $ret;
-	}
-
-	/**
-	DayNames:
-
-	Get one, or array of, translated day-name(s)
-
-	@which: 1 (for Sunday) .. 7 (for Saturday), or array of such indices
-	@short: optional, whether to get short-form name, default FALSE
-	*/
-	function DayNames($which,$short=FALSE)
-	{
-		$k = ($short) ? 'shortdays' : 'longdays';
-		$all = explode(',',$this->mod->Lang($k));
-
-		if (!is_array($which))
-		{
-			if ($which > 0 && $which < 8)
-				return $all[$which-1];
-			return '';
-		}
-		$ret = array();
-		foreach ($which as $day)
-		{
-			if ($day > 0 && $day < 8)
-				$ret[$day] = $all[$day-1];
-		}
-		return $ret;
-	}
-
-	/**
-	IntervalNames:
-
-	Get one, or array of, translated time-interval-name(s)
-
-	@which: index 0 (for 'none'), 1 (for 'minute') .. 6 (for 'year'), or array of such indices
-	@plural: optional, whether to get plural form of the interval name(s), default FALSE
-	@cap: optional, whether to capitalise the first character of the name(s), default FALSE
-	*/
-	function IntervalNames($which,$plural=FALSE,$cap=FALSE)
-	{
-		$k = ($plural) ? 'multiperiods' : 'periods';
-		$all = explode(',',$this->mod->Lang($k));
-		array_unshift($all,$this->mod->Lang('none'));
-
-		if (!is_array($which))
-		{
-			if ($which >= 0 && $which < 7)
-				return $all[$which];
-			return '';
-		}
-		$ret = array();
-		foreach($which as $period)
-		{
-			if ($period >= 0 && $period < 7)
-			{
-				$ret[$period] = ($cap) ? ucfirst($all[$period]): //for current locale
-					$all[$period];
-			}
-		}
-		return $ret;
 	}
 
 	/**
