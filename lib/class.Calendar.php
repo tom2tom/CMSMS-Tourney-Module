@@ -472,9 +472,6 @@ class Calendar
 		{
 			if($rb === FALSE)
 			{
-//	$dbg = ($sa !== FALSE) ? 1 : -1;
-//	$this->DoNothing();
-//	return ($sa !== FALSE) ? 1 : -1;
 				return -1;
 			}
 			else
@@ -486,45 +483,33 @@ class Calendar
 				if($ma && $mb)
 				{
 					if($na != $nb)
-					{
-//	$dbg = ord($nb)-ord($na);
-//	$this->DoNothing();
 						return (ord($nb)-ord($na)); //'+' < '-' so reverse
-					}
 					elseif($na == '+')
 					{
 						$a = substr($a,$ra+2);
 						$b = substr($b,$rb+2);
-//	$this->DoNothing();
 						goto plaintimes;
 					}
 					elseif($na == '-')
 					{
-						$t = substr($b,$rb+2); //swapped
+						$t = substr($b,$rb+2); //swap
 						$b = substr($a,$ra+2);
 						$a = $t;
-//	$this->DoNothing();
 						goto plaintimes;
 					}
 					else
-					{
-//	$this->DoNothing();
 						return FALSE;
-					}
 				}
 				elseif($ma && !$mb)
 				{
-//	$this->DoNothing();
 					return ($na=='+') ? 1:-1;
 				}
 				elseif($mb && !$ma)
 				{
-//	$this->DoNothing();
 					return ($nb=='+') ? -1:1;
 				}
 				return 0;
 			}
-//	$this->DoNothing();
 		}
 		$sa = strpos($a,'S');
 		$sb = strpos($b,'S');
@@ -535,7 +520,7 @@ class Calendar
 //QQQ
 	$dbg = ($ra !== FALSE) ? -1 : 1;
 //	$this->DoNothing();
-	return ($ra !== FALSE) ? -1 : 1; //sunset after sunrise, before others
+	return $dbg; //sunset after sunrise, before others
 //			return -1; //sunset after sunrise, before others
 			}
 			else
@@ -547,42 +532,29 @@ class Calendar
 				if($ma && $mb)
 				{
 					if($na != $nb)
-					{
-//	$this->DoNothing();
 						return (ord($nb)-ord($na)); //'+' < '-' so reverse
-					}
 					elseif($na == '+')
 					{
 						$a = substr($a,$sa+2);
 						$b = substr($b,$sb+2);
-//	$this->DoNothing();
 						//fall through to compare $a,$b
 					}
 					elseif($na == '-')
 					{
-//	$this->DoNothing();
-						$t = substr($b,$sb+2); //swapped
+						$t = substr($b,$sb+2); //swap
 						$b = substr($a,$sa+2);
 						$a = $t;
-//	$this->DoNothing();
 						//fall through to compare $a,$b
 					}
 					else
 						return FALSE;
 				}
 				elseif($ma && !$mb)
-				{
-//	$this->DoNothing();
 					return ($na=='+') ? 1:-1;
-				}
 				elseif($mb && !$ma)
-				{
-//	$this->DoNothing();
 					return ($nb=='+') ? -1:1;
-				}
 				return 0;
 			}
-//	$this->DoNothing();
 		}
 		elseif($rb !== FALSE)
 		{
@@ -600,7 +572,6 @@ class Calendar
 plaintimes:
 		$sa = strpos($a,':');
 		$sb = strpos($b,':');
-//$this->DoNothing();
 		if($sa === FALSE)
 		{
 			if($sb === FALSE)
