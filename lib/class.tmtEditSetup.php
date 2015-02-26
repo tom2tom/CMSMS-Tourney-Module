@@ -654,7 +654,7 @@ EOS;
 			$mod->Lang('help_same_time'),
 		);
 
-		$cal = new Calendar(mod);
+		$cal = new tmtCalendar(mod);
 		$opts = $cal->IntervalNames(array(0,1,2,3,4),TRUE); //plural choices up to weeks
 		$unset($cal);
 		if($pmod)
