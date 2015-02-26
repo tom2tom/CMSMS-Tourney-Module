@@ -130,7 +130,7 @@ class Calendar
 	}
 
 	//$offset points to opening bracket in $str
-	private function MatchBracket($str,$offset)
+	private function _MatchBracket($str,$offset)
 	{
 		$p = $offset;
 		$d = 0;
@@ -159,15 +159,19 @@ class Calendar
 		While ($p >= 0)
 		{
 			$c = $str[$p--];
-			if($c == '.')
+			switch($c)
 			{
+			 case '.':
 				if(++$d > 2)	//should never happen
 					return -1;
+				break;
+			 case ')':
+			 case '(':
+			 case ',':
+				return $p+2;
 			}
-			elseif(0) //TODO not a range-char
-				return $p+1;
 		}
-		return -1;
+		return 0;
 	}
 
 	//$offset points to initial '.' in $str
@@ -179,15 +183,20 @@ class Calendar
 		While ($p < $l)
 		{
 			$c = $str[$p++];
-			if($c == '.')
+			switch($c)
 			{
+			 case '.':
 				if(++$d > 2)
 					return -1;
+				break;
+			 case ')';
+			 case '(';
+			 case ',';
+			 case '@';
+				return $p-2;
 			}
-			elseif(0) //TODO not a range-char
-				return $p-1;
 		}
-		return -1;
+		return $l-1; //offset of end
 	}
 
 	/**
@@ -456,6 +465,35 @@ class Calendar
 			return key($parts);
 	}
 
+	/**
+	@str is PERIOD component of a condition
+	Depending on @report, returns sanitised variant of @str or array, or in either
+	case FALSE upon error;
+	*/
+	private 
+	function _PeriodClean($str,$report)
+	{
+		$clean = '';
+		$s = -1; $e = -1; $l = strlen(str);
+/*	for($p = 0; $p < $l; $p++)
+		{
+			switch ($str[$p])
+			{
+			 case :
+				break;
+			 case :
+				break;
+			 case :
+				break;
+			 case :
+				break;
+			}
+		}
+*/
+		$focus = $N;
+		return array($focus,$clean);
+	}
+
 	//Compare time-strings like [sun*[+-]][h]h[:[m]m]] without expensive
 	//time-conversions and with all sun* before all others
 	private static function _cmp_times($a,$b)
@@ -517,11 +555,11 @@ class Calendar
 		{
 			if($sb === FALSE)
 			{
-//QQQ
-	$dbg = ($ra !== FALSE) ? -1 : 1;
-//	$this->DoNothing();
-	return $dbg; //sunset after sunrise, before others
-//			return -1; //sunset after sunrise, before others
+				//want sunset after sunrise, before others
+				if($rb !== FALSE) //$b includes R
+					return ($ra===FALSE) ? 1:-1;
+				else //no R at all
+					return ($ra===FALSE) ? -1:1;
 			}
 			else
 			{
@@ -557,17 +595,9 @@ class Calendar
 			}
 		}
 		elseif($rb !== FALSE)
-		{
-//	$dbg = ($sa !== FALSE) ? -1 : 1;
-//	$this->DoNothing();
 			return ($sa !== FALSE) ? -1 : 1; //sunset after sunrise, before others
-		}
 		elseif($sb !== FALSE)
-		{
-//	$dbg = ($ra !== FALSE) ? -1 : 1;
-//	$this->DoNothing();
 			return ($ra !== FALSE) ? -1 : 1; //ditto
-		}
 		//now just time-values
 plaintimes:
 		$sa = strpos($a,':');
@@ -601,40 +631,12 @@ plaintimes:
 	}
 
 	/**
-	@str is PERIOD component of a condition
-	Depending on @report, returns sanitised variant of @str or array, or in either
-	case FALSE upon error;
-	*/
-	private function _PeriodClean($str,$report)
-	{
-		$clean = '';
-		$s = -1; $e = -1; $l = strlen(str);
-/*	for($p = 0; $p < $l; $p++)
-		{
-			switch ($str[$p])
-			{
-			 case :
-				break;
-			 case :
-				break;
-			 case :
-				break;
-			 case :
-				break;
-			}
-		}
-*/
-		$focus = $N;
-		return array($focus,$clean);
-	}
-
-	/**
 	@str is TIME component of a condition
 	Depending on @report, returns sanitised variant of @str or array of timevalues,
 	with sun-related values first, rest sorted ascending by value or start of range
 	where relevant, or in either case FALSE upon error
 	*/
-//	private 
+	//private 
 	function _TimeClean($str,$report)
 	{
 		$parts = array();
@@ -648,7 +650,7 @@ plaintimes:
 			 case '(':
 			 	if(++$d == 1)
 				{
-					$e = self::MatchBracket($str,$p); //matching brace (in case nested)
+					$e = self::_MatchBracket($str,$p); //matching brace (in case nested)
 					if($e != -1)
 					{
 						$s = $p+1;
@@ -660,6 +662,7 @@ plaintimes:
 						else
 							return FALSE;
 						$d = 0;
+						$one = '';
 						$p = $e; //resume after closing bracket
 						break;
 					}
@@ -679,6 +682,7 @@ plaintimes:
 					if($t !== FALSE)
 					{
 						$parts[] = $t;
+						$one = '';
 						$p = $e;
 						break;
 					}
@@ -704,10 +708,10 @@ plaintimes:
 				break;
 		  default:
 				if ($c != ',')
-				  $one .= $c;
-				else
+					$one .= $c;
+				elseif($one)
 				{
-				  $parts[] = $one;
+					$parts[] = $one;
 					$one = '';
 				}
 				break;
