@@ -19,8 +19,14 @@ class tmtComm
 	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		$this->text = new tmtSMS();
-		$this->mail = new tmtMail($mod);
+		if(class_exists('CGSMS',FALSE))
+			$this->text = new tmtSMS();
+		else
+			$this->text = FALSE;
+		if(class_exists('CMSMailer',FALSE))
+			$this->mail = new tmtMail($mod);
+		else
+			$this->mail = FALSE;
 		$this->tweet = new tmtTweet();
 	}
 
@@ -32,9 +38,9 @@ class tmtComm
 	*/
 	public function ValidateAddress($address)
 	{
-		if($this->text->ValidateAddress($address))
+		if($this->text && $this->text->ValidateAddress($address))
 			return TRUE;
-		if($this->mail->ValidateAddress($address))
+		if($this->mail && $this->mail->ValidateAddress($address))
 			return TRUE;
 		if($this->tweet->ValidateAddress($address))
 			return TRUE;
@@ -95,19 +101,32 @@ class tmtComm
 			$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
 			//channel-specific var report set downstream
 			$res = FALSE;
-			$patn = '^04\d{2} ?\d{3} ?\d{3} ?\d{3}$'; //TODO
-			list($ok,$msg1) = $this->text->TellOwner($this->mod,$smarty,$bdata,$mdata,$body,$patn);
+			$msgs = array();
+			if($this->text)
+			{
+				$patn = '^04\d{2} ?\d{3} ?\d{3} ?\d{3}$'; //TODO
+				list($ok,$msg1) = $this->text->TellOwner($this->mod,$smarty,$bdata,$mdata,$body,$patn);
+				if($ok)
+					$res = TRUE;
+				else
+					$msgs[] = $msg1;
+			}
+			if($this->mail)
+			{
+				list($ok,$msg1) = $this->mail->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
+				if($ok)
+					$res = TRUE;
+				else
+					$msgs[] = $msg1;
+			}
+			list($ok,$msg1) = $this->tweet->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
 			if($ok)
 				$res = TRUE;
-			list($ok,$msg2) = $this->mail->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
-			if($ok)
-				$res = TRUE;
-			list($ok,$msg3) = $this->tweet->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
-			if($ok)
-				$res = TRUE;
+			else
+				$msgs[] = $msg1;
 			if($res)
 				return array(TRUE,'');
-			return array(FALSE,implode('<br />',array($msg1,$msg2,$msg3)));
+			return array(FALSE,implode('<br />',$msgs));
 		}
 		return array(FALSE,$mod->Lang('err_match'));
 	}
@@ -136,19 +155,32 @@ class tmtComm
 			$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
 			//team-specific vars recipient(for email),toall,opponent set downstream
 			$res = FALSE;
-			$patn = '^04\d{2} ?\d{3} ?\d{3} ?\d{3}$'; //TODO
-			list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first,$patn);
+			$msgs = array();
+			if($this->text)
+			{
+				$patn = '^04\d{2} ?\d{3} ?\d{3} ?\d{3}$'; //TODO
+				list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first,$patn);
+				if($ok)
+					$res = TRUE;
+				else
+					$msgs[] = $msg1;
+			}
+			if($this->mail)
+			{
+				list($ok,$msg1) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+				if($ok)
+					$res = TRUE;
+				else
+					$msgs[] = $msg1;
+			}
+			list($ok,$msg1) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
 			if($ok)
 				$res = TRUE;
-			list($ok,$msg2) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
-			if($ok)
-				$res = TRUE;
-			list($ok,$msg3) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
-			if($ok)
-				$res = TRUE;
+			else
+				$msgs[] = $msg1;
 			if($res)
 				return array(TRUE,'');
-			return array(FALSE,implode('<br />',array($msg1,$msg2,$msg3)));
+			return array(FALSE,implode('<br />',$msgs));
 		}
 		return array(FALSE,$mod->Lang('err_match'));
 	}
