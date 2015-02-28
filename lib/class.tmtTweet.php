@@ -39,7 +39,7 @@ class tmtTweet
 		{
 			if($handle[0] != '@')
 				$handle = '@'.$handle;
-			if(!$this->ValidateAddress($handle))
+			if(!self::ValidateAddress($handle))
 				return FALSE;
 			if($handle != '@CMSMSTourney')
 			{
@@ -104,7 +104,7 @@ class tmtTweet
 		}
 		if($handle[0] != '@')
 			$handle = '@'.$handle;
-		if(!$this->ValidateAddress($handle))
+		if(!self::ValidateAddress($handle))
 			return FALSE;
 		$priv = base64_encode($priv); //no point in more sophistication e.g. encryption
 		$sql = 'UPDATE '.$pref.'module_tmt_tweet SET pubtoken=?,privtoken=? WHERE bracket_id=? AND handle=?';
@@ -196,7 +196,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 			$sends = array();
 			foreach($members as $one)
 			{
-				$clean = $this->ValidateAddress($one['contact']);
+				$clean = self::ValidateAddress($one['contact']);
 				if($clean)
 				{
 					$clean[0] = '#';
@@ -253,7 +253,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 		$pref = cms_db_prefix();
 		$sql = 'SELECT twtfrom FROM '.$pref.'tmt_module_brackets WHERE bracket_id=?';
 		$source = $db->GetOne($sql,array($bracket_id));
-		if(!$source || !$this->ValidateAddress($source))
+		if(!$source || !self::ValidateAddress($source))
 			return FALSE;
 		$sql = 'SELECT teamA,teamB FROM '.$pref.'tmt_module_matches WHERE match_id';
 		if(!is_array($mid))
@@ -267,10 +267,10 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 		foreach($teams as $mteam)
 		{
 			$tid = (int)$mteam['teamA'];
-			if($tid > 0 && $this->GetTeamContacts($tid))
+			if($tid > 0 && self::GetTeamContacts($tid))
 				return TRUE;
 			$tid = (int)$mteam['teamB'];
-			if($tid > 0 && $this->GetTeamContacts($tid))
+			if($tid > 0 && self::GetTeamContacts($tid))
 				return TRUE;
 		}
 		return FALSE;
@@ -291,7 +291,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 	public function TellOwner(&$mod,&$smarty,&$bdata,&$mdata,$lines)
 	{
 		//owner
-		$clean = $this->ValidateAddress($bdata['contact']);
+		$clean = self::ValidateAddress($bdata['contact']);
 		if($clean)
 		{
 			$clean[0] = '#';
@@ -299,21 +299,21 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 		}
 		else
 			return array(FALSE,''); //silent, try another channel
-		$tokens = $this->GetTokens($bdata['bracket_id']);
+		$tokens = self::GetTokens($bdata['bracket_id']);
 		if(!$tokens)
 			return array(FALSE,$mod->Lang('lackpermission'));
 		//teams
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$more = $this->GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($tid,TRUE);
 			if($more)
 				$to = array_merge($to,$more);
 		}
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$more = $this->GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($tid,TRUE);
 			if($more)
 				$to = array_merge($to,$more);
 		}
@@ -323,7 +323,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 		$tpl = $mod->GetTemplate('tweetin_'.$bdata['bracket_id'].'_template');
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('tweetin_default_template');
-		return $this->DoSend($mod,$tokens,$to,$tpl);
+		return self::DoSend($mod,$tokens,$to,$tpl);
 	}
 	
 	/**
@@ -345,16 +345,16 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('tweetout_default_template');
 
-		$owner = $this->ValidateAddress($bdata['contact']);
+		$owner = self::ValidateAddress($bdata['contact']);
 		if($owner)
 			$owner[0] = '#';
-		$tokens = $this->GetTokens($bdata['bracket_id']);
+		$tokens = self::GetTokens($bdata['bracket_id']);
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$to = $this->GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($mod,$tid,$first);
 			if($to)
 			{
 				if($tokens)
@@ -367,7 +367,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 					$smarty->assign('opponent',$mod->TeamName($mdata['teamB']));
 					if($owner)
 						$to[] = $owner;
-					list($resA,$msg) = $this->DoSend($mod,$tokens,$to,$tpl);
+					list($resA,$msg) = self::DoSend($mod,$tokens,$to,$tpl);
 					if(!$resA)
 					{
 						if(!$msg)
@@ -384,7 +384,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$to = $this->GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($mod,$tid,$first);
 			if($to)
 			{
 				if($tokens)
@@ -397,7 +397,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 					$smarty->assign('opponent',$mod->TeamName($mdata['teamA']));
 					if($owner)
 						$to[] = $owner;
-					list($resB,$msg) = $this->DoSend($mod,$tokens,$to,$tpl);
+					list($resB,$msg) = self::DoSend($mod,$tokens,$to,$tpl);
 					if(!$resB)
 					{
 						if($err) $err .= '<br />'; 
