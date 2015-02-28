@@ -11,6 +11,13 @@ This class is not suitable for static method-calling
 class tmtMail
 {
 	private $mlr;
+	private $loaded;
+
+	private function __construct(&$mod)
+	{
+			$this->mlr = $mod->GetModuleInstance('CMSMailer'); //maybe FALSE
+			$this->loaded = FALSE;
+	}
 
 	/**
 	DoSend:
@@ -29,12 +36,11 @@ class tmtMail
 		if(!($to || $cc))
 			return array(FALSE,'');
 		if(!$this->mlr)
+			return array(FALSE,$mod->Lang('err_system'));
+		if(!$this->loaded)
 		{
-			$this->mlr = $mod->GetModuleInstance('CMSMailer');
-			if($this->mlr)
-				$this->mlr->_load();
-			else
-				return array(FALSE,$mod->Lang('err_system'));
+			$this->mlr->_load();
+			$this->loaded = TRUE;
 		}
 
 		$subject = $mod->Lang('tournament').' - '.$bdata['name'];
@@ -107,7 +113,7 @@ class tmtMail
 			$sends = array();
 			foreach($members as $one)
 			{
-				$clean = $this->ValidateAddress($one['contact']);
+				$clean = self::ValidateAddress($one['contact']);
 				if($clean)
 				{
 					$sends[$one['name']] = $clean;
@@ -181,7 +187,7 @@ class tmtMail
 	public function TellOwner(&$mod,&$smarty,&$bdata,&$mdata,$lines)
 	{
 		//owner
-		$clean = $this->ValidateAddress($bdata['contact']);
+		$clean = self::ValidateAddress($bdata['contact']);
 		if($clean)
 			$to[$bdata['owner']] = $clean;
 		else
@@ -191,14 +197,14 @@ class tmtMail
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$more = $this->GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($tid,TRUE);
 			if($more)
 				$cc = $cc + $more;
 		}
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$more = $this->GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($tid,TRUE);
 			if($more)
 				$cc = $cc + $more;
 		}
@@ -209,7 +215,7 @@ class tmtMail
 		$tpl = $mod->GetTemplate('mailin_'.$bdata['bracket_id'].'_template');
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('mailin_default_template');
-		return $this->DoSend($mod,$bdata,$to,$cc,$tpl);
+		return self::DoSend($mod,$bdata,$to,$cc,$tpl);
 	}
 
 	/**
@@ -231,14 +237,14 @@ class tmtMail
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('mailout_default_template');
 
-		$clean = $this->ValidateAddress($bdata['contact']);
+		$clean = self::ValidateAddress($bdata['contact']);
 		$cc = ($clean) ? array($bdata['owner']=>$clean) : FALSE;
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$to = $this->GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($mod,$tid,$first);
 			if($to)
 			{
 				reset($to);
@@ -247,7 +253,7 @@ class tmtMail
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$smarty->assign('toall',$toall);
 				$smarty->assign('opponent',$mod->TeamName($mdata['teamB']));
-				list($resA,$msg) = $this->DoSend($mod,$bdata,$to,$cc,$tpl);
+				list($resA,$msg) = self::DoSend($mod,$bdata,$to,$cc,$tpl);
 				if(!$resA)
 				{
 					if(!$msg)
@@ -261,7 +267,7 @@ class tmtMail
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$to = $this->GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($mod,$tid,$first);
 			if($to)
 			{
 				reset($to);
@@ -270,7 +276,7 @@ class tmtMail
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$smarty->assign('toall',$toall);
 				$smarty->assign('opponent',$mod->TeamName($mdata['teamA']));
-				list($resB,$msg) = $this->DoSend($mod,$bdata,$to,$cc,$tpl);
+				list($resB,$msg) = self::DoSend($mod,$bdata,$to,$cc,$tpl);
 				if(!$resB)
 				{
 					if($err) $err .= '<br />';
