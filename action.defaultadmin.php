@@ -254,6 +254,12 @@ if ($padm)
 	$misc[] = array($this->Lang('title_time_format'),
 		$this->CreateInputText($id, 'tmt_time_format', $this->GetPreference('time_format'), 20),
 		$this->Lang('help_time_format'));
+	if(class_exists('CGSMS',FALSE))
+	{
+		$misc[] = array($this->Lang('title_phone_regex'),
+			$this->CreateInputText($id, 'tmt_phoneid', $this->GetPreference('phone_regex'), 30),
+			$this->Lang('help_phone_regex'));
+	}
 	$misc[] = array($this->Lang('title_uploads_dir'),
 		$this->CreateInputText($id, 'tmt_uploads_dir', $this->GetPreference('uploads_dir',''), 30),
 		$this->Lang('help_uploads_dir'));

@@ -19,6 +19,7 @@ switch ($oldversion)
 	$rel = $this->GetPreference('uploads_dir');
 	if(!$rel)
 		$this->SetPreference('uploads_dir',$this->GetName());
+	$this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$';
 	$dict = NewDataDictionary($db);
 
 	$flds = "

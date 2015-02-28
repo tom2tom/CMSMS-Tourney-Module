@@ -21,7 +21,8 @@ $this->SetPreference('against_name',$params['tmt_versus']);
 $this->SetPreference('noop_name',$params['tmt_bye']);
 $this->SetPreference('forfeit_name',$params['tmt_forfeit']);
 $this->SetPreference('abandon_name',$params['tmt_nomatch']);
-
+if(isset($params['tmt_phoneid']))
+	$this->SetPreference('phone_regex',trim($params['tmt_phoneid'])); //excludes pre- post-
 $this->SetPreference('time_zone',$params['tmt_timezone']);
 $this->SetPreference('time_format',$params['tmt_time_format']);
 $this->SetPreference('date_format',$params['tmt_date_format']);

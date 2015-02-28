@@ -195,6 +195,7 @@ $this->SetPreference('tied_name',$this->Lang('name_tied'));
 $this->SetPreference('noop_name',$this->Lang('name_no_opponent'));
 $this->SetPreference('forfeit_name',$this->Lang('name_forfeit'));
 $this->SetPreference('abandon_name',$this->Lang('name_abandoned'));
+$this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$'; //for SMS messages to cell/mobile numbers
 
 $fn = cms_join_path(dirname(__FILE__),'templates','chart_custom.tpl');
 $s = @file_get_contents($fn);

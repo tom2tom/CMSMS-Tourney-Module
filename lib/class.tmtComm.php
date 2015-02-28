@@ -12,13 +12,15 @@ class tmtComm
 	//reference to current module object
 	protected $mod;
 	//channel-objects for polling
+	protected $text;
 	protected $mail;
 	protected $tweet;
 
 	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		$this->mail = new tmtMail();
+		$this->text = new tmtSMS();
+		$this->mail = new tmtMail($mod);
 		$this->tweet = new tmtTweet();
 	}
 
@@ -30,6 +32,8 @@ class tmtComm
 	*/
 	public function ValidateAddress($address)
 	{
+		if($this->text->ValidateAddress($address))
+			return TRUE;
 		if($this->mail->ValidateAddress($address))
 			return TRUE;
 		if($this->tweet->ValidateAddress($address))
@@ -91,15 +95,19 @@ class tmtComm
 			$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
 			//channel-specific var report set downstream
 			$res = FALSE;
-			list($ok,$msg1) = $this->mail->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
+			$patn = '^04\d{2} ?\d{3} ?\d{3} ?\d{3}$'; //TODO
+			list($ok,$msg1) = $this->text->TellOwner($this->mod,$smarty,$bdata,$mdata,$body,$patn);
 			if($ok)
 				$res = TRUE;
-			list($ok,$msg2) = $this->tweet->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
+			list($ok,$msg2) = $this->mail->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
+			if($ok)
+				$res = TRUE;
+			list($ok,$msg3) = $this->tweet->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
 			if($ok)
 				$res = TRUE;
 			if($res)
 				return array(TRUE,'');
-			return array(FALSE,implode('<br />',array($msg1,$msg2)));
+			return array(FALSE,implode('<br />',array($msg1,$msg2,$msg3)));
 		}
 		return array(FALSE,$mod->Lang('err_match'));
 	}
@@ -128,15 +136,19 @@ class tmtComm
 			$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
 			//team-specific vars recipient(for email),toall,opponent set downstream
 			$res = FALSE;
-			list($ok,$msg1) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+			$patn = '^04\d{2} ?\d{3} ?\d{3} ?\d{3}$'; //TODO
+			list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first,$patn);
 			if($ok)
 				$res = TRUE;
-			list($ok,$msg2) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+			list($ok,$msg2) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+			if($ok)
+				$res = TRUE;
+			list($ok,$msg3) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
 			if($ok)
 				$res = TRUE;
 			if($res)
 				return array(TRUE,'');
-			return array(FALSE,implode('<br />',array($msg1,$msg2)));
+			return array(FALSE,implode('<br />',array($msg1,$msg2,$msg3)));
 		}
 		return array(FALSE,$mod->Lang('err_match'));
 	}
