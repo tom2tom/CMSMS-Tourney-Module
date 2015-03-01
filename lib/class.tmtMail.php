@@ -13,7 +13,7 @@ class tmtMail
 	private $mlr;
 	private $loaded;
 
-	private function __construct(&$mod)
+	function __construct(&$mod)
 	{
 			$this->mlr = $mod->GetModuleInstance('CMSMailer'); //never FALSE, cuz class created after check
 			$this->loaded = FALSE;
