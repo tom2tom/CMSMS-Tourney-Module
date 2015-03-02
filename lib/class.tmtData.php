@@ -79,9 +79,15 @@ class tmtData
 		$data->twtfrom = $params['tmt_twtfrom'];
 		if(isset ($params['tmt_smspattern']))	//relevant SMS module present
 		{
-			$data->smspattern = $params['tmt_smspattern'];
-			if ($data->smspattern) //TODO && $data->smsfrom validates against $data->smspattern
-				$data->smsfrom = $params['tmt_smsfrom'];
+			$tmp = trim($params['tmt_smspattern']);
+			if ($tmp)
+			{
+				$data->smspattern = str_replace('\\','\\\\',$tmp);
+				if(preg_match('~'.$tmp.'~',$params['tmt_smsfrom']))
+					$data->smsfrom = $params['tmt_smsfrom'];
+				else
+					$data->smsfrom = '';
+			}
 			else
 				$data->smsfrom = '';
 			$data->smsprefix = $params['tmt_smsprefix'];
