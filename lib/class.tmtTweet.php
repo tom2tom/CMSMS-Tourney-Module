@@ -354,7 +354,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($tid,$first);
 			if($to)
 			{
 				if($tokens)
@@ -384,7 +384,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($tid,$first);
 			if($to)
 			{
 				if($tokens)

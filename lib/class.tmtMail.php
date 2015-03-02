@@ -244,7 +244,7 @@ class tmtMail
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($tid,$first);
 			if($to)
 			{
 				reset($to);
@@ -267,7 +267,7 @@ class tmtMail
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($tid,$first);
 			if($to)
 			{
 				reset($to);

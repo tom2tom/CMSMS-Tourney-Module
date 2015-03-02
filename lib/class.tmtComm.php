@@ -67,7 +67,7 @@ class tmtComm
 		$stamp = strtotime($mdata['playwhen']);
 		$smarty->assign('time',date($tfmt,$stamp));
 		$smarty->assign('date',date($dfmt,$stamp));
-		$smarty->assign('when',date($tfmt.','.$dfmt,$stamp));
+		$smarty->assign('when',date($tfmt.', '.$dfmt,$stamp));
 		$tid = (int)$mdata['teamA'];
 		$tA = ($tid > 0) ? $mod->TeamName($mdata['teamA']) : '';
 		$tid = (int)$mdata['teamB'];
@@ -104,8 +104,7 @@ class tmtComm
 			$msgs = array();
 			if($this->text)
 			{
-				$patn = '^04\d{2} ?\d{3} ?\d{3} ?\d{3}$'; //TODO
-				list($ok,$msg1) = $this->text->TellOwner($this->mod,$smarty,$bdata,$mdata,$body,$patn);
+				list($ok,$msg1) = $this->text->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
 				if($ok)
 					$res = TRUE;
 				else
@@ -158,8 +157,7 @@ class tmtComm
 			$msgs = array();
 			if($this->text)
 			{
-				$patn = '^04\d{2} ?\d{3} ?\d{3} ?\d{3}$'; //TODO
-				list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first,$patn);
+				list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
 				if($ok)
 					$res = TRUE;
 				else
