@@ -13,12 +13,36 @@ class tmtSMS
 	private $utils;
 	private $gateway;
 	
-	private function __construct()
+	function __construct()
 	{
 		$this->utils = new cgsms_utils(); //never FALSE, cuz class created after check
 		$this->gateway = $this->utils->get_gateway(); //maybe FALSE
 	}
 
+/*
+	function TestSend($to,$body)
+	{
+		if(!$this->gateway)
+			return FALSE;
+		$to = self::ValidateAddress($to,'61','^(61|0)4\d{2} ?\d{3} ?\d{3}$');
+		if($to)
+		{
+	$this->DoNothing();
+			$this->gateway->set_num($to);
+			$this->gateway->set_msg($body);
+			$err = '';
+			if(!$this->gateway->send())
+			{
+			$this->DoNothing();
+				$err = $to.': '.$this->gateway->get_statusmsg();
+			}
+			$this->DoNothing();
+			return $err;
+		}
+	$this->DoNothing();
+		return 'BADNUM';
+	}
+*/
 	/**
 	DoSend:
 	Sends SMS(s) about a match
@@ -30,20 +54,21 @@ class tmtSMS
 	 [0] FALSE if no addressee or no CGSMS-module gateway, otherwise boolean cumulative result of gateway->send()
 	 [1] '' or error message e.g. from gateway->send()
 	*/
-	private function DoSend(&$mod,$codes,$to,$tpl)
+	private function DoSend(&$mod,$to,$tpl)
 	{
 		if(!$to)
 			return array(FALSE,'');
 		if(!$this->gateway)
 			return array(FALSE,$mod->Lang('err_system'));
 		$body = $mod->ProcessDataTemplate($tpl);
-		if(!$this->utils->text_is_valid($body)
+		if(!$this->utils->text_is_valid($body))
 			return array(FALSE,$mod->Lang('err_template'));
 		$this->gateway->set_msg($body);
 		$err = '';
-		foreach($to as $ph)
+		//assume gateway doesn't support batching
+		foreach($to as $num)
 		{
-			$this->gateway->set_num($ph);
+			$this->gateway->set_num($num);
 			if(!$this->gateway->send())
 			{
 				if($err) $err .= '<br />';
@@ -56,10 +81,12 @@ class tmtSMS
 	/**
 	GetTeamContacts:
 	@team_id: enumerator of team being processed
+	@prefix: default country-code for phone-numbers to receive text
+	@pattern: regex for matching acceptable phone nos, defaults to module preference
 	@first: whether to only try for the first relevant tag, optional, default = FALSE
 	Returns: array of validated phone nos (maybe empty), or FALSE.
 	*/
-	private function GetTeamContacts($team_id,$first=FALSE)
+	private function GetTeamContacts($team_id,$prefix,$pattern,$first=FALSE)
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
@@ -77,7 +104,7 @@ class tmtSMS
 			$sends = array();
 			foreach($members as $one)
 			{
-				$clean = self::ValidateAddress($one['contact']);
+				$clean = self::ValidateAddress($one['contact'],$prefix,$pattern);
 				if($clean)
 				{
 					$sends[] = $clean;
@@ -90,38 +117,47 @@ class tmtSMS
 		return FALSE;
 	}
 
+	private function AdjustPhone($number,$country)
+	{
+		$n = str_replace(' ','',$number);
+		if($n[0] == '+')
+			$n = substr($n,1);
+		if($n[0] === '0')
+			$n = $country.substr($n,1);
+		return $n;
+	}
+
 	/**
 	ValidateAddress:
 	Check whether @address is a valid phone no.
-	@address: one, or a comma-separated series of, address(es) to check
-	@patn: optional, regex for matching acceptable phone nos, defaults to module preference
+	@number: one, or a comma-separated series of, number(s) to check
+	@prefix: default country-code for phone-numbers to receive text
+	@pattern: regex for matching acceptable phone nos, defaults to module preference
 	Returns: a trimmed valid phone no., or array of them, or FALSE
 	*/
-	public function ValidateAddress(&$mod,$address,$pattern=FALSE)
+	public function ValidateAddress($number,$prefix,$pattern)
 	{
-		if(!$pattern)
-			$pattern = $mod->GetPreference('phone_regex');
 		if(!$pattern)
 			return FALSE;
 		$pattern = '~'.$pattern.'~';
-		if(strpos($address,',') === FALSE)
+		if(strpos($number,',') === FALSE)
 		{
-			$address = trim($address);
-			if(preg_match($pattern,$address))
-				return $address;
+			$number = self::AdjustPhone($number,$prefix);
+			if(preg_match($pattern,$number))
+				return $number;
 		}
 		else
 		{
-			$parts = explode(',',$address);
-			$address = array();
+			$parts = explode(',',$number);
+			$number = array();
 			foreach($parts as $one)
 			{
-				$one = trim($one);
+				$one = self::AdjustPhone($one,$prefix);
 				if(preg_match($pattern,$one))
-					$address[] = $one;
+					$number[] = $one;
 			}
-			if($address)
-				return $address;
+			if($number)
+				return $number;
 		}
 		return FALSE;
 	}
@@ -135,31 +171,33 @@ class tmtSMS
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@lines: array of lines for message body
-	@patn: optional, default FALSE
 	Returns: 2-member array -
 	 [0] TRUE|FALSE representing success
 	 [1] '' or specific failure message
 	*/
-	public function TellOwner(&$mod,&$smarty,&$bdata,&$mdata,$lines,$patn=FALSE)
+	public function TellOwner(&$mod,&$smarty,&$bdata,&$mdata,$lines)
 	{
-		//owner
-		$clean = self::ValidateAddress($mod,$bdata['contact'],$patn);
-		if($clean)
-			$to = array($clean);
+		//owner(s)
+		$to = self::ValidateAddress($bdata['contact'],$bdata['smsprefix'],$bdata['smspattern']);
+		if($to)
+		{
+			if(!is_array($to))
+				$to = array($to);
+		}
 		else
 			return array(FALSE,''); //silent, try another channel
 		//teams
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$more = self::GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],TRUE);
 			if($more)
 				$to = array_merge($to,$more);
 		}
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$more = self::GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],TRUE);
 			if($more)
 				$to = array_merge($to,$more);
 		}
@@ -169,7 +207,7 @@ class tmtSMS
 		$tpl = $mod->GetTemplate('tweetin_'.$bdata['bracket_id'].'_template');
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('tweetin_default_template');
-		return self::DoSend($mod,$tokens,$to,$tpl);
+		return self::DoSend($mod,$to,$tpl);
 	}
 	
 	/**
@@ -182,46 +220,40 @@ class tmtSMS
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@first: TRUE to send only to first recognised address, FALSE to send per
 		the teams' respective contactall settings, optional, default FALSE
-	@patn: optional, default FALSE
 	Returns: 2-member array -
 	 [0] TRUE|FALSE representing success, or TRUE if nobody to send to
 	 [1] '' or specific failure message
 	*/
-	public function TellTeams(&$mod,&$smarty,&$bdata,&$mdata,$first=FALSE,$patn=FALSE)
+	public function TellTeams(&$mod,&$smarty,&$bdata,&$mdata,$first=FALSE)
 	{
 		$tpl = $mod->GetTemplate('tweetout_'.$bdata['bracket_id'].'_template');
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('tweetout_default_template');
 
-		$owner = self::ValidateAddress($mod,$bdata['contact'],$patn);
+		$owner = self::ValidateAddress($bdata['contact'],$bdata['smsprefix'],$bdata['smspattern']);
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],$first);
 			if($to)
 			{
-				if($tokens)
+				reset($to);
+				$smarty->assign('recipient',key($to));
+				$tc = count($to);
+				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
+				$smarty->assign('toall',$toall);
+				$smarty->assign('opponent',$mod->TeamName($mdata['teamB']));
+				if($owner)
+					$to[] = $owner;
+				list($resA,$msg) = self::DoSend($mod,$to,$tpl);
+				if(!$resA)
 				{
-					reset($to);
-					$smarty->assign('recipient',key($to));
-					$tc = count($to);
-					$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
-					$smarty->assign('toall',$toall);
-					$smarty->assign('opponent',$mod->TeamName($mdata['teamB']));
-					if($owner)
-						$to[] = $owner;
-					list($resA,$msg) = self::DoSend($mod,$tokens,$to,$tpl);
-					if(!$resA)
-					{
-						if(!$msg)
-							$msg = $mod->Lang('err_notice');
-						$err .= $mod->TeamName($tid).': '.$msg;
-					}
+					if(!$msg)
+						$msg = $mod->Lang('err_notice');
+					$err .= $mod->TeamName($tid).': '.$msg;
 				}
-				else
-					$err = $mod->TeamName($tid).': '.$mod->Lang('lackpermission');
 			}
 		}
 
@@ -229,32 +261,24 @@ class tmtSMS
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($mod,$tid,$first);
+			$to = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],$first);
 			if($to)
 			{
-				if($tokens)
+				reset($to);
+				$smarty->assign('recipient',key($to));
+				$tc = count($to);
+				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
+				$smarty->assign('toall',$toall);
+				$smarty->assign('opponent',$mod->TeamName($mdata['teamA']));
+				if($owner)
+					$to[] = $owner;
+				list($resB,$msg) = self::DoSend($mod,$to,$tpl);
+				if(!$resB)
 				{
-					reset($to);
-					$smarty->assign('recipient',key($to));
-					$tc = count($to);
-					$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
-					$smarty->assign('toall',$toall);
-					$smarty->assign('opponent',$mod->TeamName($mdata['teamA']));
-					if($owner)
-						$to[] = $owner;
-					list($resB,$msg) = self::DoSend($mod,$tokens,$to,$tpl);
-					if(!$resB)
-					{
-						if($err) $err .= '<br />'; 
-						if(!$msg)
-							$msg = $mod->Lang('err_notice');
-						$err .= $mod->TeamName($tid).': '.$msg;
-					}
-				}
-				else
-				{
-					if($err) $err .= '<br />';
-					$err .= $mod->TeamName($tid).': '.$mod->Lang('lackpermission');
+					if($err) $err .= '<br />'; 
+					if(!$msg)
+						$msg = $mod->Lang('err_notice');
+					$err .= $mod->TeamName($tid).': '.$msg;
 				}
 			}
 		}
