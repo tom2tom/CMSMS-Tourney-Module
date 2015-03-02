@@ -53,6 +53,9 @@ switch ($oldversion)
 	fixtype I(1) DEFAULT 0,
 	locale C(12),
 	twtfrom C(18),
+	smsfrom C(18),
+	smsprefix C(4),
+	smspattern C(32),
 	calendarid C(24),
 	latitude N(8.3),
 	longitude N(8.3)

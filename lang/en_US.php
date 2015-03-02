@@ -322,6 +322,11 @@ $lang['title_teamsize']='Players per team';
 
 $lang['title_owner']='Responsible person';
 $lang['title_contact']='Contact details for responsible person';
+$lang['title_smsfrom']='SMS to tournament participants from';
+$lang['help_smsfrom']='This will be displayed if the SMS-provider allows. Include relevant country-prefix.';
+$lang['title_smsprefix']='Country-prefix for phone numbers to receive SMS messages';
+$lang['help_smsprefix']='One to four numbers e.g. 1 for USA. <a href="http://countrycode.org">Search</a>. No leading \'+\'';
+
 $lang['title_twtfrom']='Tweets about the tournament sent from';
 //$lang['title_admin_eds']='Admin users group whose members can edit tournament results';
 $lang['title_feu_eds']='FEU group whose members can edit tournament results';

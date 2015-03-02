@@ -77,6 +77,15 @@ class tmtData
 		$data->contact = $params['tmt_contact'];
 		$data->locale = trim($params['tmt_locale']);
 		$data->twtfrom = $params['tmt_twtfrom'];
+		if(isset ($params['tmt_smspattern']))	//relevant SMS module present
+		{
+			$data->smspattern = $params['tmt_smspattern'];
+			if ($data->smspattern) //TODO && $data->smsfrom validates against $data->smspattern
+				$data->smsfrom = $params['tmt_smsfrom'];
+			else
+				$data->smsfrom = '';
+			$data->smsprefix = $params['tmt_smsprefix'];
+		}
 		if (isset ($params['tmt_feu_editgroup']))
 			$data->feu_editgroup = $params['tmt_feu_editgroup'];
 		$data->seedtype = intval($params['tmt_seedtype']);
@@ -327,6 +336,9 @@ class tmtData
 			$data->contact = '';
 			$data->locale = '';
 			$data->twtfrom = '';
+			$data->smsfrom = '';
+			$data->smsprefix = '';
+			$data->smspattern = $mod->GetPreference('phone_regex');
 //		$data->admin_editgroup = 'none';
 			$data->feu_editgroup = 'none';
 
@@ -401,6 +413,9 @@ class tmtData
 			$data->contact = $row['contact'];
 			$data->locale = $row['locale'];
 			$data->twtfrom = $row['twtfrom'];
+			$data->smsfrom = $row['smsfrom'];
+			$data->smsprefix = $row['smsprefix'];
+			$data->smspattern = $row['smspattern'];
 //		$data->admin_editgroup = $row['admin_editgroup'];
 			$data->feu_editgroup = $row['feu_editgroup'];
 

@@ -436,6 +436,24 @@ EOS;
 			$data->twtfrom,
 			$help
 		);
+		$sms = class_exists('CGSMS',FALSE);
+		if($sms)
+		{
+			$main[] = array(
+				$mod->Lang('title_smsfrom'),
+				($pmod) ?
+				$mod->CreateInputText($id,'tmt_smsfrom',$data->smsfrom,16):
+				$data->smsfrom,
+				$mod->Lang('help_smsfrom')
+			);
+			$main[] = array(
+				$mod->Lang('title_smsprefix'),
+				($pmod) ?
+				$mod->CreateInputText($id,'tmt_smsprefix',$data->smsprefix,4):
+				$data->smsprefix,
+				$mod->Lang('help_smsprefix')
+			);
+		}
 		$ob =& $mod->GetModuleInstance('FrontEndUsers');
 		if($ob)
 		{
@@ -464,6 +482,16 @@ EOS;
 			$mod->CreateInputText($id,'tmt_locale',$data->locale,8,12) : $data->locale,
 			$mod->Lang('help_locale')
 		);
+		if($sms)
+		{
+			$adv[] = array(
+				$mod->Lang('title_phone_regex'),
+				($pmod) ?
+				$mod->CreateInputText($id,'tmt_smspattern',$data->smspattern,30,32):
+				$data->smspattern,
+				$mod->Lang('help_phone_regex')
+			);
+		}
 		$mail = class_exists('CMSMailer',FALSE);
 		$tplhelp = array();
 		$tplhelp[] = $mod->Lang('help_template');
@@ -483,6 +511,7 @@ EOS;
 		) as $varname) $tplhelp[] = '&nbsp;$'.$varname.': '.$mod->Lang('desc_'.$varname);
 		$tplhelp[] = $mod->Lang('help_mailout_template');
 		$help = implode('<br />',$tplhelp);
+
 		if($mail)
 		{
 			if($pmod)
