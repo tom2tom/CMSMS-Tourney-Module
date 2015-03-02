@@ -128,8 +128,6 @@ elseif(isset($params['cancel']))
 	else //editing an existing team
 	{
 		$tid = $params['team_id'];
-		$sql = 'DELETE FROM '.$pref.'module_tmt_people WHERE id=? AND flags=1';
-		$db->Execute($sql,array($tid));
 		//TODO support content reversion where flags = 3
 		$sql = 'UPDATE '.$pref.'module_tmt_people SET flags = 0 WHERE id=? AND flags IN (2,3)';
 		$db->Execute($sql,array($tid));
