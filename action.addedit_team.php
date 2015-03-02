@@ -328,6 +328,17 @@ switch($op)
  case 2://starting a new edit-session
 	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
 	$rows = $db->GetAll($sql,array($thistid));
+	if($rows == FALSE) //should never happen
+	{
+		$rows = array();
+		$rows[] = array(
+		 'id'=>$thistid,
+		 'name'=>'',
+		 'contact'=>'',
+		 'displayorder'=>1,
+		 'flags'=>1
+		);
+	}
 	break;
  case 3://add player to team
 //CHECKME unset($params['addplayer]);
