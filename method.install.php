@@ -125,7 +125,8 @@ $sql = 'INSERT INTO'.$pref.'module_tmt_tweet (bracket_id,handle) VALUES (0,\'fir
 $db->Execute($sql);
 
 $flds = "
-	bracket_id I KEY,
+	history_id I KEY,
+	bracket_id I,
 	changer C(128),
 	changewhen ".CMS_ADODB_DT.",
 	olddata C(128),

@@ -69,6 +69,11 @@ switch ($oldversion)
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_matches','flags I(1) DEFAULT 0');
 	$dict->ExecuteSQLArray($sql,FALSE);
 
+	$sql = $dict->AlterColumnSQL($pref.'module_tmt_history','bracket_id I');
+	$dict->ExecuteSQLArray($sql,FALSE);
+	$sql = $dict->AddColumnSQL($pref.'module_tmt_history','history_id I KEY');
+	$dict->ExecuteSQLArray($sql,FALSE);
+
 	$flds = "
 	bracket_id I NOTNULL DEFAULT 0,
 	handle C(24),
