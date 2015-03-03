@@ -17,9 +17,12 @@ if (!empty($params['send']))
 	$valid = TRUE;
 	if (isset($params['captcha']))
 	{
-		$ob =& $this->getModuleInstance('Captcha');
+		$ob = $this->getModuleInstance('Captcha');
 		if ($ob)
+		{
 			$valid = $ob->checkCaptcha($params['captcha']);
+			unset($ob);
+		}
 	}
 	if ($valid)
 	{
@@ -32,26 +35,26 @@ if (!empty($params['send']))
 			$relations = $this->ResultTemplates($bracket_id,FALSE);
 		
 			$indx = array_search($params['match'],$params['shown'],false);
-			$res = $params['status'][$indx];
-			switch ((int)$res)
+			$res = (int)$params['status'][$indx];
+			switch ($res)
 			{
 			 case WONA:
-			    $res = str_replace('%s',$tA,$relations['won']);
+				$tres = str_replace('%s',$tA,$relations['won']);
 				break;
 			 case WONB:
-			    $res = str_replace('%s',$tB,$relations['won']);
+				$tres = str_replace('%s',$tB,$relations['won']);
 				break;
 			 case FORFA:
-			    $res = str_replace('%s',$tA,$relations['forf']);
+				$tres = str_replace('%s',$tA,$relations['forf']);
 				break;
 			 case FORFB:
-			    $res = str_replace('%s',$tB,$relations['forf']);
+				$tres = str_replace('%s',$tB,$relations['forf']);
 				break;
 			 case MTIED:
-				$res = sprintf($relations['tied'],$tA,$tB);
+				$tres = sprintf($relations['tied'],$tA,$tB);
 				break;
 			 case NOWIN:
-				$res = sprintf($relations['nomatch'],$tA,$tB);
+				$tres = sprintf($relations['nomatch'],$tA,$tB);
 				break;
 			 default:
 			 	$valid = FALSE;
@@ -59,8 +62,30 @@ if (!empty($params['send']))
 			}
 			if ($valid)
 			{
+				$save = FALSE;
+				$ob = $this->GetModuleInstance('FrontEndUsers');
+				if ($ob)
+				{
+					$uid = $ob->LoggedInID();
+					if ($uid !== FALSE)
+					{
+						$t = $bdata['feu_editgroup'];
+						if ($t == 'any')
+							$save = TRUE;
+						elseif ($t != 'none')
+						{
+							$gid = $ob->GetGroupID($t);
+							$save = $ob->MemberOfGroup($uid,$gid);
+						}
+						if($save)
+							$by = $ob->GetUserName($uid); //default
+					}
+					unset($ob);
+				}
+				$dt = new DateTime($mdata['playwhen'],new DateTimeZone($bdata['timezone']));
+
 				$name = sprintf($relations['vs'],$tA,$tB);
-				$body = array($name,'',$res,'');
+				$body = array($name,'',$tres,'');
 				$score = $params['score'][$indx];
 				if (!$score)
 				{
@@ -74,9 +99,37 @@ if (!empty($params['send']))
 				}
 				if ($res == WONA || $res == WONB)
 				{
-					$finished = $params['when'][$indx]; //TODO check for valid date/time
-					if (!finished)
+					$when = $params['when'][$indx];
+					if ($when)
+					{
+						$ends = date_parse($when);
+						if($ends && $ends['error_count'] == 0)
+						{
+							$starts = getdate($dt->getTimestamp());
+							if(!$ends['year']) $ends['year'] = $starts['year'];
+							if(!$ends['month']) $ends['month'] = $starts['mon'];
+							if(!$ends['day']) $ends['day'] = $starts['mday'];
+							if(!$ends['hour']) $ends['hour'] = $starts['hours'];
+							if(!$ends['minute'])
+							{
+								$ends['minute'] = $starts['minutes'];
+								$offs = 1800; //arbitrary 30-min increment
+							}
+							else
+								$offs = 0;
+							$dt->setDate($ends['year'],$ends['month'],$ends['day']);
+							$dt->setTime($ends['hour'],$ends['minute']);
+							$when = strftime('%F %R',$dt->getTimestamp()+$offs);
+							$finished = $when;
+						}
+						else
+							$when = FALSE;
+					}
+					if(!$when)
+					{
+						$when = $mdata['playwhen']; //default to scheduled start time
 						$finished = $this->Lang('missing');
+					}
 					$body[] = $this->Lang('titlewhen').' '.$finished;
 					$body[] = '';
 				}
@@ -87,6 +140,12 @@ if (!empty($params['send']))
 				}
 				if ($params['sender'])
 					$body[] = $this->Lang('reporter',$params['sender']);
+				if($save)
+				{
+					$body[] = '';
+					$body[] = $this->Lang('processed');
+				}
+
 				$funcs = new tmtComm($this);
 				list($res,$errmsg) = $funcs->TellOwner($bracket_id,$params['match'],$body);
 				if($res)
@@ -96,7 +155,25 @@ if (!empty($params['send']))
 					$msg = $this->Lang('notsent');
 					if($errmsg)
 						$msg .= '<br />'.$errmsg;
-				}	
+				}
+
+				if($save)
+				{
+					$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?, score=?,	status=? WHERE match_id=?';
+					$db->Execute($sql,array($when,$score,$res,$params['match']));
+					$t = $db->GenID($pref.'module_tmt_history_seq');
+					if($params['sender'])
+						$by = $params['sender'];
+					$dt->modify('now');
+					$when = strftime('%F %T',$dt->getTimestamp());
+					$sql = 'INSERT INTO '.$pref.
+					'module_tmt_history (history_id,bracket_id,changer,changewhen,olddata,newdata,comment VALUES (?,?,?,?,?,?,?)';
+					$db->Execute($sql,array($t,$bracket_id,$by,$when,NULL,$tres,$this->Lang('match_added',$params['match'])));
+
+					$funcs = new tmtSchedule();
+					$funcs->ScheduleMatches($this,$bracket_id);
+				}
+
 				$params = array(
 					'bracket_id'=>$bracket_id,
 					'view'=>$params['view'],
