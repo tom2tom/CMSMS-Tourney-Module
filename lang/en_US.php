@@ -522,6 +522,10 @@ $lang['title_sendto']='Give match-related notices to';
 $lang['help_sendto']='If \'one\', they should go to the first-listed player having usable contact-details';
 $lang['deleteplayer']='Remove this player from the team';
 
+//===== history =====
+$lang['match_added']='Match %d result added';
+$lang['processed']='This match result has been processed.';
+
 //===========================
 //in the following, text between >> and << is used for a link
 $lang['chart_noshow']='This browser can\'t display the tournament chart. You can get the chart from >>here<<, and review it using some other application.';
