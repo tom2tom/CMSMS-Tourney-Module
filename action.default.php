@@ -203,7 +203,7 @@ if($bdata['contact'])
 	{
 		//check for valid address for results
 		$funcs = new tmtComm($this);
-		if($funcs->ValidateAddress($bdata['contact']))
+		if($funcs->ValidateAddress($bdata['contact'],$bdata['smsprefix'],$bdata['smspattern']))
 			$submit = $this->CreateInputSubmitDefault($id,'result',$this->Lang('submit2'));
 	}
 }
