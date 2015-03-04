@@ -33,9 +33,9 @@ if (!empty($params['send']))
 			$tA = $this->TeamName($mdata['teamA']);
 			$tB = $this->TeamName($mdata['teamB']);
 			$relations = $this->ResultTemplates($bracket_id,FALSE);
-		
+
 			$indx = array_search($params['match'],$params['shown'],false);
-			$res = (int)$params['status'][$indx];
+			$res = (int)$params['result'][$indx];
 			switch ($res)
 			{
 			 case WONA:
