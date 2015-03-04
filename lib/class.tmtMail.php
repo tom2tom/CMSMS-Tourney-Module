@@ -209,7 +209,7 @@ class tmtMail
 				$cc = $cc + $more;
 		}
 		//submitted data
-		$sep = ($bdata['html']) ? '<br />' : "\n";
+		$sep = ($bdata['html']) ? '<br>' : "\n";
 		$smarty->assign('report',implode($sep,$lines));
 
 		$tpl = $mod->GetTemplate('mailin_'.$bdata['bracket_id'].'_template');
