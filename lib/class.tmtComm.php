@@ -33,12 +33,14 @@ class tmtComm
 	/**
 	ValidateAddress:
 	Check that @address is suitable for sending message via a supported channel
-	@address: The address to check
+	@address: The phone/address/handle to check
+	@prefix: default country-code for phone-numbers to receive text
+	@pattern: regex for matching acceptable phone nos, defaults to module preference
 	Returns: TRUE if valid
 	*/
-	public function ValidateAddress($address)
+	public function ValidateAddress($address,$prefix,$pattern)
 	{
-		if($this->text && $this->text->ValidateAddress($address))
+		if($this->text && $this->text->ValidateAddress($address,$prefix,$pattern))
 			return TRUE;
 		if($this->mail && $this->mail->ValidateAddress($address))
 			return TRUE;
