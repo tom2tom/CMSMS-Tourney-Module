@@ -340,7 +340,6 @@ class tmtData
 			$data->smsfrom = '';
 			$data->smsprefix = '';
 			$data->smspattern = $mod->GetPreference('phone_regex');
-//		$data->admin_editgroup = 'none';
 			$data->feu_editgroup = 'none';
 
 			$data->motemplate = $mod->GetTemplate('mailout_default_template');
@@ -417,7 +416,6 @@ class tmtData
 			$data->smsfrom = $row['smsfrom'];
 			$data->smsprefix = $row['smsprefix'];
 			$data->smspattern = $row['smspattern'];
-//		$data->admin_editgroup = $row['admin_editgroup'];
 			$data->feu_editgroup = $row['feu_editgroup'];
 
 			$data->motemplate = $mod->GetTemplate('mailout_'.$row['bracket_id'].'_template');
