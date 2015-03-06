@@ -42,13 +42,13 @@ if(!function_exists('DisplayErrorPage'))
 }
 
 $pref = cms_db_prefix();
-if(isset($params['nosend'])) //fronted user cancelled result sumbission
+if(isset($params['nosend'])) //frontend user cancelled result sumbission
 {
 	$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
-	$match = $params['bracket_id'];
+	$val = $params['bracket_id'];
 	$view = $params['view'];
-	unset($params); //other data from frontend not to interfere
-	$params['view'] = $view;
+	//other data from frontend not to interfere
+	$params = array('view'=>$view);
 }
 elseif(isset($params['tweetauth']))
 {
@@ -68,19 +68,19 @@ elseif(isset($params['chart']) || isset($params['list']))
 {
 	$params['view'] =(isset($params['chart'])) ? 'chart':'list';
 	$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
-	$match = $params['bracket_id'];
+	$val = $params['bracket_id'];
 }
 elseif(!empty($params['alias']))
 {
 	$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE alias=?';
-	$match = $params['alias'];
+	$val = $params['alias'];
 }
 else
 {
 	DisplayErrorPage($this,$smarty,$db,$params,TRUE,$this->Lang('err_tag'));
 	return;
 }
-$bdata = $db->GetRow($sql,array($match));
+$bdata = $db->GetRow($sql,array($val));
 if(!$bdata)
 {
 	DisplayErrorPage($this,$smarty,$db,$params,TRUE,$this->Lang('err_missing'));
