@@ -117,13 +117,30 @@ class tmtSMS
 		return FALSE;
 	}
 
-	private function AdjustPhone($number,$country)
+	//$pattern is for matching $number AFTER whitespace gone, BEFORE any prefix-adjustment,
+	//no '~' in it
+	private function AdjustPhone($number,$country,$pattern)
 	{
 		$n = str_replace(' ','',$number);
-		if($n[0] == '+')
-			$n = substr($n,1);
-		if($n[0] === '0')
-			$n = $country.substr($n,1);
+		if(preg_match('~'.$pattern.'~',$n) === FALSE)
+			return FALSE;
+		$p = str_replace(' ','',$country);
+		$plus = ($p[0] == '+');
+		if($plus)
+			$p = substr($p,1);
+		$l = strlen($p);
+		if($l > 0)
+		{
+			if(substr($n,0,$l) != $p)
+			{
+				if($n[0] === '0')
+					$n = $p.substr($n,1);
+			}
+		}
+		if($plus && $n[0] != '+')
+			$n = '+'.$n;
+		elseif(!$plus && $n[0] == '+')
+			$n = substr($n,1); //assume it's already a full number i.e. +countrylocal
 		return $n;
 	}
 
@@ -132,7 +149,7 @@ class tmtSMS
 	Check whether @address is a valid phone no.
 	@number: one, or a comma-separated series of, number(s) to check
 	@prefix: default country-code for phone-numbers to receive text
-	@pattern: regex for matching acceptable phone nos, defaults to module preference
+	@pattern: regex for matching acceptable phone nos
 	Returns: a trimmed valid phone no., or array of them, or FALSE
 	*/
 	public function ValidateAddress($number,$prefix,$pattern)
@@ -142,9 +159,7 @@ class tmtSMS
 		$pattern = '~'.$pattern.'~';
 		if(strpos($number,',') === FALSE)
 		{
-			$number = self::AdjustPhone($number,$prefix);
-			if(preg_match($pattern,$number))
-				return $number;
+			return self::AdjustPhone($number,$prefix,$pattern);
 		}
 		else
 		{
@@ -152,9 +167,9 @@ class tmtSMS
 			$number = array();
 			foreach($parts as $one)
 			{
-				$one = self::AdjustPhone($one,$prefix);
-				if(preg_match($pattern,$one))
-					$number[] = $one;
+				$to = self::AdjustPhone($one,$prefix,$pattern);
+				if($to)
+					$number[] = $to;
 			}
 			if($number)
 				return $number;
