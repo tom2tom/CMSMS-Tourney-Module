@@ -440,6 +440,7 @@ $lang['seed_none']='Random';
 $lang['seed_toponly']='Random except 1,2';
 $lang['seed_balanced']='More-equal matches eg 1v3';
 $lang['seed_unbalanced']='Less-equal matches eg 1v4';
+$lang['seed_randbalance']='Random more- or less-equal';
 $lang['help_seedtype']='Determines how seeds are allocated among initial matches';
 
 $lang['title_fixtype']='Arrangement of other selected competitors';

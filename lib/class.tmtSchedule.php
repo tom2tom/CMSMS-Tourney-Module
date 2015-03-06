@@ -586,8 +586,10 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			else
 				$rs = 1;
 			break;
-		 case 2: //no seed randomising
-		 case 3:
+		 case 4: //random choice 2 or 3
+		  $stype = rand(2,3);
+		 case 3: //no seed randomising
+		 case 2:
 		 	break;
 		 default: //ignore seeds,should never happen
 			$numseeds = 0; //don't use $allteams at all
@@ -845,8 +847,10 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			else
 				$rs = 1;
 			break;
-		 case 2: //no seed randomising
-		 case 3:
+		 case 4: //random choice 2 or 3
+		  $stype = rand(2,3);
+		 case 3: //no seed randomising
+		 case 2:
 		 	break;
 		 default: //ignore seeds,should never happen
 			$numseeds = 0; //don't use $allteams at all

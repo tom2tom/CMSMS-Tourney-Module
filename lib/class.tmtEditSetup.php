@@ -383,7 +383,8 @@ EOS;
 			$mod->Lang('seed_none')=>0,
 			$mod->Lang('seed_toponly')=>1,
 			$mod->Lang('seed_balanced')=>2,
-			$mod->Lang('seed_unbalanced')=>3
+			$mod->Lang('seed_unbalanced')=>3,
+			$mod->Lang('seed_randbalance')=>4
 		);
 		$main[] = array(
 			$mod->Lang('title_seedtype'),
@@ -1243,7 +1244,7 @@ EOS;
 				($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
 			}
 			$smarty->assign('matches',$matches);
-
+/* TODO
 			if($pmod && $matches)
 			{
 				//embedded vars here were defined for start/end-date calendars
@@ -1251,7 +1252,7 @@ EOS;
  $('.mat_playwhen').each(function() {
    $(this).Pikaday({
     container: this.parentNode,
-    format: 'YYYY-MM-DD HH:MM',
+    format: 'YYYY-MM-DD HH:mm',
     i18n: {
      previousMonth: '{$prevm}',
      nextMonth: '{$nextm}',
@@ -1264,7 +1265,7 @@ EOS;
 
 EOS;
 			}
-
+*/
 			if($pmod && count($matches) > 1)
 			{
 				$jsfuncs[] = <<< EOS
@@ -1664,7 +1665,7 @@ EOS;
 		$jsloads[] = <<< EOS
  $('form input[type=text]').keypress(function(e){
   if (e.which == 13) {
-	 $('input[type=submit].default').focus();
+// $('input[type=submit].default').focus();
    return false;
   }
  });
