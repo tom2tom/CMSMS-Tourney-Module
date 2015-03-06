@@ -102,18 +102,19 @@ class tmtLayout
 
 	/**
 	GetList:
-	@mod reference to module object
-	@bdata reference to array of brackets-table data
+	@mod: reference to module object
+	@bdata: reference to array of brackets-table data
+	@front: optional, whether list is for frontend display, default TRUE
 	Get bracket match status data in list format
 	Returns: array of match descriptor strings, or message-string key
 		if nothing to report or error happens
 	*/
-	function GetList(&$mod,&$bdata)
+	function GetList(&$mod,&$bdata,$front=TRUE)
 	{
 		$bracket_id = (int)$bdata['bracket_id'];
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
-		//get all matches, regardless of status, for use downstream
+		//get all matches, regardless of status
 		$sql = 'SELECT * FROM '.$pref.
 			'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';
 		$matches = $db->GetAssoc($sql,array($bracket_id));
@@ -148,16 +149,17 @@ class tmtLayout
 		{
 			if($mdata['status']==0)
 				continue; //filter out the matches of no interest here
-			//no i18n for byes
+			//bye(s)?
 			if ($mdata['teamA'] == -1)
 			{
-				if ($mdata['teamB'] != -1)
+				if (!($front || $mdata['teamB'] == -1))
 					$showrows[] = $mod->TeamName($mdata['teamB']).' '.$bdata['bye'];
-				else
-					continue; //nothing to show for double-byes
 			}
 			else if ($mdata['teamB'] == -1)
-				$showrows[] = $mod->TeamName($mdata['teamA']).' '.$bdata['bye'];
+			{
+				if (!$front)
+					$showrows[] = $mod->TeamName($mdata['teamA']).' '.$bdata['bye'];
+			}
 			else
 			{
 				$tA = ($mdata['teamA']) ? $mod->TeamName($mdata['teamA']) : FALSE;
