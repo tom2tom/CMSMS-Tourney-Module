@@ -54,7 +54,7 @@ switch ($oldversion)
 	locale C(12),
 	twtfrom C(18),
 	smsfrom C(18),
-	smsprefix C(4),
+	smsprefix C(6),
 	smspattern C(32),
 	calendarid C(24),
 	latitude N(8.3),
