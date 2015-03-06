@@ -118,11 +118,11 @@ class tmtSMS
 	}
 
 	//$pattern is for matching $number AFTER whitespace gone, BEFORE any prefix-adjustment,
-	//no '~' in it
+	//already has surrrounding delimiter-chars
 	private function AdjustPhone($number,$country,$pattern)
 	{
 		$n = str_replace(' ','',$number);
-		if(preg_match('~'.$pattern.'~',$n) === FALSE)
+		if(preg_match($pattern,$n) === FALSE)
 			return FALSE;
 		$p = str_replace(' ','',$country);
 		$plus = ($p[0] == '+');
