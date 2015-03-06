@@ -66,9 +66,11 @@ class tmtComm
 		$smarty->assign('where',$mdata['place']);
 		$tfmt = $mod->GetPreference('time_format');
 		$dfmt = $mod->GetZoneDateFormat($bdata['timezone']);
-		$stamp = strtotime($mdata['playwhen']);
+		$dt = new DateTime($mdata['playwhen'],new DateTimeZone($bdata['timezone']));
+		$stamp = $dt->GetTimestamp();
 		$smarty->assign('time',date($tfmt,$stamp));
 		$smarty->assign('date',date($dfmt,$stamp));
+		//time before date, can't rely on $bdata['atformat']
 		$smarty->assign('when',date($tfmt.', '.$dfmt,$stamp));
 		$tid = (int)$mdata['teamA'];
 		$tA = ($tid > 0) ? $mod->TeamName($mdata['teamA']) : '';
