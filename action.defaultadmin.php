@@ -70,7 +70,7 @@ $rows = $db->GetAll('SELECT bracket_id,name,alias FROM '.$pref.'module_tmt_brack
 if ($rows)
 {
 	$sql1 = 'SELECT COUNT(1) as num FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
-	$sql2 = $sql1.' AND status>='.MRES;
+	$sql2 = $sql1.' AND status>='.MRES.' AND teamA>-1 AND teamB>-1';
 	$sql3 = $sql1.' AND status!=0 AND status<'.ANON;
 	$currow = 'row1';
 	
