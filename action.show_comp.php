@@ -75,7 +75,7 @@ if (!$list)
 }
 else
 {
-	$res = $lyt->GetList($this,$bdata);
+	$res = $lyt->GetList($this,$bdata,FALSE);
 	if (is_array($res))
 	{
 		$smarty->assign('pagetitle',$bdata['name']);
