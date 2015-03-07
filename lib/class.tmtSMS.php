@@ -18,16 +18,14 @@ class tmtSMS
 		$this->utils = new cgsms_utils(); //never FALSE, cuz class created after check
 		$this->gateway = $this->utils->get_gateway(); //maybe FALSE
 	}
-
 /*
 	function TestSend($to,$body)
 	{
 		if(!$this->gateway)
 			return FALSE;
-		$to = self::ValidateAddress($to,'61','^(61|0)4\d{2} ?\d{3} ?\d{3}$');
+		$to = self::ValidateAddress($to,'61','^04\d{2} ?\d{3} ?\d{3}$');
 		if($to)
 		{
-	$this->DoNothing();
 			$this->gateway->set_num($to);
 			$this->gateway->set_msg($body);
 			$err = '';
