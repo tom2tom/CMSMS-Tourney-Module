@@ -342,6 +342,7 @@ $lang['help_twt2']='You can refresh the current authorisation for <strong>%s</st
 $lang['help_twt3']='You can initiate authorisation by clicking the \'Visit\' button.';
 $lang['help_twt4']='<strong>Ensure all wanted data are saved</strong>, before departing.';
 
+$lang['title_atformat']='Format of displayed date & time';
 $lang['title_chttemplate']='Front-end chart display template';
 $lang['title_emailhtml']='Generate HTML email';
 $lang['title_emailcoding']='Email character-encoding';

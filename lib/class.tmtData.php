@@ -226,7 +226,7 @@ class tmtData
 			$data->cssfile = $params['cssfile'];
 		else
 			$data->cssfile = NULL;
-
+		$data->atformat = $params['tmt_atformat'];
 		$data->final = $params['tmt_final'];
 		$data->semi = $params['tmt_semi'];
 		$data->quarter = $params['tmt_quarter'];
@@ -351,6 +351,7 @@ class tmtData
 
 			$data->chttemplate = $mod->GetTemplate('chart_default_template');
 			$data->chartcss = '';
+			$data->atformat = $mod->GetPreference('date_format').' '.$mod->GetPreference('time_format');
 			$data->final = $mod->GetPreference('last_match_name');
 			$data->semi = $mod->GetPreference('2ndlast_match_name');
 			$data->quarter = $mod->GetPreference('3rdlast_match_name');
@@ -427,6 +428,7 @@ class tmtData
 
 			$data->chttemplate = $mod->GetTemplate('chart_'.$row['bracket_id'].'_template');
 			$data->chartcss = $row['chartcss'];
+			$data->atformat = $row['atformat'];
 			$data->final = $row['final'];
 			$data->semi = $row['semi'];
 			$data->quarter = $row['quarter'];

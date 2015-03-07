@@ -47,6 +47,7 @@ $flds = "
 	cantie I(1) DEFAULT 0,
 	chartbuild I(1) DEFAULT 0,
 	chartcss C(128),
+	atformat C(16),
 	final C(48),
 	semi C(48),
 	quarter C(48),

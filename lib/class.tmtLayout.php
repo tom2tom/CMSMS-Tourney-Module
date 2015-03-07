@@ -143,6 +143,10 @@ class tmtLayout
 			$levelmax = $rnd->LevelMax($tc);
 		 	break;
 		}
+		$fmt = $bdata['atformat'];
+		if(!$fmt)
+			$fmt = $mod->GetZoneDateFormat($bdata['timezone']).' '.$mod->GetPreference('time_format');
+		$dt = new DateTime('now',new DateTimeZone($bdata['timezone']));
 		$relations = $mod->ResultTemplates($bdata['bracket_id'],FALSE);
 		$showrows = array();
 		foreach($matches as $mid=>$mdata)
@@ -168,8 +172,8 @@ class tmtLayout
 				{
 					if ($mdata['playwhen'])
 					{
-						$str = $mod->GetZoneDateFormat($bdata['timezone']).' '.$mod->GetPreference('time_format');
-						$at = ', '.date($str,strtotime($mdata['playwhen']));
+						$dt->modify($mdata['playwhen']);
+						$at = ', '.date($fmt,$dt->getTimestamp());
 						if ($mdata['place'] != NULL)
 							$at .= ', '.$mdata['place'];
 					}

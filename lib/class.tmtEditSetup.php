@@ -708,7 +708,7 @@ EOS;
 				$mod->CreateInputDropdown($id,'tmt_playgaptype',$opts,-1,$data->playgaptype):
 			$data->playgap.' '.$opts[$data->playgaptype],
 			$mod->Lang('help_play_gap')
-			);
+		);
 
 		$smarty->assign('schedulers',$sched);
 
@@ -779,6 +779,12 @@ EOS;
 			$mod->CreateInputText($id,'tmt_nomatch',$data->nomatch,30) : $data->nomatch
 		);
 		$names[] = array(
+			$mod->Lang('title_atformat'),
+			($pmod) ?
+			$mod->CreateInputText($id,'tmt_atformat',$data->atformat,16): $data->atformat,
+			$mod->Lang('help_date_format')
+		);
+		$names[] = array(
 			$mod->Lang('title_cssfile'),
 			($pmod) ?
 			$mod->CreateInputText($id,'tmt_chartcss',$data->chartcss,20,128).
@@ -809,7 +815,7 @@ EOS;
 			$data->chttemplate,
 			$help
 		);
-		
+
 		$smarty->assign('names',$names);
 
 		$smarty->assign('print',$mod->CreateInputSubmit($id,'print',$mod->Lang('plain'),

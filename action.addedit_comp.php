@@ -60,6 +60,7 @@ if ($add)
 	'seedtype' => $data->seedtype,
 	'fixtype' => $data->fixtype,
 	'teamsize' => $data->teamsize,
+	'atformat' => $data->atformat,
 	'final' => $data->final,
 	'semi' => $data->semi,
 	'quarter' => $data->quarter,

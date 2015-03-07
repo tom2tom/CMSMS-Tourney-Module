@@ -84,7 +84,10 @@ class tmtChartRR extends tmtChartBase
 			$names[$order] = $this->mod->TeamName($tid);
 			$order++;
 		}
-		$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
+		$fmt = $bdata['atformat'];
+		if(!$fmt)
+			$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
+		$dt = new DateTime('now',new DateTimeZone($bdata['timezone']));
 		$relations = $this->mod->ResultTemplates($bdata['bracket_id']);
 		$anon = $this->mod->Lang('anonother');
 		//process all recorded matches
@@ -123,7 +126,10 @@ ORDER BY T1.displayorder';
 					$rel = sprintf($relations['vs'],$tA,$tB);
 					$at = ($mdata['place']) ? $mdata['place'] : '';
 					if($mdata['playwhen'])
-						$at .= ' '.date($fmt,strtotime($mdata['playwhen']));
+					{
+						$dt->modify($mdata['playwhen']);
+						$at .= ' '.date($fmt,$dt->getTimestamp());
+					}
 					$text = $rel."\n".trim($at);
 					break;
 				case ASOFT:
@@ -140,7 +146,10 @@ ORDER BY T1.displayorder';
 						$rel = sprintf($relations['vs'],$anon,$tB);
 					$at = ($mdata['place']) ? $mdata['place'] : '';
 					if($mdata['playwhen'])
-						$at .= ' '.date($fmt,strtotime($mdata['playwhen']));
+					{
+						$dt->modify($mdata['playwhen']);
+						$at .= ' '.date($fmt,$dt->getTimestamp());
+					}
 					$text = $rel."\n".trim($at);
 					break;
 				case FORFB:
@@ -198,7 +207,10 @@ ORDER BY T1.displayorder';
 				}
 				$at = ($mdata['place']) ? $mdata['place'] : '';
 				if($mdata['playwhen'])
-					$at .= ' '.date($fmt,strtotime($mdata['playwhen']));
+				{
+					$dt->modify($mdata['playwhen']);
+					$at .= ' '.date($fmt,$dt->getTimestamp());
+				}
 				if($at)
 				{
 					$rel = ''; //$this->mod->Lang('matchnum',(int)$mdata['match_id'])."\n";

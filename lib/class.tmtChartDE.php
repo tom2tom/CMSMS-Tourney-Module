@@ -135,7 +135,10 @@ class tmtChartDE extends tmtChartBase
 		$lvlmax = $this->ldata['finalband'];//total levels in the draw
 		//levels in the winners' draw + 1 = lowest level in losers' draw
 		$lvlmid = $this->ldata['winnerbands'] + 1;
-		$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
+		$fmt = $bdata['atformat'];
+		if(!$fmt)
+			$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
+		$dt = new DateTime('now',new DateTimeZone($bdata['timezone']));
 		$relations = $this->mod->ResultTemplates($bracket_id);
 
 		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';
@@ -172,7 +175,10 @@ class tmtChartDE extends tmtChartBase
 								$rel = sprintf($relations['vs'],$nameA,$nameB);
 								$at = ($mdata['place']) ? $mdata['place'] : '';
 								if($mdata['playwhen'])
-									$at .= ' '.date($fmt,strtotime($mdata['playwhen']));
+								{
+									$dt->modify($mdata['playwhen']);
+									$at .= ' '.date($fmt,$dt->getTimestamp());
+								}
 								$text = $rel."\n".trim($at);
 								break;
 							case FORFB:
@@ -248,7 +254,10 @@ class tmtChartDE extends tmtChartBase
 						}
 						$at = ($mdata['place']) ? $mdata['place'] : '';
 						if($mdata['playwhen'])
-							$at .= ' '.date($fmt,strtotime($mdata['playwhen']));
+						{
+							$dt->modify($mdata['playwhen']);
+							$at .= ' '.date($fmt,$dt->getTimestamp());
+						}
 						$text = $rel."\n".trim($at);
 					}
 				}
@@ -311,7 +320,10 @@ class tmtChartDE extends tmtChartBase
 					}
 					$at = ($mdata['place']) ? $mdata['place'] : '';
 					if($mdata['playwhen'])
-						$at .= ' '.date($fmt,strtotime($mdata['playwhen']));
+					{
+						$dt->modify($mdata['playwhen']);
+						$at .= ' '.date($fmt,$dt->getTimestamp());
+					}
 					$text = $rel."\n".trim($at);
 				}
 				unset($mdata);

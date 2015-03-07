@@ -58,7 +58,8 @@ switch ($oldversion)
 	smspattern C(32),
 	calendarid C(24),
 	latitude N(8.3),
-	longitude N(8.3)
+	longitude N(8.3),
+	atformat C(16)
 ";
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_brackets',$flds);
 	$dict->ExecuteSQLArray($sql,FALSE);
