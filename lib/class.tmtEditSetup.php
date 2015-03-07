@@ -1250,7 +1250,6 @@ EOS;
 				($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
 			}
 			$smarty->assign('matches',$matches);
-/* TODO
 			if($pmod && $matches)
 			{
 				//embedded vars here were defined for start/end-date calendars
@@ -1271,7 +1270,7 @@ EOS;
 
 EOS;
 			}
-*/
+
 			if($pmod && count($matches) > 1)
 			{
 				$jsfuncs[] = <<< EOS
@@ -1535,6 +1534,26 @@ EOS;
 			if($results) //there's something other than a bye
 			{
 				$smarty->assign('results',$results);
+				if($pmod)
+				{
+					//embedded vars here were defined for start/end-date calendars
+					$jsloads[] = <<< EOS
+ $('.res_playwhen').each(function() {
+   $(this).Pikaday({
+    container: this.parentNode,
+    format: 'YYYY-MM-DD HH:mm',
+    i18n: {
+     previousMonth: '{$prevm}',
+     nextMonth: '{$nextm}',
+     months: [{$mnames}],
+     weekdays: [{$dnames}],
+     weekdaysShort: [{$sdnames}]
+    }
+   });
+ });
+
+EOS;
+				}
 				if(count($results) > 1)
 				{
 					$jsfuncs[] = <<< EOS
