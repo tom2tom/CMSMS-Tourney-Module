@@ -77,6 +77,8 @@ $lang['confirm_deletethis']='Are you sure you want to delete this %s?';
 $lang['match_data']='all match data';
 $lang['sel_players']='selected players';
 $lang['sel_teams']='selected teams';
+$lang['sel_items']='selected tournaments';
+$lang['sel_groups']='selected groups';
 
 $lang['deleted2']='Deleted %s.';
 //for replacement score-string
