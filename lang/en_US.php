@@ -35,8 +35,9 @@ $lang['err_template']='Display-template error';
 $lang['err_value']='Invalid parameter value'; 
 $lang['noname']='name missing';
 
-$lang['tab_items']='Tournaments';
 $lang['tab_config']='Settings';
+$lang['tab_groups']='Groups';
+$lang['tab_items']='Tournaments';
 
 $lang['title_name']='Name';
 $lang['title_tag']='Page Tag';
@@ -85,13 +86,17 @@ $lang['import']='Import';
 $lang['upload']='Upload';
 $lang['update']='Update';
 //$lang['export_selected_records']='export selected records';
-$lang['export_tip']='Export data for selected competitors to .csv file';
-$lang['import_tip']='Import competitors data from selected .csv file';
-$lang['delete_tip']='Delete selected competitors';
-$lang['upload_tip']='Upload selected file to website host';
-$lang['update_tip']='Save data for selected rows';
-$lang['submit_tip']='Send result to tournament manager';
+$lang['export_tip']='export data for selected competitors to .csv file';
+$lang['import_tip']='import competitors data from selected .csv file';
+$lang['delete_tip']='delete selected competitors';
+$lang['upload_tip']='upload selected file to website host';
+$lang['update_tip']='save data for selected rows';
+$lang['submit_tip']='send result to tournament manager';
 $lang['err_save']='Error during data save.';
+
+$lang['clonesel_tip']='clone selected tournaments';
+$lang['deletesel_tip']='delete selected tournaments';
+$lang['exportsel_tip']='export selected tournaments';
 
 $lang['team']='team';
 $lang['player']='competitor';
@@ -197,6 +202,19 @@ The tellall field will be treated as TRUE if it contains something other than '0
 <p>Imported data are <strong>not automatically stored</strong> in the database.
 After review and any modification, you should save the tournament data in the normal manner.;
 EOS;
+
+//tournament-groups
+
+$lang['activate']='Activate';
+$lang['activeselgrp']='toggle activation of selected groups';
+$lang['addgroup']='Add new group';
+$lang['deleteselgrp']='delete selected groups';
+$lang['groupdefault']='Ungrouped';
+$lang['inactive']='inactive';
+$lang['no_groups']='No group is recorded.';
+$lang['title_active']='Active';
+$lang['sortselgrp']='sort selected groups';
+$lang['updateselgrp']='update selected groups';
 
 //settings
 
@@ -317,6 +335,8 @@ $lang['title_title']='Displayed title';
 $lang['title_alias']='Alias name';
 $lang['help_alias']='For use in web-page smarty tags that display this tournament. If left blank, a default will be applied.';
 $lang['title_desc']='Description';
+$lang['title_group']='Group';
+$lang['help_group']='Tournaments can be grouped to facilitate allocation of players and places across multiple events';
 $lang['title_type']='Type';
 $lang['title_teamsize']='Players per team';
 

@@ -40,9 +40,15 @@ class tmtData
 		//each identifier in the data object must match the relevant database-fieldname
 		//identifiers are created here in more-or-less the field-order of the database table
 		if (!empty($params['bracket_id']))
+		{
 			$data->bracket_id = (int)$params['bracket_id'];
+			$data->groupid = (int)$params['groupid'];
+		}
 		if(!empty($params['newbracket']))
+		{
+			$data->groupid = 0; //ungrouped
 			$data->added = 1;
+		}
 		if (!empty($params['tmt_type']))
 			$data->type = (int)$params['tmt_type'];
 		else
@@ -326,6 +332,7 @@ class tmtData
 			$db = cmsms()->GetDb();
 			$data = new stdClass();
 			$data->bracket_id = $db->GenID(cms_db_prefix().'module_tmt_brackets_seq');
+			$data->groupid = 0; //ungrouped
 			$data->type = ''; //select the 'choose one' item in list
 			$data->name = '';
 			$data->description = '';
@@ -401,6 +408,7 @@ class tmtData
 			$data = new stdClass();
 
 			$data->bracket_id = $bracket_id;
+			$data->groupid = (int)$row['groupid'];
 //TODO also allow picker for copy, allow edit ONLY before comp starts
 			$data->type = (int)$row['type'];
 //		$data->teamcount = $row['teamcount'];

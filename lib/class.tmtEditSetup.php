@@ -360,6 +360,23 @@ EOS;
 			$mod->CreateInputText($id,'tmt_alias',$data->alias,30) : $data->alias,
 			$mod->Lang('help_alias')
 		);
+		$options = $mod->GetGroups();
+		if($options)
+		{
+			foreach($options as &$row)
+				$row = $row['name'];
+			unset($row);
+			$options = array_flip($options);
+		}
+		else
+			$options = array($mod->Lang('groupdefault')=>0); //ensure something exists
+		$main[] = array(
+			$mod->Lang('title_group'),
+			($pmod && !$this->committed) ?
+			$mod->CreateInputDropdown($id,'tmt_groupid',$options,'',$data->groupid) :
+			array_search($data->groupid,$options,TRUE).(($pmod)?$mod->CreateInputHidden($id,'tmt_groupid',$data->groupid):''),
+			$mod->Lang('help_group')
+		);
 		$options = $funcs->GetTypeNames($mod);
 		$main[] = array(
 			$mod->Lang('title_type'),

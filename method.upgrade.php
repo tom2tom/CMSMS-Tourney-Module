@@ -12,6 +12,7 @@ if (! $this->CheckAccess('admin'))
 $pref = cms_db_prefix();
 $taboptarray = array('mysql' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci',
  'mysqli' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci');
+$dict = NewDataDictionary($db);
 switch ($oldversion)
 {
  case '0.1.0':
@@ -19,8 +20,7 @@ switch ($oldversion)
 	$rel = $this->GetPreference('uploads_dir');
 	if(!$rel)
 		$this->SetPreference('uploads_dir',$this->GetName());
-	$this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$';
-	$dict = NewDataDictionary($db);
+	$this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$');
 
 	$flds = "
 	type I(1) DEFAULT ".KOTYPE.",
@@ -50,6 +50,7 @@ switch ($oldversion)
 		return $msg;
 	}
 	$flds = "
+	groupid I(2) DEFAULT 0,
 	fixtype I(1) DEFAULT 0,
 	locale C(12),
 	twtfrom C(18),
@@ -87,6 +88,20 @@ switch ($oldversion)
 	$dict->ExecuteSQLArray($sql);
 	$sql = 'INSERT INTO'.$pref.'module_tmt_tweet (bracket_id,handle) VALUES (0,\'firstrow\')';
 	$db->Execute($sql);
+
+ case '0.1.2':
+	$fields = "
+		group_id I(2) KEY,
+		name C(128),
+		vieworder I(2),
+		flags I(1) DEFAULT 1
+	";
+	$sqlarray = $dict->CreateTableSQL($pref.'module_tmt_groups', $fields, $taboptarray);
+	$dict->ExecuteSQLArray($sqlarray);
+	$db->CreateSequence($pref.'module_tmt_groups_seq');
+	// add default group 0
+	$sql = 'INSERT INTO '.$pref.'module_tmt_groups (group_id,name,vieworder) VALUES (0,?,1)';
+	$db->Execute($sql,array($this->Lang('groupdefault')));
 
 	break;
 }

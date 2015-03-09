@@ -1,41 +1,45 @@
 {if !empty($message)}<p class="pagemessage">{$message}</p>{/if}
 
 {$tab_headers}
-{$start_main_tab}
 
-{if $count}
+{$start_items_tab}
+{$start_itemsform}
+{if $icount}
 <div style="overflow:auto;">
- <table class="pagetable" style="border-collapse:collapse;">
+ <table id="items" class="pagetable" style="border-collapse:collapse;">
   <thead><tr>
   <th>{$title_name}</th>
 {if $candev}
   <th>{$title_tag}</th>
 {/if}
+  <th>{$title_group}</th>
   <th>{$title_status}</th>
   <th class="pageicon"></th>
   <th class="pageicon"></th>
-{if $canconfig == 1}
+{if $canmod}
   <th class="pageicon"></th>
   <th class="pageicon"></th>
 {/if}
   <th class="pageicon"></th>
+  <th class="checkbox" style="width:20px;">{$selectall_items}</th>
  </tr></thead>
  <tbody>
-{foreach from=$comps item=entry}
-{cycle values='row1,row2' assign='rowclass'}
-	<tr class="{$rowclass}" onmouseover="this.className='{$rowclass}hover';" onmouseout="this.className='{$rowclass}';">
+{foreach from=$comps item=entry} {cycle values='row1,row2' name='c1' assign='rowclass'}
+ <tr class="{$rowclass}" onmouseover="this.className='{$rowclass}hover';" onmouseout="this.className='{$rowclass}';">
   <td>{$entry->name}</td>
 {if $candev}
   <td>{ldelim}{$modname} alias='{$entry->alias}'{rdelim}</td>
 {/if}
+  <td>{$entry->group}</td>
   <td>{$entry->status}</td>
   <td>{$entry->viewlink}</td>
   <td>{$entry->editlink}</td>
-{if $canconfig}
+{if $canmod}
   <td>{$entry->copylink}</td>
   <td>{$entry->deletelink}</td>
 {/if}
   <td>{$entry->exportlink}</td>
+  <td class="checkbox">{$entry->selected}</td>
  </tr>
 {/foreach}
  </tbody>
@@ -44,18 +48,71 @@
 {else}
 <p>{$notourn}</p>
 {/if}
-{if $canconfig}
-<p class="pageoptions">{$addlink}&nbsp;{$addlink2}</p>
-<div class="pageoverflow">
-{$start_importform}
- <p class="pagetext">{$title_import}:</p>
- <p class="pageinput">{$input_import}&nbsp;&nbsp;{$submitxml}</p>
-{$end_importform}
+<div class="pageoptions">
+{if $canmod}{$addlink}&nbsp;{$addlink2}
+{if $icount}
+<div style="margin:0;float:right;text-align:right">
+{$clonebtn} {$deletebtn} {$exportbtn}
 </div>
+<div class="clearb"></div>
 {/if}
+  <div class="pageoverflow">
+   <p class="pagetext">{$title_import}:</p>
+   <p class="pageinput">{$input_import}&nbsp;&nbsp;{$submitxml}</p>
+ </div>
+{/if}
+</div>
+{$end_form}
 {$end_tab}
-{if $canconfig}
-{$start_configuration_tab}
+
+{$start_grps_tab}
+{$start_groupsform}
+{if $gcount}
+<div style="overflow:auto;">
+ <table id="groups" class="pagetable{if $canmod} table_drag{/if}" style="border-collapse:collapse">
+  <thead><tr>
+   <th>{$title_gname}</th>
+   <th>{$title_active}</th>
+{if $canmod}
+   <th>{$title_move}</th>
+   <th class="pageicon"></th>
+{/if}
+   <th class="checkbox" style="width:20px;">{$selectall_groups}</th>
+  </tr></thead>
+  <tbody>
+ {foreach from=$groups item=entry} {cycle values='row1,row2' name='c2' assign='rowclass'}
+  <tr class="{$rowclass}" onmouseover="this.className='{$rowclass}hover';" onmouseout="this.className='{$rowclass}';">
+   <td>{$entry->name}</td>
+   <td>{$entry->active}</td>
+{if $canmod}
+   <td class="updown">{$entry->downlink}{$entry->uplink}</td>
+   <td>{$entry->deletelink}</td>
+{/if}
+   <td class="checkbox">{$entry->selected}</td>
+  </tr>
+ {/foreach}
+  </tbody>
+ </table>
+{if $canmod && $gcount > 1}<p class="dndhelp">{$dndhelp}</p>{/if}
+</div>
+{else}
+ <p class="pageinput" style="margin:20px;">{$nogroups}</p>
+{/if}
+<div class="pageoptions">
+{if $canmod}{$addgrplink}
+{if $gcount}
+<div style="margin:0;float:right;text-align:right">
+{$cancelbtn2} {$activebtn2} {$sortbtn2} {$deletebtn2} {$submitbtn2}
+</div>
+<div class="clearb"></div>
+{/if}
+{/if}
+</div>
+{$end_form}
+{$end_tab}
+
+{if $config}
+{$start_config_tab}
 {$start_configform}
  <div class="module_fbr_overflow">
  <fieldset><legend>{$title_names_fieldset}</legend>
@@ -71,15 +128,17 @@
 {/foreach}
  </fieldset>
 {if isset($hidden)}{$hidden}{/if}
-<p class="pageinput" style="margin-top:10px;">{$save}&nbsp;{$cancel}</p>
+<div style="margin:10px 0 0 0;float:right;text-align:right">
+{$cancel} {$save}
 </div>
-{$end_configform}
+<div class="clearb"></div>
+{$end_form}
 {$end_tab}
 {/if}
 
 {$tab_footers}
 
-{if $canconfig}
+{if $canmod}
 <div id="confirm" class="modal-overlay">
 <div class="confirm-container">
 <p style="text-align:center;font-weight:bold;"></p>

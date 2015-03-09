@@ -72,6 +72,8 @@ $sql = $dict->DropTableSQL($pref.'module_tmt_people');
 $dict->ExecuteSQLArray($sql);
 $sql = $dict->DropTableSQL($pref.'module_tmt_matches');
 $dict->ExecuteSQLArray($sql);
+$sql = $dict->DropTableSQL($pref.'module_tmt_groups');
+$dict->ExecuteSQLArray($sql);
 $sql = $dict->DropIndexSQL('idx_tweetid', $pref.'module_tmt_tweet');
 $dict->ExecuteSQLArray($sql);
 $sql = $dict->DropTableSQL($pref.'module_tmt_tweet');
@@ -83,6 +85,7 @@ $db->DropSequence($pref.'module_tmt_brackets_seq');
 $db->DropSequence($pref.'module_tmt_teams_seq');
 //no sequence for people,tweet tables
 $db->DropSequence($pref.'module_tmt_matches_seq');
+$db->DropSequence($pref.'module_tmt_groups_seq');
 $db->DropSequence($pref.'module_tmt_history_seq');
 
 // permissions

@@ -13,41 +13,50 @@ if ($padm)
 	$pmod = TRUE;
 	$pscore = TRUE;
 	$pview = TRUE;
+	$smarty->assign('config',1);
+	$smarty->assign('canmod',1);
 }
 else
 {
+	$smarty->assign('config',0);
 	$pmod = $this->CheckAccess('modify');
 	if ($pmod)
 	{
 		$pscore = TRUE;
 		$pview = TRUE;
+		$smarty->assign('canmod',1);
 	}
 	else
 	{
 		$pscore = $this->CheckAccess('score');
 		$pview = $this->CheckAccess('adview');
+		$smarty->assign('canmod',0);
 	}
 }
 
-if (isset($params['tmt_message']) && $params['tmt_message'] != '')
+if (!empty($params['tmt_message']))
 	$smarty->assign('message',$params['tmt_message']);
 
-if ($padm)
-{
-	$smarty->assign('tab_headers',$this->starttabheaders().
-		$this->settabheader('compdata',$this->lang('tab_items')).
-		$this->settabheader('configuration',$this->lang('tab_config')).
-		$this->endtabheaders().$this->starttabcontent());
-	$smarty->assign('start_configuration_tab',$this->StartTab('configuration'));
-}
+if(isset($params['showtab']))
+	$showtab = (int)$params['showtab'];
 else
-{
-	$smarty->assign('tab_headers',$this->StartTabHeaders().
-		$this->SetTabHeader('compdata',$this->Lang('tab_items')).
-		$this->EndTabHeaders().$this->StartTabContent());
-}
+	$showtab = 0; //default
+$seetab1 = ($showtab==1);
+$seetab2 = ($showtab==2);
 
-$smarty->assign('start_main_tab',$this->StartTab('compdata'));
+$t = ($padm) ? $this->SetTabHeader('configuration',$this->lang('tab_config'),$seetab2) : '';
+$smarty->assign('tab_headers',$this->StartTabHeaders().
+	$this->SetTabHeader('itmdata',$this->lang('tab_items')).
+	$this->SetTabHeader('grpdata',$this->lang('tab_groups'),$seetab1).
+	$t.
+	$this->EndTabHeaders().$this->StartTabContent());
+
+//need diversion for 'import_comp' action
+$smarty->assign('start_itemsform',$this->CreateFormStart($id, 'process_items', $returnid, 'post','multipart/form-data'));
+//$smarty->assign('start_itemsform',$this->CreateFormStart($id, 'process_items',$returnid));
+$smarty->assign('end_form',$this->CreateFormEnd());
+
+$smarty->assign('start_items_tab',$this->StartTab('itmdata'));
 $smarty->assign('end_tab',$this->EndTab());
 $smarty->assign('tab_footers',$this->EndTabContent());
 
@@ -56,6 +65,7 @@ $smarty->assign('title_name',$this->Lang('title_name'));
 $t = ($pdev) ? $this->Lang('title_tag'):null;
 $smarty->assign('title_tag',$t);
 
+$smarty->assign('title_group',$this->Lang('title_group'));
 $smarty->assign('title_status',$this->Lang('title_status'));
 
 $gCms = cmsms();
@@ -65,15 +75,20 @@ $comps = array();
 $jsfuncs = array();
 $jsincudes = array();
 
+$groups = $this->GetGroups();
+$selgrp = ($groups && count($groups) > 1);
+if($selgrp)
+	$inactive = $this->Lang('inactive');
+else
+	$ungrouped = $this->Lang('groupdefault');
 $pref = cms_db_prefix();
-$rows = $db->GetAll('SELECT bracket_id,name,alias FROM '.$pref.'module_tmt_brackets ORDER BY name');
+$rows = $db->GetAll('SELECT bracket_id,groupid,name,alias FROM '.$pref.'module_tmt_brackets ORDER BY name');
 if ($rows)
 {
 	$sql1 = 'SELECT COUNT(1) as num FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
 	$sql2 = $sql1.' AND status>='.MRES.' AND teamA>-1 AND teamB>-1';
 	$sql3 = $sql1.' AND status!=0 AND status<'.ANON;
-	$currow = 'row1';
-	
+
 	if($pmod || $pscore)
 		$iconedit = $theme->DisplayImage('icons/system/edit.gif',$this->Lang('edit'),'','','systemicon');
 	$iconview = $theme->DisplayImage('icons/system/view.gif',$this->Lang('view'),'','','systemicon');
@@ -92,83 +107,121 @@ if ($rows)
 	
 	foreach ($rows as $bdata)
 	{
-		$oneset = new stdClass();
-
-		$total = $db->GetOne($sql1,array($bdata['bracket_id']));
+		$one = new stdClass();
+		$thisid = (int)$bdata['bracket_id'];
+		$total = $db->GetOne($sql1,array($thisid));
 		if (!$total)
-			$oneset->status = $this->Lang('status_notyet');
+			$one->status = $this->Lang('status_notyet');
 		else
 		{
-			$done = $db->GetOne($sql2,array($bdata['bracket_id']));
+			$done = $db->GetOne($sql2,array($thisid));
 			if ($done < $total)
 			{
-				$pending = $db->GetOne($sql3,array($bdata['bracket_id']));
+				$pending = $db->GetOne($sql3,array($thisid));
 				$mn = ($done == 1) ? $this->Lang('match'):$this->Lang('matches');
-				$oneset->status = $this->Lang('status_going',$done,$mn,$pending);
+				$one->status = $this->Lang('status_going',$done,$mn,$pending);
 			}
 			else
-				$oneset->status = $this->Lang('status_ended');
+				$one->status = $this->Lang('status_ended');
 		}
 		if ($pmod || $pscore)
 		{
-			$oneset->name = $this->CreateLink($id,'addedit_comp','',
-				$bdata['name'],array('bracket_id'=>$bdata['bracket_id']));
-			$oneset->editlink = $this->CreateLink($id,'addedit_comp','',
-				$iconedit,array('bracket_id'=>$bdata['bracket_id']));
+			$one->name = $this->CreateLink($id,'addedit_comp','',
+				$bdata['name'],array('bracket_id'=>$thisid));
+			$one->editlink = $this->CreateLink($id,'addedit_comp','',
+				$iconedit,array('bracket_id'=>$thisid));
 			if ($pdev)
-				$oneset->alias = $bdata['alias']; //info for site-content developers
+				$one->alias = $bdata['alias']; //info for site-content developers
 			if ($pmod)
 			{
-				$oneset->copylink = $this->CreateLink($id,'clone_comp','',
-					$iconclone,array('bracket_id'=>$bdata['bracket_id']));
-				$oneset->deletelink = $this->CreateLink($id,'delete_comp','',
-					$icondel,array('bracket_id'=>$bdata['bracket_id'])); //confirmation by modalconfirm dialog
+				$one->copylink = $this->CreateLink($id,'clone_comp','',
+					$iconclone,array('bracket_id'=>$thisid));
+				$one->deletelink = $this->CreateLink($id,'delete_comp','',
+					$icondel,array('bracket_id'=>$thisid)); //confirmation by modalconfirm dialog
 			}
 		}
 		else //no mod allowed
 		{
-			$oneset->name = $bdata['name'];
+			$one->name = $bdata['name'];
 		}
-		if ($pview || $pscore)
-			$oneset->viewlink = $this->CreateLink($id,'addedit_comp','',
-				$iconview,array('bracket_id'=>$bdata['bracket_id'],'real_action'=>'view'));
+		if($selgrp)
+		{
+			$gid = $bdata['groupid'];
+			$t = $groups[$gid]['name'];
+			if ((int)$groups[$gid]['flags'] & 1 === 0)
+				$t .= ':'.$inactive;
+			$one->group = $t;
+		}
 		else
-			$oneset->viewlink = '';
+			$one->group = $ungrouped;
+		if ($pview || $pscore)
+			$one->viewlink = $this->CreateLink($id,'addedit_comp','',
+				$iconview,array('bracket_id'=>$thisid,'real_action'=>'view'));
+		else
+			$one->viewlink = '';
 
 		if ($pmod || $padm)
 		{
-			$oneset->exportlink = $this->CreateLink($id, 'export_comp', '',
+			$one->exportlink = $this->CreateLink($id, 'export_comp', '',
 				$iconexport,
-					array('bracket_id'=>$bdata['bracket_id']));
+					array('bracket_id'=>$thisid));
 		}
 		else
-			$oneset->exportlink = '';
+			$one->exportlink = '';
+		$one->selected = $this->CreateInputCheckbox($id,'selitems[]',$thisid,-1);
 
-		if ((bool)$oneset) //object isn't empty
-		{
-			$oneset->rowclass = $currow;
-			$comps[] = $oneset;
-			($currow == 'row1'?$currow='row2':$currow='row1');
-		}
+		if ((bool)$one) //object isn't empty
+			$comps[] = $one;
 		else
-			unset($oneset);
+			unset($one);
 	}
 }
 
 if ($comps)
 {
-	$smarty->assign('count',count($comps));
+	$ic = count($comps);
+	$smarty->assign('icount',$ic);
 	$smarty->assign('comps',$comps);
 	$smarty->assign('modname',$this->GetName());
 	$smarty->assign('candev',$pdev);
+	if ($ic > 1)
+	{
+		$t = $this->CreateInputCheckbox($id,'item',TRUE,FALSE,'onclick="select_all_items(this)"');
+		$jsfuncs[] = <<< EOS
+function select_all_items(b)
+{
+ var st = $(b).attr('checked');
+ if(!st) st = false;
+ $('input[name="{$id}selitems[]"][type="checkbox"]').attr('checked',st);
+}
+EOS;
+	}
+	else
+		$t = '';
+	$smarty->assign('selectall_items',$t);
 
 	if ($pmod)
 	{
+		$smarty->assign('clonebtn',$this->CreateInputSubmit($id,'clone',$this->Lang('clone'),
+			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"'));
+		$smarty->assign('deletebtn',$this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
+			'title="'.$this->Lang('deletesel_tip').'"')); //TODO modal confirm
+		$smarty->assign('exportbtn',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
+			'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"'));
 		//for popup confirmation
 		$smarty->assign('no',$this->Lang('no'));
 		$smarty->assign('yes',$this->Lang('yes'));
 		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.min.js"></script>';
 		$jsfuncs[] = <<< EOS
+function selitm_count()
+{
+ var cb = $('input[name="{$id}selitems[]"]:checked');
+ return cb.length;
+}
+function confirm_selitm_count()
+{
+ return (selitm_count() > 0);
+}
 $(document).ready(function(){
  $('.{$id}delete_comp').modalconfirm({
   overlayID: 'confirm',
@@ -191,7 +244,7 @@ $(document).ready(function(){
 EOS;
 	}
 }
-else
+else //no tournament
 {
 	$smarty->assign('notourn',$this->Lang('no_tourney'));
 }
@@ -203,19 +256,147 @@ if ($pmod)
 	$smarty->assign('addlink2',$this->CreateLink($id,'addedit_comp', '',
 		$this->Lang('title_add_tourn')));
 
-	$smarty->assign('start_importform',$this->CreateFormStart($id, 'import_comp', $returnid, 'post','multipart/form-data'));
-	$smarty->assign('end_importform',$this->CreateFormEnd());
 	$smarty->assign('title_import',$this->Lang('title_import'));
 	$smarty->assign('input_import',$this->CreateInputFile($id, 'xmlfile', 'text/xml', 25));
-	$smarty->assign('submitxml', $this->CreateInputSubmit($id, 'tmt_import', $this->Lang('upload')));
+	$smarty->assign('submitxml', $this->CreateInputSubmit($id, 'import', $this->Lang('upload')));
+}
+
+$smarty->assign('start_grps_tab',$this->StartTab('grpdata'));
+$smarty->assign('start_groupsform',$this->CreateFormStart($id, 'process_groups', $returnid));
+
+if($groups)
+{
+	if($pmod)
+	{
+		$mc = 0;
+		$previd	= -10;
+		$iconup = $theme->DisplayImage('icons/system/arrow-u.gif',$this->Lang('up'),'','','systemicon');
+		$icondn = $theme->DisplayImage('icons/system/arrow_d.gif',$this->Lang('down'),'','','systemicon');
+	}
+	else
+	{
+		$no = $this->Lang('no');
+		$yes = $this->Lang('yes');
+	}
+	$showgrps = array();
+	foreach ($groups as $gid=>&$gdata)
+	{
+		$one = new stdClass();
+		$active = ((int)$gdata['flags'] & 1) ? TRUE:FALSE;
+		if($pmod)
+		{
+			$one->name = $this->CreateInputText($id,'group_names['.$gid.']',$gdata['name'],50,128);
+			$one->active = $this->CreateInputCheckbox($id,'activegroups['.$gid.']',$gid,(($active)?$gid:-1));
+			$one->downlink = '';
+			if ($mc)
+			{
+				//there's a previous item,create the appropriate links
+				$one->uplink = $this->CreateLink($id,'swap_groups',$returnid,
+					$iconup,array('group_id'=>$gid,'prev_id'=>$previd));
+				$showgrps[($mc-1)]->downlink = $this->CreateLink($id,'swap_groups',$returnid,
+					$icondn,array('group_id'=>$previd,'next_id'=>$gid));
+			}
+			else
+				$one->uplink = '';
+			$mc++;
+			$previd = $gid;
+			if ($gid > 0) //preserve the default group
+				$one->deletelink = $this->CreateLink($id,'delete_group','',
+					$icondel,array('group_id'=>$gid)); //confirmation by modalconfirm dialog
+			else
+				$one->deletelink = '';
+		}
+		else //no mod allowed
+		{
+			$one->name = $gdata['name'];
+			$one->active = ($active) ? $yes : $no;
+		}
+		$one->selected = $this->CreateInputCheckbox($id,'selgroups[]',$gid,-1);
+		$showgrps[] = $one;
+	}
+	unset($gdata);
+	$gc = count($showgrps);
+	$smarty->assign('gcount',$gc);
+	$smarty->assign('groups',$showgrps);
+	if ($gc > 0)
+	{
+		//buttons
+		if ($pmod)
+		{
+			$smarty->assign('submitbtn2',$this->CreateInputSubmit($id,'update',
+				$this->Lang('update'),
+				'title="'.$this->Lang('updateselgrp').'" onclick="return confirm_selgrp_count();"'));
+			$smarty->assign('deletebtn2',$this->CreateInputSubmit($id,'delete',
+				$this->Lang('delete'),
+				'title="'.$this->Lang('deleteselgrp').'"')); //TODO modalconfirm
+			$smarty->assign('activebtn2',$this->CreateInputSubmit($id,'activate',
+				$this->Lang('activate'),
+				'title="'.$this->Lang('activeselgrp').'" onclick="return confirm_selgrp_count();"'));
+			$smarty->assign('cancelbtn2',$this->CreateInputSubmit($id,'cancel',
+				$this->Lang('cancel')));
+			$jsfuncs[] = <<< EOS
+function selgrp_count()
+{
+ var cb = $('input[name="{$id}selgroups[]"]:checked');
+ return cb.length;
+}
+function confirm_selgrp_count()
+{
+ return (selgrp_count() > 0);
+}
+EOS;
+		}
+	}
+	
+	if ($gc > 1)
+	{
+		if ($pmod)
+		{
+			$smarty->assign('sortbtn2',$this->CreateInputSubmit($id,'sort',
+				$this->Lang('sort'),
+				'title="'.$this->Lang('sortselgrp').'" onclick="return confirm_selgrp_count();"'));
+		}
+		$t = $this->Lang('title_move');
+		$cb = $this->CreateInputCheckbox($id,'group',TRUE,FALSE,'onclick="select_all_groups(this)"');
+		$jsfuncs[] = <<< EOS
+function select_all_groups(b)
+{
+ var st = $(b).attr('checked');
+ if(!st) st = false;
+ $('input[name="{$id}selgroups[]"][type="checkbox"]').attr('checked',st);
+}
+EOS;
+	}
+	else
+	{
+		$t = '';
+		$cb = '';
+	}
+	$smarty->assign('title_gname',$this->Lang('title_name'));
+	$smarty->assign('title_active',$this->Lang('title_active'));
+	$smarty->assign('title_move',$t);
+	$smarty->assign('selectall_groups',$cb);
+}
+else //no group
+{
+	$smarty->assign('nogroups',$this->Lang('no_groups'));
 }
 
 if ($padm)
 {
-	$smarty->assign('canconfig',1);
+	$smarty->assign('addgrplink',$this->CreateLink($id,'addgroup',$returnid,
+		$theme->DisplayImage('icons/system/newobject.gif',$this->Lang('addgroup'),'','','systemicon'),
+			array(),'',false,false,'')
+		.' '.
+		$this->CreateLink($id,'addgroup',$returnid,
+			$this->Lang('addgroup'),
+			array(),'',false,false,'class="pageoptions"'));
+}
 
+if ($padm)
+{
+	$smarty->assign('start_config_tab',$this->StartTab('configuration'));
 	$smarty->assign('start_configform',$this->CreateFormStart($id, 'save_config', $returnid));
-	$smarty->assign('end_configform',$this->CreateFormEnd());
 
 	$smarty->assign('title_names_fieldset', $this->Lang('title_names_fieldset'));
 	$smarty->assign('title_misc_fieldset', $this->Lang('title_misc_fieldset'));
@@ -285,9 +466,9 @@ if ($padm)
 	$smarty->assign('misc',$misc);
 
 	$smarty->assign('save',
-		$this->CreateInputSubmitDefault($id, 'tmt_submit', $this->Lang('save')));
+		$this->CreateInputSubmitDefault($id, 'submit', $this->Lang('save')));
 	$smarty->assign('cancel',
-		$this->CreateInputSubmit($id, 'tmt_cancel', $this->Lang('cancel')));
+		$this->CreateInputSubmit($id, 'cancel', $this->Lang('cancel')));
 }
 else
 {
