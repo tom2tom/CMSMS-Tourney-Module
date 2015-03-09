@@ -772,7 +772,7 @@ EOS;
 		$names[] = array(
 			$mod->Lang('title_cantie'),
 			($pmod) ?
-			$mod->CreateInputCheckbox($id,'tmt_cantie',1,$data->cantie,'class="pagecheckbox"') :
+			$mod->CreateInputCheckbox($id,'tmt_cantie',1,$data->cantie) :
 				($data->cantie?$mod->Lang('yesties'):$mod->Lang('noties'))
 		);
 		$names[] = array(
@@ -894,7 +894,7 @@ EOS;
 						$mod->Lang('edit'),'onclick="set_params(this);"');
 					$one->deletelink = $mod->CreateInputLinks($id,'delete_team['.$tid.']','delete.gif',FALSE,
 						$mod->Lang('delete')); //confirmation via modal dialog
-					$one->selected = $mod->CreateInputCheckbox($id,'tsel[]',$tid,-1,'class="pagecheckbox"');
+					$one->selected = $mod->CreateInputCheckbox($id,'tsel[]',$tid,-1);
 				}
 				else
 				{
@@ -1238,7 +1238,7 @@ EOS;
 							break;
 						}
 					}
-					$one->selected = $mod->CreateInputCheckbox($id,'msel[]',$mid,-1,'class="pagecheckbox"');
+					$one->selected = $mod->CreateInputCheckbox($id,'msel[]',$mid,-1);
 				}
 				else //no change allowed
 				{
@@ -1508,7 +1508,7 @@ EOS;
 						$tmp = $mod->CreateInputText($id,'res_score[]',$mdata['score'],15,30);
 						$repls = array('class="res_score $1"','');
 						$one->score = preg_replace($finds,$repls,$tmp);
-						$one->selected = $mod->CreateInputCheckbox($id,'rsel[]',$mid,-1,'class="pagecheckbox"');
+						$one->selected = $mod->CreateInputCheckbox($id,'rsel[]',$mid,-1);
 					}
 					else //no changes
 					{
