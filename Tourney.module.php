@@ -936,6 +936,10 @@ Europe/Vilnius'
 					$params['real_action'] = $task;
 			}
 			break;
+		 case 'process_items':
+			if (!empty($params['import']))
+				$name = 'import_comp';
+		  break;
 		 case 'default':
 		 	if (!empty($params['result']))
 				$name = 'result';
