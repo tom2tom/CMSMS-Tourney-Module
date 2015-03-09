@@ -272,6 +272,18 @@ if ($pmod)
 $smarty->assign('start_grps_tab',$this->StartTab('grpdata'));
 $smarty->assign('start_groupsform',$this->CreateFormStart($id, 'process_groups', $returnid));
 
+if(!empty($params['addgroup']))
+{
+	//setup to append empry row
+	if($groups)
+	{
+		$gc = count($groups);
+		$groups = $groups + array(-1 => array('name'=>'','vieworder'=>$gc,'flags'=>1));
+	}
+	else
+		$groups = array(-1 => array('name'=>'','vieworder'=>1,'flags'=>1));
+}
+
 if($groups)
 {
 	if($pmod)
@@ -279,7 +291,7 @@ if($groups)
 		$mc = 0;
 		$previd	= -10;
 		$iconup = $theme->DisplayImage('icons/system/arrow-u.gif',$this->Lang('up'),'','','systemicon');
-		$icondn = $theme->DisplayImage('icons/system/arrow_d.gif',$this->Lang('down'),'','','systemicon');
+		$icondn = $theme->DisplayImage('icons/system/arrow-d.gif',$this->Lang('down'),'','','systemicon');
 	}
 	else
 	{
@@ -293,8 +305,9 @@ if($groups)
 		$active = ((int)$gdata['flags'] & 1) ? TRUE:FALSE;
 		if($pmod)
 		{
-			$one->name = $this->CreateInputText($id,'group_names['.$gid.']',$gdata['name'],50,128);
-			$one->active = $this->CreateInputCheckbox($id,'activegroups['.$gid.']',$gid,(($active)?$gid:-1));
+			$one->name = $this->CreateInputText($id,'group_name[]',$gdata['name'],50,128);
+			$one->order = (int)$gdata['vieworder']; //hidden, for DnD
+			$one->active = $this->CreateInputCheckbox($id,'group_active[]',$gid,(($active)?$gid:-10));
 			$one->downlink = '';
 			if ($mc)
 			{
@@ -352,7 +365,91 @@ function confirm_selgrp_count()
 {
  return (selgrp_count() > 0);
 }
+EOS;
+		}
+	}
+	
+	if ($gc > 1)
+	{
+		if ($pmod)
+		{
+			//setup some ajax-parameters - partial data for tableDnD::onDrop
+			$url = $this->CreateLink($id,'order_groups',NULL,NULL,array('neworders'=>''),NULL,TRUE);
+			$offs = strpos($url,'?mact=');
+			$ajfirst = str_replace('amp;','',substr($url,$offs+1));
+			$jsfuncs[] = <<< EOS
+function select_all_groups(b)
+{
+ var st = $(b).attr('checked');
+ if(!st) st = false;
+ $('input[name="{$id}selgroups[]"][type="checkbox"]').attr('checked',st);
+}
+function ajaxData(droprow,dropcount)
+{
+ var orders = [];
+ $(droprow.parentNode).find('tr td.ord').each(function(){
+  orders[orders.length] = this.innerHTML;
+ });
+ var ajaxdata = '$ajfirst'+orders.join();
+ return ajaxdata;
+}
+function dropresponse(data,status)
+{
+ if(status == 'success' && data) {
+  var i = 1;
+  $('#groups').find('.ord').each(function(){\$(this).html(i++);});
+  var name;
+  var oddclass = 'row1';
+  var evenclass = 'row2';
+  i = true;
+  $('#groups').trigger('update').find('tbody tr').each(function() {
+	name = i ? oddclass : evenclass;
+	\$(this).removeClass().addClass(name);
+	i = !i;
+  });
+ } else {
+  $('#page_tabs').prepend('<p style="font-weight:bold;color:red;">{$this->Lang('err_ajax')}!</p><br />');
+ }
+}
 $(document).ready(function(){
+ $('#groups').addClass('table_drag').tableDnD({
+	dragClass: 'row1hover',
+	onDrop: function(table, droprows) {
+		var odd = true;
+		var oddclass = 'row1';
+		var evenclass = 'row2';
+		var droprow = $(droprows)[0];
+		$(table).find('tbody tr').each(function() {
+			var name = odd ? oddclass : evenclass;
+			if (this === droprow) {
+				name = name+'hover';
+			}
+			$(this).removeClass().addClass(name);
+			odd = !odd;
+		});
+		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {		
+			var ajaxdata = ajaxData(droprow,droprows.length);
+			if (ajaxdata) {
+				$.ajax({
+				 url: 'moduleinterface.php',
+				 type: 'POST',
+				 data: ajaxdata,
+				 dataType: 'text',
+				 success: dropresponse
+				});
+			}
+		}
+	}
+ }).find('tbody tr').removeAttr('onmouseover').removeAttr('onmouseout').mouseover(function() {
+		var now = $(this).attr('class');
+		$(this).attr('class', now+'hover');
+ }).mouseout(function() {
+		var now = $(this).attr('class');
+		var to = now.indexOf('hover');
+		$(this).attr('class', now.substring(0,to));
+ });
+ $('.updown').hide();
+ $('.dndhelp').css('display','block');
  $('#{$id}delete_group').modalconfirm({
   overlayID: 'confirm',
   doCheck: confirm_selgrp_count,
@@ -363,27 +460,14 @@ $(document).ready(function(){
  });
 });
 EOS;
-		}
-	}
-	
-	if ($gc > 1)
-	{
-		if ($pmod)
-		{
+			$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.tablednd.min.js"></script>';
+			$smarty->assign('dndhelp',$this->Lang('help_dnd'));
 			$smarty->assign('sortbtn2',$this->CreateInputSubmit($id,'sort',
 				$this->Lang('sort'),
 				'title="'.$this->Lang('sortselgrp').'" onclick="return confirm_selgrp_count();"'));
 		}
 		$t = $this->Lang('title_move');
 		$cb = $this->CreateInputCheckbox($id,'group',TRUE,FALSE,'onclick="select_all_groups(this)"');
-		$jsfuncs[] = <<< EOS
-function select_all_groups(b)
-{
- var st = $(b).attr('checked');
- if(!st) st = false;
- $('input[name="{$id}selgroups[]"][type="checkbox"]').attr('checked',st);
-}
-EOS;
 	}
 	else
 	{
