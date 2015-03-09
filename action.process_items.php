@@ -7,12 +7,7 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
  
 Processes form-submission from admin brackets tab
 */
-
-$this->DoNothing();
-
-if(isset($params['import']))
-	$this->Redirect($id,'import_comp');
-elseif(isset($params['cancel']) || empty($params['selitems']))
+if(isset($params['cancel']) || empty($params['selitems']))
 	$this->Redirect($id,'defaultadmin');
 elseif(isset($params['clone']))
 {
@@ -22,7 +17,7 @@ elseif(isset($params['clone']))
 		//TODO
 	}
 }
-elseif(isset($params['delete']))
+elseif(isset($params['delete_item']))
 {
 	$vals = array_flip($params['selitems']); //convert strings
 	$vals = array_flip($vals);

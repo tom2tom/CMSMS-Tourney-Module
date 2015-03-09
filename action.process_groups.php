@@ -28,7 +28,7 @@ if(isset($params['update']))
 		$db->Execute($sql,array($name,$active,(int)$thisid));
 	}
 }
-elseif(isset($params['delete']))
+elseif(isset($params['delete_group']))
 {
 	$vals = array_diff($vals,array(0,'0','')); //preserve default
 	$vc = count($vals);
