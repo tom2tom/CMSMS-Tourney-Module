@@ -204,8 +204,8 @@ EOS;
 	{
 		$smarty->assign('clonebtn',$this->CreateInputSubmit($id,'clone',$this->Lang('clone'),
 			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"'));
-		$smarty->assign('deletebtn',$this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
-			'title="'.$this->Lang('deletesel_tip').'"')); //TODO modal confirm
+		$smarty->assign('deletebtn',$this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
+			'title="'.$this->Lang('deletesel_tip').'"')); //confirmed by modalconfirm
 		$smarty->assign('exportbtn',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
 			'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"'));
 		//for popup confirmation
@@ -232,6 +232,14 @@ $(document).ready(function(){
    }
    var para = d.children('p:first')[0];
    para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+  }
+ });
+ $('#{$id}delete_item').modalconfirm({
+  overlayID: 'confirm',
+  doCheck: confirm_selitm_count,
+  preShow: function(d){
+   var para = d.children('p:first')[0];
+   para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_items'))}';
   }
  });
  $('form input[type=text]').keypress(function(e){
@@ -326,9 +334,9 @@ if($groups)
 			$smarty->assign('submitbtn2',$this->CreateInputSubmit($id,'update',
 				$this->Lang('update'),
 				'title="'.$this->Lang('updateselgrp').'" onclick="return confirm_selgrp_count();"'));
-			$smarty->assign('deletebtn2',$this->CreateInputSubmit($id,'delete',
+			$smarty->assign('deletebtn2',$this->CreateInputSubmit($id,'delete_group',
 				$this->Lang('delete'),
-				'title="'.$this->Lang('deleteselgrp').'"')); //TODO modalconfirm
+				'title="'.$this->Lang('deleteselgrp').'"')); //confirmed by modalconfirm
 			$smarty->assign('activebtn2',$this->CreateInputSubmit($id,'activate',
 				$this->Lang('activate'),
 				'title="'.$this->Lang('activeselgrp').'" onclick="return confirm_selgrp_count();"'));
@@ -344,6 +352,16 @@ function confirm_selgrp_count()
 {
  return (selgrp_count() > 0);
 }
+$(document).ready(function(){
+ $('#{$id}delete_group').modalconfirm({
+  overlayID: 'confirm',
+  doCheck: confirm_selgrp_count,
+  preShow: function(d){
+   var para = d.children('p:first')[0];
+   para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_groups'))}';
+  }
+ });
+});
 EOS;
 		}
 	}
