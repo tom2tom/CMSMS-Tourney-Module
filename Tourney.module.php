@@ -85,7 +85,7 @@ class Tourney extends CMSModule
 
 	function GetVersion()
 	{
-		return '0.1.2';
+		return '0.1.3';
 	}
 
 	function GetHelp()
@@ -281,6 +281,27 @@ class Tourney extends CMSModule
 			return $params['active_tab'];
 	}
 
+	//construct ordered array of groups data : key = group_id, value = other row data array
+	//if $active, only the active groups are returned - otherwise all
+	function GetGroups($active=FALSE)
+	{
+		$pref = cms_db_prefix();
+		$db = cmsms()->GetDB();
+		$sql = 'SELECT * FROM '.$pref.'module_tmt_groups ORDER BY vieworder';
+		$groups = $db->GetAssoc($sql);
+		if($groups && $active)
+		{
+			foreach ($groups as &$data)
+			{
+				if (((int)$data['flags'] & 1) == 0)
+					$data = NULL;
+			}
+			unset($data);
+			$groups = array_diff($groups,array(NULL));
+		}
+		return $groups;
+	}
+	
 	//construct series of hidden objects to support page-recreation when editing comp
 	function GetHiddenParms($id,&$params,$tabname=FALSE)
 	{
@@ -924,7 +945,6 @@ Europe/Vilnius'
 				$name = 'default';
 			break;
 		}
-
 		parent::DoAction($name, $id, $params, $returnid);
 	}
 }
