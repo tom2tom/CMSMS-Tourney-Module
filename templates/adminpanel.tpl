@@ -69,12 +69,13 @@
 {$start_groupsform}
 {if $gcount}
 <div style="overflow:auto;">
- <table id="groups" class="pagetable{if $canmod} table_drag{/if}" style="border-collapse:collapse">
+ <table id="groups" class="pagetable" style="border-collapse:collapse">
   <thead><tr>
+   <th style="display:none;"></th>
    <th>{$title_gname}</th>
    <th>{$title_active}</th>
 {if $canmod}
-   <th>{$title_move}</th>
+   <th class="updown">{$title_move}</th>
    <th class="pageicon"></th>
 {/if}
    <th class="checkbox" style="width:20px;">{$selectall_groups}</th>
@@ -82,6 +83,7 @@
   <tbody>
  {foreach from=$groups item=entry} {cycle values='row1,row2' name='c2' assign='rowclass'}
   <tr class="{$rowclass}" onmouseover="this.className='{$rowclass}hover';" onmouseout="this.className='{$rowclass}';">
+   <td class="ord" style="display:none;">{$entry->order}</td>
    <td>{$entry->name}</td>
    <td>{$entry->active}</td>
 {if $canmod}
