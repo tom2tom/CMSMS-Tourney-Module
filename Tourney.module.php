@@ -170,6 +170,8 @@ class Tourney extends CMSModule
 				return TRUE;
 			if (strpos($request['mact'],',order_team'))
 				return TRUE;
+			if (strpos($request['mact'],',order_groups'))
+				return TRUE;
 			if (strpos($request['mact'],',export_comp'))
 				return TRUE;
 			if (strpos($request['mact'],',addedit_comp,')
@@ -939,7 +941,7 @@ Europe/Vilnius'
 		 case 'process_items':
 			if (!empty($params['import']))
 				$name = 'import_comp';
-		  break;
+			break;
 		 case 'default':
 		 	if (!empty($params['result']))
 				$name = 'result';
@@ -947,6 +949,10 @@ Europe/Vilnius'
 		 case 'result':
 			if (empty($params['send']))
 				$name = 'default';
+			break;
+		 case 'addgroup':
+			$name = 'defaultadmin';
+			$params = array('showtab' => 1,'addgroup' => TRUE);
 			break;
 		}
 		parent::DoAction($name, $id, $params, $returnid);
