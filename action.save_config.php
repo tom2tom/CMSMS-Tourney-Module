@@ -44,6 +44,6 @@ $this->SetPreference('export_encoding',$params['tmt_export_encoding']);
 
 unset($params);
 $this->Redirect($id, 'defaultadmin', '',
-	array('tmt_message' => $this->PrettyMessage('prefs_updated')));
+	array('showtab'=>2, 'tmt_message'=>$this->PrettyMessage('prefs_updated')));
 
 ?>
