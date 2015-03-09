@@ -215,6 +215,7 @@ $lang['groupdefault']='Ungrouped';
 $lang['inactive']='inactive';
 $lang['no_groups']='No group is recorded.';
 $lang['title_active']='Active';
+$lang['sort']='Sort';
 $lang['sortselgrp']='sort selected groups';
 $lang['updateselgrp']='update selected groups';
 
