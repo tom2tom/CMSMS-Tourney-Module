@@ -18,14 +18,27 @@ if(isset($params['update']))
 {
 	$pref = cms_db_prefix();
 	$sql = 'UPDATE '.$pref.'module_tmt_groups SET name=?,flags=? WHERE group_id=?';
-	foreach($vals as $indx=>$thisid)
+	foreach($vals as $thisid)
 	{
-		$name = $params['group_names'][$indx];
-		if($thisid)
-			$active = (int)$params['activegroups'][$indx]; //TODO mask lowest bit
+		$indx = array_search($thisid,$params['group_active']);
+		$name = trim($params['group_name'][$indx]);
+		if(!$name)
+			$name = '<'.$this->Lang('noname').'>';
+		if($thisid == '-1')
+		{
+			$nc = count($params['group_name']);
+			$thisid = $db->GenID($pref.'module_tmt_groups_seq');
+			$db->Execute('INSERT INTO '.$pref.'module_tmt_groups (group_id,name,vieworder) VALUES (?,?,?)',
+				array((int)$thisid,$name,$nc));
+		}
 		else
-			$active = 1; //default/ungrouped always active
-		$db->Execute($sql,array($name,$active,(int)$thisid));
+		{
+			if($thisid)
+				$active = (int)$params['group_active'][$indx]; //TODO mask lowest bit
+			else
+				$active = 1; //default/ungrouped always active
+			$db->Execute($sql,array($name,$active,(int)$thisid));
+		}
 	}
 }
 elseif(isset($params['delete_group']))
@@ -55,6 +68,10 @@ elseif(isset($params['activate']))
 		array_unshift($vals,$state);
 		$ares = $db->Execute($sql,$vals);
 	}
+}
+elseif(isset($params['sort']))
+{
+	//TODO
 }
 
 $this->Redirect($id, 'defaultadmin','',array('showtab'=>1));
