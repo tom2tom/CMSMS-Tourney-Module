@@ -96,7 +96,7 @@ if ($rows)
 	if($pmod)
 	{
 		$iconclone = $theme->DisplayImage('icons/system/copy.gif',$this->Lang('clone'),'','','systemicon');
-		$icondel = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon '.$id.'delete_comp'); //extra class for confirm-dialog usage
+		$icondel = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon delitmlink'); //extra class for confirm-dialog usage
 	}
 	if ($pmod || $padm)
 	{
@@ -137,7 +137,7 @@ if ($rows)
 				$one->copylink = $this->CreateLink($id,'clone_comp','',
 					$iconclone,array('bracket_id'=>$thisid));
 				$one->deletelink = $this->CreateLink($id,'delete_comp','',
-					$icondel,array('bracket_id'=>$thisid)); //confirmation by modalconfirm dialog
+					$icondel,array('bracket_id'=>$thisid)); //$(.delitmlink) modalconfirm
 			}
 		}
 		else //no mod allowed
@@ -205,7 +205,7 @@ EOS;
 		$smarty->assign('clonebtn',$this->CreateInputSubmit($id,'clone',$this->Lang('clone'),
 			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"'));
 		$smarty->assign('deletebtn',$this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
-			'title="'.$this->Lang('deletesel_tip').'"')); //confirmed by modalconfirm
+			'title="'.$this->Lang('deletesel_tip').'"')); //$(#$id.delete_item) modalconfirm
 		$smarty->assign('exportbtn',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
 			'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"'));
 		//for popup confirmation
@@ -223,7 +223,7 @@ function confirm_selitm_count()
  return (selitm_count() > 0);
 }
 $(document).ready(function(){
- $('.{$id}delete_comp').modalconfirm({
+ $('.delitmlink').modalconfirm({
   overlayID: 'confirm',
   preShow: function(d){
    var name = \$('td:first > a', $(this).closest('tr')).text();
@@ -292,6 +292,7 @@ if($groups)
 		$previd	= -10;
 		$iconup = $theme->DisplayImage('icons/system/arrow-u.gif',$this->Lang('up'),'','','systemicon');
 		$icondn = $theme->DisplayImage('icons/system/arrow-d.gif',$this->Lang('down'),'','','systemicon');
+		$icondel = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon delgrplink'); //extra class for confirm-dialog usage
 	}
 	else
 	{
@@ -323,7 +324,7 @@ if($groups)
 			$previd = $gid;
 			if ($gid > 0) //preserve the default group
 				$one->deletelink = $this->CreateLink($id,'delete_group','',
-					$icondel,array('group_id'=>$gid)); //confirmation by modalconfirm dialog
+					$icondel,array('group_id'=>$gid)); //$(.delgrplink) modalconfirm
 			else
 				$one->deletelink = '';
 		}
@@ -349,7 +350,7 @@ if($groups)
 				'title="'.$this->Lang('updateselgrp').'" onclick="return confirm_selgrp_count();"'));
 			$smarty->assign('deletebtn2',$this->CreateInputSubmit($id,'delete_group',
 				$this->Lang('delete'),
-				'title="'.$this->Lang('deleteselgrp').'"')); //confirmed by modalconfirm
+				'title="'.$this->Lang('deleteselgrp').'"')); //$(#$id.delete_group) modalconfirm
 			$smarty->assign('activebtn2',$this->CreateInputSubmit($id,'activate',
 				$this->Lang('activate'),
 				'title="'.$this->Lang('activeselgrp').'" onclick="return confirm_selgrp_count();"'));
@@ -450,6 +451,17 @@ $(document).ready(function(){
  });
  $('.updown').hide();
  $('.dndhelp').css('display','block');
+ $('.delgrplink').modalconfirm({
+  overlayID: 'confirm',
+  preShow: function(d){
+   var name = \$('td > input:text', $(this).closest('tr')).val();
+   if (name.search(' ') > -1){ 
+    name = '"'+name+'"';
+   }
+   var para = d.children('p:first')[0];
+   para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+  }
+ });
  $('#{$id}delete_group').modalconfirm({
   overlayID: 'confirm',
   doCheck: confirm_selgrp_count,
