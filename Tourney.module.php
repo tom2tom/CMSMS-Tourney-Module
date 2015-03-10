@@ -181,6 +181,9 @@ class Tourney extends CMSModule
 			if (strpos($request['mact'],',addedit_team,')
 				&& isset($request['m1_export']))
 					return TRUE; //export selected team-member(s)
+			if (strpos($request['mact'],',process_items,')
+				&& isset($request['m1_export']))
+					return TRUE; //export selected bracket(s)
 		}
 		return FALSE;
 	}
