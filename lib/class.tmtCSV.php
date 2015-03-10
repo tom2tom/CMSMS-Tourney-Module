@@ -20,7 +20,7 @@ class tmtCSV
 	{
 		$detail = ($bdata['alias']) ? preg_replace('/\W/','_',$bdata['alias']) : $bdata['bracket_id'];
 		$dt = new DateTime('now',new DateTimeZone($bdata['timezone']));
-		$fn = $mod->Lang('title_teams').'-'.$detail.'-'.$dt->format('Y-m-d G:i');
+		$fn = $mod->Lang('title_teams').'-'.$detail.'-'.$dt->format('Y-m-d-G-i');
 		header('Pragma: public');
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
