@@ -33,13 +33,28 @@ elseif(isset($params['delete_item']))
 //	$db->Execute($sql,$vals);
 $this->DoNothing();
 }
-elseif(isset($params['export']))
+elseif(isset($params['group']))
 {
 	$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$this->PrettyMessage('NOT YET IMPLEMENTED',FALSE,FALSE,FALSE)));
-	foreach($params['selitems'] as $thisid)
-	{
-		//TODO
-	}
+	//TODO cache $params['selitems']
+	$gid = 0; //TODO get choice for new group
+	$vals = array_flip($params['selitems']); //convert strings
+	$vals = array_flip($vals);
+	$vc = count($vals);
+	$fillers = str_repeat('?,',$vc-1).'?';
+	$pref = cms_db_prefix();
+	$sql = 'UPDATE '.$pref.'module_tmt_brackets SET groupid=? WHERE bracket_id IN ('.$fillers.')';
+	array_unshift($vals,$gid);
+	$db->Execute($sql,$vals);
+}
+elseif(isset($params['export']))
+{
+	$funcs = new tmtXML();
+	$res = $funcs->ExportXML($this,$params['selitems']);
+	if ($res === TRUE)
+		exit;
+	$this->Redirect($id,'defaultadmin','',
+			array('tmt_message'=>$this->PrettyMessage($res,FALSE)));
 }
 
 $this->Redirect($id,'defaultadmin');
