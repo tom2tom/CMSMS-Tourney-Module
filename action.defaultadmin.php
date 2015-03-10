@@ -202,6 +202,12 @@ EOS;
 
 	if ($pmod)
 	{
+		if ($selgrp)
+			$t = $this->CreateInputSubmit($id,'group',$this->Lang('title_group'),
+			'title="'.$this->Lang('groupsel_tip').'" onclick="return confirm_selitm_count();"');
+		else
+			$t = '';
+		$smarty->assign('groupbtn',$t);
 		$smarty->assign('clonebtn',$this->CreateInputSubmit($id,'clone',$this->Lang('clone'),
 			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"'));
 		$smarty->assign('deletebtn',$this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
@@ -345,17 +351,25 @@ if($groups)
 		//buttons
 		if ($pmod)
 		{
+			if($selgrp)
+				$t = $this->CreateInputSubmit($id,'delete_group',
+					$this->Lang('delete'),
+					'title="'.$this->Lang('deleteselgrp').'"'); //$(#$id.delete_group) modalconfirm
+			else
+				$t = '';
+			$smarty->assign('deletebtn2',$t);
+			if($selgrp)
+				$t = $this->CreateInputSubmit($id,'activate',
+					$this->Lang('activate'),
+					'title="'.$this->Lang('activeselgrp').'" onclick="return confirm_selgrp_count();"');
+			else
+				$t = '';
+			$smarty->assign('activebtn2',$t);
+			$smarty->assign('cancelbtn2',$this->CreateInputSubmit($id,'cancel',
+				$this->Lang('cancel')));
 			$smarty->assign('submitbtn2',$this->CreateInputSubmit($id,'update',
 				$this->Lang('update'),
 				'title="'.$this->Lang('updateselgrp').'" onclick="return confirm_selgrp_count();"'));
-			$smarty->assign('deletebtn2',$this->CreateInputSubmit($id,'delete_group',
-				$this->Lang('delete'),
-				'title="'.$this->Lang('deleteselgrp').'"')); //$(#$id.delete_group) modalconfirm
-			$smarty->assign('activebtn2',$this->CreateInputSubmit($id,'activate',
-				$this->Lang('activate'),
-				'title="'.$this->Lang('activeselgrp').'" onclick="return confirm_selgrp_count();"'));
-			$smarty->assign('cancelbtn2',$this->CreateInputSubmit($id,'cancel',
-				$this->Lang('cancel')));
 			$jsfuncs[] = <<< EOS
 function selgrp_count()
 {
