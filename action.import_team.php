@@ -62,10 +62,8 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 		$newparms = $this->GetEditParms($params,'playerstab',$this->PrettyMessage('lackpermission',FALSE));
 		$this->Redirect($id, 'addedit_comp', $returnid, $newparms);
 	}
-	//some basic validation of file-content
-	$haveseed = FALSE;
-	$havetell = FALSE;
 	$bad = FALSE;
+	//some basic validation of file-content
 	$firstline = GetSplitLine($handle);
 	if ($firstline == FALSE)
 		$bad = TRUE;
@@ -77,19 +75,41 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 	}
 	if (!$bad)
 	{
-		if ($firstline[0] != '##Teamname')
-			$bad = TRUE;
-		$haveseed = array_search('#Seeded', $firstline);
-		if (!$bad && $haveseed && !($haveseed==1||$haveseed==2))
-			$bad = TRUE;
-		$havetell = array_search('#Tellall', $firstline);
-		if (!$bad && $havetell && !($havetell==1||$havetell==2))
-			$bad = TRUE;
-		$mo = max((int)$haveseed, (int)$havetell);
-		if ($mo > 0 && ($num-$mo-1)%2)//want even no. of player-fields
-			$bad = TRUE;
-		elseif ($mo == 0 && $num%2 == 0)
-			$bad = TRUE;
+		$namecols = array(); //[0]=namecol or missing, [1]=seedcol or missing, [2]=tellcol or missing
+		foreach (array('#Teamname','#Seeded','#Tellall') as $i=>$custom)
+		{
+			$col = array_search($custom, $firstline);
+			if ($col !== FALSE)
+			{
+				if ($col < 3)
+					$namecols[$i] = $col;
+				else
+				{
+					$bad = TRUE;
+					break;
+				}
+			}
+		}
+		if($namecols)
+		{
+			$mo = max($namecols);
+			if ($mo > 0)
+			{
+				if (($num-$mo-1)%2) //want even no. of player-fields
+					$bad = TRUE;
+			}
+			else //$mo == 0
+			{
+				if($num%2 == 0)
+					$bad = TRUE;
+			}
+		}
+		else
+		{
+			$mo = -1;
+			if($num%2 == 1)
+				$bad = TRUE;
+		}
 	}
 	if ($bad)
 	{
@@ -115,13 +135,13 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 			//so we fake an id (-"the next real ID") to send back, it will need to be fixed later
 			if ($params['bracket_id'] == FALSE)
 				$params['bracket_id'] = -$db->GenID($pref.'module_tmt_brackets_seq');
-//$imports is array, 0=>teamname[,1|2=>seeding][,1|2=>tellall][,3=>player1,4=>contact1][....] for as many players as there are
+//$imports is array, [0|1|2=>teamname][,0|1|2=>seeding][,0|1|2=>tellall][,3=>player1,4=>contact1][....] for as many players as there are
 			$addid = $db->GenID($pref.'module_tmt_teams_seq');
 			$args = array($addid, (int)$params['bracket_id']);
-			$args[] = ($imports[0]) ? $imports[0] : null;
-			$args[] = ($haveseed && $imports[$haveseed]) ? (int)$imports[$haveseed] : null;
-			if ($havetell && $imports[$havetell] &&
-				strtolower(trim($imports[$havetell])) != 'no')
+			$args[] = (isset($namecols[0]) && $imports[$namecols[0]]) ? trim($imports[$namecols[0]]) : null;
+			$args[] = (isset($namecols[1]) && $imports[$namecols[1]]) ? (int)$imports[$namecols[1]] : null;
+			if (isset($namecols[2]) && $imports[$namecols[2]] &&
+				strtolower(trim($imports[$namecols[2]])) != 'no')
 					$val = 1;
 			else
 				$val = 0;

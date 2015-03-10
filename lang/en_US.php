@@ -185,13 +185,13 @@ $lang['help_teamimport']=<<< EOS
 Any actual comma in a field should be represented by '&amp;#44;'.
 Each line in the file (except the header line, discussed below) represents one team.</p>
 <h4>Header Line</h4>
-<p>The first line of the file names the fields in the file. The first field name must be '##Teamname' (without the quotes).
-After that, up to two optional fields, named '#Seeded' and/or '#Tellall' (again, no quotes).
+<p>The first line of the file names the fields in the file. First, there may be up to three
+optional fields, named '#Teamname' and/or '#Seeded' and/or '#Tellall' (no quotes, any order).
 Further fieldnames, if they exist, can have any names but must be in pairs - the first of each
 to hold a player name, the second to hold contact information for that player.
 There may be any number of such pairs. For example:<br />
-<code>##Teamname,Player,Contact</code> or<br />
-<code>##Teamname,#Seeded,#Tellall,Captain,Contact1,Player2,Contact2</code></p>
+<code>#Seeded,Player,Contact</code> or<br />
+<code>#Seeded,#Teamname,#Tellall,Captain,Contact1,Player2,Contact2</code></p>
 <h4>Other Lines</h4>
 <p>The data in each line must conform to the header columns, of course. Any field, or entire line, may be empty.
 The tellall field will be treated as TRUE if it contains something other than '0' or 'no' or 'NO' (no quotes, untranslated).</p>
