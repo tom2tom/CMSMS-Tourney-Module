@@ -100,9 +100,19 @@ class tmtChartBase
 		$this->Layout($params,$db,$bdata['bracket_id']); //setup boxes' size, position and chart size
 		$this->Boxes($bdata,$db,$titles);//setup boxes' text and style
 
+		if($titles == 0)
+		{
+			//print-chart min size
+			$min = $css->pxsize($css->GetWithDefault('.chart','minwidth','770pt'));
+			if($this->ldata['width'] < $min)
+				$this->ldata['width'] = $min;
+			$min = $css->pxsize($css->GetWithDefault('.chart','minheight','526pt'));
+			if($this->ldata['height'] < $min)
+				$this->ldata['height'] = $min;
+		}
 		$cw = $this->ldata['width'];
 		$ch = $this->ldata['height'];
-
+		
 		//check for custom .ttf files
 		$config = cmsms()->GetConfig();
 		$rel = $mod->GetPreference('uploads_dir');
@@ -120,12 +130,15 @@ class tmtChartBase
 		$pdf->SetAutoPageBreak(FALSE);
 		$pdf->AddPage();
 
-		$back = $css->hex2rgb($css->GetWithDefault('.chart','background-color',FALSE));
-		//TODO support image-background
-		if($back)
+		if($titles > 0)
 		{
-			$pdf->SetFillColor($back[0],$back[1],$back[2]);
-			$pdf->Rect(0,0,$cw,$ch,'F'); //no chart border
+			$back = $css->hex2rgb($css->GetWithDefault('.chart','background-color',FALSE));
+			//TODO support image-background
+			if($back)
+			{
+				$pdf->SetFillColor($back[0],$back[1],$back[2]);
+				$pdf->Rect(0,0,$cw,$ch,'F'); //no chart border
+			}
 		}
 		//display title
 		$class = '.chart';
@@ -141,8 +154,11 @@ class tmtChartBase
 			$attr .= 'u';
 		$pdf->AddFont($ft,$attr);
 		$pdf->SetFont($ft,$attr,(int)($th*72/96-0.01)+1); //tFPDF needs font size as pts
-		$c = $css->hex2rgb($css->GetWithDefault($class,'color','#000'));
-		$pdf->SetTextColor($c[0],$c[1],$c[2]);
+		if($titles > 0)
+		{
+			$c = $css->hex2rgb($css->GetWithDefault($class,'color','#000'));
+			$pdf->SetTextColor($c[0],$c[1],$c[2]);
+		}
 		$pdf->SetXY($lm,$tp);
 		$pdf->Cell($this->ldata['width']-$lm-$rm,$th,$title,0,0,'C');
 
@@ -150,7 +166,10 @@ class tmtChartBase
 		$params['pdf'] = &$pdf;
 		$params['gw'] = $gw;
 		$params['lw'] = $lw;
-		$lc = $css->hex2rgb($css->GetWithDefault('.line','color','#000'));
+		if($titles > 0)
+			$lc = $css->hex2rgb($css->GetWithDefault('.line','color','#000'));
+		else
+			$lc = FALSE;
 		$params['lc'] = $lc;
 		$params['ls'] = $css->GetWithDefault('.line','style','solid');
 		$params['blw'] = $blw;
@@ -176,13 +195,25 @@ class tmtChartBase
 				$attr .= 'u';
 			$pdf->AddFont($ft,$attr);
 			$size = $css->pxsize($css->GetWithDefault($class,'font-size',$bh/4));
+			if($titles > 0)
+			{
+				$bc = $css->hex2rgb($css->GetWithDefault($class,'border-color',$lc));
+				$fc = $css->hex2rgb($css->GetWithDefault($class,'background-color',$back));//TODO support image/url
+				$tc = $css->hex2rgb($css->GetWithDefault($class,'color',$lc));
+			}
+			else
+			{
+				$bc = FALSE;
+				$fc = FALSE;
+				$tc = FALSE;
+			}
 			$params['boxstyles'][$type] = array(
 			 'bw'=>$css->pxsize($css->GetWithDefault($class,'border-width',$lw)),
-			 'bc'=>$css->hex2rgb($css->GetWithDefault($class,'border-color',$lc)),
+			 'bc'=>$bc,
 			 'bs'=>$css->GetWithDefault($class,'border-style','solid'),
-			 'fill'=>$css->hex2rgb($css->GetWithDefault($class,'background-color',$back)),//TODO support image/url
+			 'fill'=>$fc,
 			 'font'=>$ft,
-			 'color'=>$css->hex2rgb($css->GetWithDefault($class,'color',$lc)),
+			 'color'=>$tc,
 			 'size'=>(int)($size*72/96-0.01)+1,
 			 'attr'=>$attr
 			 );
