@@ -297,7 +297,8 @@ ORDER BY T1.displayorder';
 			{
 				//draw joins first
 				$pdf->SetLineWidth($lw);
-				$pdf->SetDrawColor($lc[0],$lc[1],$lc[2]);
+				if($lc)
+					$pdf->SetDrawColor($lc[0],$lc[1],$lc[2]);
 				switch($ls)
 				{
 				 case 'dotted':
@@ -333,13 +334,9 @@ ORDER BY T1.displayorder';
 				if($type == 'hide')
 					continue;
 				$style = $boxstyles[$type];
-				if($style['fill'])
-				{
-					$c = $style['fill'];
+				$c = $style['fill'];
+				if($c)
 					$pdf->SetFillColor($c[0],$c[1],$c[2]);
-				}
-				else
-					$c = FALSE;
 				//$mode default = border,no fill DF = border&fill F = no border D could be for no fill or border?
 				switch($style['bs'])
 				{
@@ -367,7 +364,8 @@ ORDER BY T1.displayorder';
 				{
 					$pdf->SetLineWidth($blw);
 					$c = $style['bc'];
-					$pdf->SetDrawColor($c[0],$c[1],$c[2]);
+					if($c)
+						$pdf->SetDrawColor($c[0],$c[1],$c[2]);
 				}
 				$y = floatval($row['bt']); //inside margin
 				$pdf->Rect($x,$y,$bw,$bh,$mode);
@@ -377,7 +375,8 @@ ORDER BY T1.displayorder';
 				{
 					$pdf->SetFont($style['font'],$style['attr'],$style['size']);
 					$c = $style['color'];
-					$pdf->SetTextColor($c[0],$c[1],$c[2]);
+					if($c)
+						$pdf->SetTextColor($c[0],$c[1],$c[2]);
 					$pdf->SetXY($x+$offs,$y+$offs);
 					$pdf->MultiCell($tcw,$tch,$row['text'],0,'C',FALSE);
 				}
