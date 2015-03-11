@@ -219,6 +219,8 @@ $lang['title_active']='Active';
 $lang['sort']='Sort';
 $lang['sortselgrp']='sort selected groups';
 $lang['updateselgrp']='update selected groups';
+$lang['title_bracketsgroup']='Group for selected tournaments';
+//$lang['help_bracketsgroup']='';
 
 //settings
 
