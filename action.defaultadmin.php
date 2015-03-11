@@ -284,10 +284,10 @@ if(!empty($params['addgroup']))
 	if($groups)
 	{
 		$gc = count($groups);
-		$groups = $groups + array(-1 => array('name'=>'','vieworder'=>$gc,'flags'=>1));
+		$groups = $groups + array(-1 => array('name'=>'','displayorder'=>$gc,'flags'=>1));
 	}
 	else
-		$groups = array(-1 => array('name'=>'','vieworder'=>1,'flags'=>1));
+		$groups = array(-1 => array('name'=>'','displayorder'=>1,'flags'=>1));
 }
 
 if($groups)
@@ -313,7 +313,7 @@ if($groups)
 		if($pmod)
 		{
 			$one->name = $this->CreateInputText($id,'group_name[]',$gdata['name'],50,128);
-			$one->order = (int)$gdata['vieworder']; //hidden, for DnD
+			$one->order = (int)$gdata['displayorder']; //hidden, for DnD
 			$one->active = $this->CreateInputCheckbox($id,'group_active[]',$gid,(($active)?$gid:-10));
 			$one->downlink = '';
 			if ($mc)

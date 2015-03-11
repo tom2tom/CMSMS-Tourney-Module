@@ -292,7 +292,7 @@ class Tourney extends CMSModule
 	{
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDB();
-		$sql = 'SELECT * FROM '.$pref.'module_tmt_groups ORDER BY vieworder';
+		$sql = 'SELECT * FROM '.$pref.'module_tmt_groups ORDER BY displayorder';
 		$groups = $db->GetAssoc($sql);
 		if($groups && $active)
 		{

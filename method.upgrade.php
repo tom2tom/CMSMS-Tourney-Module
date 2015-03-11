@@ -93,14 +93,14 @@ switch ($oldversion)
 	$fields = "
 		group_id I(2) KEY,
 		name C(128),
-		vieworder I(2),
+		displayorder I(2),
 		flags I(1) DEFAULT 1
 	";
 	$sqlarray = $dict->CreateTableSQL($pref.'module_tmt_groups', $fields, $taboptarray);
 	$dict->ExecuteSQLArray($sqlarray);
 	$db->CreateSequence($pref.'module_tmt_groups_seq');
 	// add default group 0
-	$sql = 'INSERT INTO '.$pref.'module_tmt_groups (group_id,name,vieworder) VALUES (0,?,1)';
+	$sql = 'INSERT INTO '.$pref.'module_tmt_groups (group_id,name,displayorder) VALUES (0,?,1)';
 	$db->Execute($sql,array($this->Lang('groupdefault')));
 
 	break;
