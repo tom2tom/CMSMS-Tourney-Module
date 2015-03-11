@@ -92,9 +92,11 @@ class tmtXML
 				else
 					$xml[] = '<?xml version="1.0"?>';
 				$xml[] = '<!DOCTYPE tourney [';
-				$xml[] = '<!ELEMENT tourney (version,date,properties,teams,people,matches)>';
+				$xml[] = '<!ELEMENT tourney (version,date,count,bracket)>';
 				$xml[] = '<!ELEMENT version (#PCDATA)>';
 				$xml[] = '<!ELEMENT date (#PCDATA)>';
+				$xml[] = '<!ELEMENT count (#PCDATA)>';
+				$xml[] = '<!ELEMENT bracket (properties,teams,people,matches)>';
 				$fields1 = array_keys($properties);
 				$xml[] = '<!ELEMENT properties ('.implode(',',$fields1).')>';
 				foreach($fields1 as $thisfield)
@@ -124,57 +126,60 @@ class tmtXML
 					}
 				}
 				$xml[] = ']>';
+				$xml[] = '<tourney>';
+				$xml[] = "\t<version>".$mod->GetVersion().'</version>';
+				$xml[] = "\t<date>".$date.'</date>';
+				$xml[] = "\t<count>".count($bracket_id).'</count>';
 				$header = FALSE;
 			}
 
-			$xml[] = '<tourney>';
-			$xml[] = "\t<version>".$mod->GetVersion().'</version>';
-			$xml[] = "\t<date>".$date.'</date>';
+			$xml[] = "\t<bracket>";
 			//main-table fieldnames are not namespaced
-			$xml[] = "\t<properties>";
+			$xml[] = "\t\t<properties>";
 			foreach($fields1 as $thisfield)
-				$xml[] = "\t\t<$thisfield>".$properties[$thisfield]."</$thisfield>";
-			$xml[] = "\t</properties>";
+				$xml[] = "\t\t\t<$thisfield>".$properties[$thisfield]."</$thisfield>";
+			$xml[] = "\t\t</properties>";
 
 			//to avoid conflicts, other-table fieldnames are namespaced
-			$xml[] = "\t<t:teams xmlns:t=\"file:///teams\">";
+			$xml[] = "\t\t<t:teams xmlns:t=\"file:///teams\">";
 			if($teams)
 			{
 				foreach($teams as $thisteam)
 				{
-					$xml[] = "\t\t<team>";
+					$xml[] = "\t\t\t<team>";
 						foreach($fields2 as $thisfield)
-							$xml[] = "\t\t\t<t:$thisfield>".$thisteam[$thisfield]."</t:$thisfield>";
-					$xml[] = "\t\t</team>";
+							$xml[] = "\t\t\t\t<t:$thisfield>".$thisteam[$thisfield]."</t:$thisfield>";
+					$xml[] = "\t\t\t</team>";
 				}
 			}
-			$xml[] = "\t</t:teams>";
-			$xml[] = "\t<h:people xmlns:h=\"file:///humans\">";
+			$xml[] = "\t\t</t:teams>";
+			$xml[] = "\t\t<h:people xmlns:h=\"file:///humans\">";
 			if($people)
 			{
 				foreach($people as $thisone)
 				{
-					$xml[] = "\t\t<person>";
+					$xml[] = "\t\t\t<person>";
 						foreach($fields3 as $thisfield)
-							$xml[] = "\t\t\t<h:$thisfield>".$thisone[$thisfield]."</h:$thisfield>";
-					$xml[] = "\t\t</person>";
+							$xml[] = "\t\t\t\t<h:$thisfield>".$thisone[$thisfield]."</h:$thisfield>";
+					$xml[] = "\t\t\t</person>";
 				}
 			}
-			$xml[] = "\t</h:people>";
-			$xml[] = "\t<m:matches xmlns:m=\"file:///matches\">";
+			$xml[] = "\t\t</h:people>";
+			$xml[] = "\t\t<m:matches xmlns:m=\"file:///matches\">";
 			if($matches)
 			{
 				foreach($matches as $thismatch)
 				{
-					$xml[] = "\t\t<match>";
+					$xml[] = "\t\t\t<match>";
 						foreach($fields4 as $thisfield)
-							$xml[] = "\t\t\t<m:$thisfield>".$thismatch[$thisfield]."</m:$thisfield>";
-					$xml[] = "\t\t</match>";
+							$xml[] = "\t\t\t\t<m:$thisfield>".$thismatch[$thisfield]."</m:$thisfield>";
+					$xml[] = "\t\t\t</match>";
 				}
 			}
-			$xml[] = "\t</m:matches>";
-			$xml[] = '</tourney>';
+			$xml[] = "\t\t</m:matches>";
+			$xml[] = "\t</bracket>";
 		}
+		$xml[] = '</tourney>';
 
 		return implode("\n",$xml);
 	}
@@ -231,7 +236,7 @@ class tmtXML
 
 		if($xmlstr)
 		{
-			if (!is_array($bracket_id))
+			if (!is_array($bracket_id) || count($bracket_id) == 1)
 				$detail = ($bdata['alias']) ? preg_replace('/\W/','_',$bdata['alias']) : $bracket_id;
 			else
 				$detail = 'brackets~'.implode('~',$bracket_id);
