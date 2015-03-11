@@ -191,7 +191,9 @@ class tmtStyler extends cssparser {
 		'padding'=>'10px',
 		'gapwidth'=>'10px',
 		'background-color'=>'#fff7ed',//off-white
-		'font-family','sans'),
+		'font-family'=>'sans',
+		'minheight'=>'526pt', //A4 landscape
+		'minwidth'=>'770pt'),
 	'.line'=>array(
 		'width'=>'2px',
 		'color'=>'#008000')
