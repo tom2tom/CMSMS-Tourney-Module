@@ -489,8 +489,7 @@ EOS;
 			$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.tablednd.min.js"></script>';
 			$smarty->assign('dndhelp',$this->Lang('help_dnd'));
 			$smarty->assign('sortbtn2',$this->CreateInputSubmit($id,'sort',
-				$this->Lang('sort'),
-				'title="'.$this->Lang('sortselgrp').'" onclick="return confirm_selgrp_count();"'));
+				$this->Lang('sort')));
 		}
 		$t = $this->Lang('title_move');
 		$cb = $this->CreateInputCheckbox($id,'group',TRUE,FALSE,'onclick="select_all_groups(this)"');
