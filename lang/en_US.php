@@ -635,7 +635,8 @@ The PHP extension 'mbstring' must be available if UTF-8-encoded text is to be di
 </ul></p>
 <p>Styling is applied at the server end, using a very-basic mechanism.
 Box-side-specific styling is not supported, apart from horizontal and vertical margins.
-Chart can have a pseudo-property 'gapwidth', representing extra horizontal distance between boxes' margins.
+Chart can have pseudo-properties 'gapwidth', representing extra horizontal distance between boxes' margins,
+and 'minheight', 'minwidth', representing a minimum page size for printed/plain charts.
 Background images and rare properties like 'letter-spacing' are not supported.
 Relative values like 'small', '%%' or 'em' have no meaning.</p>
 <p>For example, the following represents the default settings:
