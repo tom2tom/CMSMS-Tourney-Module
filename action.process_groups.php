@@ -24,15 +24,19 @@ if(isset($params['update']))
 				$name = '<'.$this->Lang('noname').'>';
 			if($thisid == '-1')
 			{
-				$nc = count($params['group_name']);
 				$thisid = $db->GenID($pref.'module_tmt_groups_seq');
+				$nc = count($params['group_name']);
 				$db->Execute('INSERT INTO '.$pref.'module_tmt_groups (group_id,name,displayorder) VALUES (?,?,?)',
 					array((int)$thisid,$name,$nc));
 			}
 			else
 			{
-				if($thisid)
+				if($thisid) //not the default group (0)
+				{
 					$active = (int)$params['group_active'][$indx]; //TODO mask lowest bit
+					if($active > 1)
+						$active = 1;
+				}
 				else
 					$active = 1; //default/ungrouped always active
 				$db->Execute($sql,array($name,$active,(int)$thisid));
@@ -63,18 +67,19 @@ elseif(isset($params['activate']))
 {
 	if(!empty($params['selgroups']))
 	{
-		$vals = array_flip($params['selgroups']);
-		$vals = array_flip($vals);
-		$vals = array_diff($vals,array(0,'0','')); //preserve default
+		$vals = array_diff($params['selgroups'],array(0,'0','')); //exclude/preserve default
 		$vc = count($vals);
 		if($vc)
 		{
-			$fillers = str_repeat('?,',$vc-1).'?';
+			foreach($vals as $k=>$id)
+				$vals[$k] = (int)$id; //integer from string
 			$pref = cms_db_prefix();
-			$state = FALSE; //TODO $state = func(VALUES OF $params['activegroups']);
-			$sql = 'UPDATE '.$pref.'module_tmt_groups SET flags=? WHERE groupid IN ('.$fillers.')';
-			array_unshift($vals,$state);
-			$ares = $db->Execute($sql,$vals);
+			$fillers = str_repeat('?,',$vc-1).'?';
+			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_groups WHERE group_id IN ('.$fillers.') AND flags = 0';
+			$inact = $db->GetOne($sql,$vals);
+			$toggled = ($inact !== FALSE && (int)$inact == 0) ? '0':'1';
+			$sql = 'UPDATE '.$pref.'module_tmt_groups SET flags='.$toggled.' WHERE group_id IN ('.$fillers.')';
+			$db->Execute($sql,$vals);
 		}
 	}
 }
