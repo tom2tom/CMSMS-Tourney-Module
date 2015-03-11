@@ -259,6 +259,160 @@ class tmtXML
 			return 'err_export';
 	}
 
+	private function ClearTags(&$array)
+	{
+		foreach($array as $indx=>&$val)
+		{
+			if (is_array($val))
+			{
+				if (is_numeric($indx))
+				{
+					$key = key(array_slice($val,0,1,TRUE));
+					array_shift($val);
+					$array[$key] = $val;
+					unset($array[$indx]);
+				}
+				self::ClearTags($val); //recurse
+			}
+		}
+		unset($val);
+	 }
+
+	private function ClearSpaces(&$array)
+	{
+		foreach($array as $indx=>&$val)
+		{
+			if (is_array($val))
+				self::ClearSpaces($val); //recurse
+			$done = 0;
+			$tmp = preg_replace('~^file:///[[:alnum:]]+:~','',$indx,10,$done); //$done-counter is for PHP5.1+ !
+			if ($tmp != null && $done == 1)
+			{
+				$array[$tmp] = $val;
+				unset($array[$indx]);
+			}
+		}
+		unset($val);
+	}
+
+	/**
+	 ImportXML:
+	 @xmlfile: filepath of xml file to be processed
+	 Read, parse and check high-level structure of xml file whose path is @xmlfile
+	 Returns: xml'ish tree-shaped array (with text encoded as UTF-8), or FALSE
+	 bracket-data are in sub-array(s) keyed as 'bracket1', ... 'bracket{array['count']}'
+	*/
+	function ImportXML($xmlfile)
+	{
+		//xml-namespacing rules out some simpler, neater approaches here
+		$parser = xml_parser_create_ns('UTF-8',':');
+		xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
+		xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
+		xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, 'UTF-8').
+		$res = xml_parse_into_struct($parser, file_get_contents($xmlfile), $xmlarray);
+		xml_parser_free($parser);
+		if ($res === 0)
+			return FALSE;
+		if (empty($xmlarray[0]) || empty($xmlarray[0]['tag']) || $xmlarray[0]['tag'] != 'tourney')
+			return FALSE;
+
+		array_shift($xmlarray); //ignore 'tourney' tag
+		$arrsize = count($xmlarray);
+		//migrate $xmlarray to condensed format
+		$opened = array();
+		$opened[1] = 0;
+		for($j = 0; $j < $arrsize; $j++)
+		{
+			$val = $xmlarray[$j];
+			switch($val['type'])
+			{
+				case 'open': //start of a new level
+					$opened[$val['level']]=0;
+				case 'complete': //a single value
+					$lvl = $val['level'];
+					$index = '';
+					for($i = 1; $i < $lvl; $i++)
+						$index .= '['.$opened[$i].']';
+					$path = explode('][', substr($index, 1, -1));
+					if($val['type'] == 'complete')
+						array_pop($path);
+					$value = &$array;
+					foreach($path as $segment)
+						$value = &$value[$segment];
+					$v = (!empty($val['value'])) ? $val['value'] : null; //default value is null
+					$value[$val['tag']] = $v;
+					if($val['type'] == 'complete' && $lvl > 1)
+						$opened[$lvl-1]++;
+					break;
+				case 'close': //end of a level
+					if ($val['level'] > 1)
+						$opened[$val['level']-1]++;
+					unset($opened[$val['level']]);
+					break;
+			}
+		}
+		unset($value);
+		//clear top-level numeric keys and related tags
+		$i = 1;
+		foreach($array as $indx=>&$value)
+		{
+			if (is_numeric($indx))
+			{
+				$key = key(array_slice($value,0,1,TRUE));
+				if($key == 'bracket')
+					$key .= $i++;
+				array_shift($value);
+				$array[$key] = $value;
+				unset($array[$indx]);
+			}
+		}
+		unset($value);
+		//and lower-level tags
+		self::ClearTags($array);
+		//and namespace prefixes
+		self::ClearSpaces($array);
+
+		$expected = array('version','date','count','bracket1');
+		foreach ($array as $indx=>&$check)
+		{
+			if (!in_array($indx,$expected))
+			{
+				unset($check);
+				return FALSE;
+			}
+		}
+		unset($check);
+		foreach ($expected as &$check)
+		{
+			if (!array_key_exists($check, $array))
+			{
+				unset($check);
+				return FALSE;
+			}
+		}
+		unset($check);
+		$expected = array('properties','teams','people','matches');	
+		foreach ($array['bracket1'] as $indx=>&$check)
+		{
+			if (!in_array($indx,$expected))
+			{
+				unset($check);
+				return FALSE;
+			}
+		}
+		unset($check);
+		foreach ($expected as &$check)
+		{
+			if (!array_key_exists($check, $array['bracket1']))
+			{
+				unset($check);
+				return FALSE;
+			}
+		}
+		unset($check);
+		return $array;
+	}
+
 }
 
 ?>
