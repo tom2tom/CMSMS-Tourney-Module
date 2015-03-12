@@ -167,12 +167,13 @@ class tmtChartDE extends tmtChartBase
 							case SOFT:
 							case ASOFT:
 								$type = 'nonf';
+								goto firm1;
 								//no break here
 							case FIRM:
 							case TOLD:
 							case AFIRM:
-								if($mdata['status'] == FIRM || $mdata['status'] == TOLD || $mdata['status'] == AFIRM)
-									$type = 'firm';
+								$type = 'firm';
+firm1:
 								$rel = sprintf($relations['vs'],$nameA,$nameB);
 								$at = ($mdata['place']) ? $mdata['place'] : '';
 								if($mdata['playwhen'])
@@ -235,12 +236,13 @@ class tmtChartDE extends tmtChartBase
 						 case SOFT:
 						 case ASOFT:
 							$type = 'nonf';
+							goto firm2;
 							//no break here
 						 case FIRM:
 						 case TOLD:
 						 case AFIRM:
-							if($mdata['status'] == FIRM || $mdata['status'] == TOLD || $mdata['status'] == AFIRM)
-								$type = 'firm';
+							$type = 'firm';
+firm2:
 							if(!($tA || $tB) || $tA == '-1' || $tB == '-1')
 								$rel = ($titles == 1)?"\n".$this->rnd->LevelName($this->mod,$bdata,$tc,$lvl):'';
 							elseif($tA)

@@ -1096,10 +1096,12 @@ EOS;
 			}
 			if($pmod)
 			{
+				$firmed = $mod->Lang('confirmed');
+				$told = $mod->Lang('notified');
 				$items = array(
 					$mod->Lang('notyet')=>NOTYET,
 					$mod->Lang('possible')=>SOFT,
-					$mod->Lang('confirmed')=>FIRM);
+					$firmed=>FIRM);
 				$group = $mod->CreateInputRadioGroup($id,'mat_status',$items,'','','|');
 				$choices = explode('|',$group);
 			}
@@ -1219,7 +1221,7 @@ EOS;
 						$one->btn3 = str_replace('mat_status"',$r,$choices[2]);
 						if ($mdata['status'] == TOLD)
 						{
-							$one->btn3 = str_replace(array($mod->Lang('confirmed'),FIRM),array($mod->Lang('notified'),TOLD),$one->btn3);
+							$one->btn3 = str_replace(array($firmed,FIRM),array($told,TOLD),$one->btn3);
 						}
 						elseif ($mdata['status'] == ASOFT || $mdata['status'] == AFIRM)
 						{

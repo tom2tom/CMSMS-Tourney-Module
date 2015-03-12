@@ -116,14 +116,16 @@ ORDER BY T1.displayorder';
 				{
 				case 0:
 					$type = 'deflt';
+					goto firm2;
 					//no break here
 				case SOFT:
 					$type = 'nonf';
+					goto firm2;
 					//no break here
 				case FIRM:
 				case TOLD:
-				if($mdata['status'] == FIRM || $mdata['status'] == TOLD)
-						$type = 'firm';
+					$type = 'firm';
+firm2:
 					$rel = sprintf($relations['vs'],$tA,$tB);
 					$at = ($mdata['place']) ? $mdata['place'] : '';
 					if($mdata['playwhen'])
