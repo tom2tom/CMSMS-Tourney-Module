@@ -86,7 +86,7 @@ class Tourney extends CMSModule
 
 	function GetVersion()
 	{
-		return '0.1.3';
+		return '0.2.0';
 	}
 
 	function GetHelp()
