@@ -72,9 +72,9 @@ $smarty->assign('end_form',$this->CreateFormEnd());
 $smarty->assign('hidden',$this->GetHiddenParms($id,$params,'charttab'));
 $smarty->assign('title',$this->Lang('title_cssfile2',$params['tmt_name']));
 $smarty->assign('chooser',$this->CreateInputFile($id,'cssfile','text/css',30));
-$smarty->assign('upload',$this->CreateInputSubmitDefault($id,'upstart',$this->Lang('upload')));
+$smarty->assign('apply',$this->CreateInputSubmitDefault($id,'upstart',$this->Lang('upload')));
 $smarty->assign('cancel',$this->CreateInputSubmit($id,'upcancel',$this->Lang('cancel')));
 $smarty->assign('help',$this->Lang('help_cssupload'));
 
-echo $this->ProcessTemplate('upload.tpl');
+echo $this->ProcessTemplate('onepage.tpl');
 ?>
