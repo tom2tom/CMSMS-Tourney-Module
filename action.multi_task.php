@@ -40,13 +40,16 @@ elseif(isset($params['notify']))
 	if(!empty($params['msel']))
 	{
 		$ok = TRUE;
+		$sql = 'UPDATE '.cms_db_prefix().'module_tmt_matches SET status='.TOLD.' WHERE match_id=?';
 		$errs = array();
 		$ids = array_keys($params['mat_status']);
 		$funcs = new tmtComm($this);
 		foreach ($params['msel'] as $mid)
 		{
 			list($res,$errmsg) = $funcs->TellTeams($params['bracket_id'],$mid);
-			if(!$res)
+			if($res)
+				$db->Execute($sql,array($mid));
+			else
 			{
 				$ok = FALSE;
 				$idx = array_search($mid,$ids);

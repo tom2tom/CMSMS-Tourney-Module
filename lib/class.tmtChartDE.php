@@ -169,8 +169,9 @@ class tmtChartDE extends tmtChartBase
 								$type = 'nonf';
 								//no break here
 							case FIRM:
+							case TOLD:
 							case AFIRM:
-								if($mdata['status'] == FIRM || $mdata['status'] == AFIRM)
+								if($mdata['status'] == FIRM || $mdata['status'] == TOLD || $mdata['status'] == AFIRM)
 									$type = 'firm';
 								$rel = sprintf($relations['vs'],$nameA,$nameB);
 								$at = ($mdata['place']) ? $mdata['place'] : '';
@@ -236,8 +237,9 @@ class tmtChartDE extends tmtChartBase
 							$type = 'nonf';
 							//no break here
 						 case FIRM:
+						 case TOLD:
 						 case AFIRM:
-							if($mdata['status'] == FIRM || $mdata['status'] == AFIRM)
+							if($mdata['status'] == FIRM || $mdata['status'] == TOLD || $mdata['status'] == AFIRM)
 								$type = 'firm';
 							if(!($tA || $tB) || $tA == '-1' || $tB == '-1')
 								$rel = ($titles == 1)?"\n".$this->rnd->LevelName($this->mod,$bdata,$tc,$lvl):'';
@@ -272,6 +274,7 @@ class tmtChartDE extends tmtChartBase
 							$type = 'nonf';
 							break;
 						 case FIRM:
+						 case TOLD:
 						 case AFIRM:
 							$type = 'firm';
 							break;

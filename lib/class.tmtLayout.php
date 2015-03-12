@@ -188,6 +188,7 @@ class tmtLayout
 				 case NOTYET:
 				 case SOFT:
 				 case FIRM:
+				 case TOLD:
 					$str = sprintf($relations['vs'],$tA,$tB).$at;
 					$showrows[] = $str;
 					break;

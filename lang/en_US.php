@@ -527,6 +527,7 @@ $lang['title_mid']='Match';
 $lang['title_venue']='Venue';
 $lang['possible']='Maybe';
 $lang['confirmed']='Confirmed';
+$lang['notified']='Notified';
 $lang['title_result']='Result';
 
 //===========================

@@ -121,7 +121,8 @@ ORDER BY T1.displayorder';
 					$type = 'nonf';
 					//no break here
 				case FIRM:
-				if($mdata['status'] == FIRM)
+				case TOLD:
+				if($mdata['status'] == FIRM || $mdata['status'] == TOLD)
 						$type = 'firm';
 					$rel = sprintf($relations['vs'],$tA,$tB);
 					$at = ($mdata['place']) ? $mdata['place'] : '';
@@ -198,6 +199,7 @@ ORDER BY T1.displayorder';
 					$type = 'nonf';
 					break;
 				 case FIRM:
+				 case TOLD:
 				 case AFIRM:
 					$type = 'firm';
 					break;

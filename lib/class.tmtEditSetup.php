@@ -45,11 +45,11 @@ class tmtEditSetup
 				$sql = 'SELECT timezone FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 				$zone = $db->GetOne($sql,array($bracket_id));
 				$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($zone));
-				$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status = '.FIRM.
-				' AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
+				$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND (status = '.FIRM.' OR status = '.TOLD.
+				') AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
 				' AND teamA IS NOT NULL AND teamA != -1 AND teamB IS NOT NULL AND teamB != -1';
 				$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
-				if($rs && !$rs->EOF) //FIRM match(es) scheduled before min. leadtime from now
+				if($rs && !$rs->EOF) //FIRM/TOLD match(es) scheduled before min. leadtime from now
 					$this->committed = TRUE;
 			}
 		}
@@ -1217,7 +1217,11 @@ EOS;
 						$one->btn1 = str_replace('mat_status"',$r,$choices[0]);
 						$one->btn2 = str_replace('mat_status"',$r,$choices[1]);
 						$one->btn3 = str_replace('mat_status"',$r,$choices[2]);
-						if ($mdata['status'] == ASOFT || $mdata['status'] == AFIRM)
+						if ($mdata['status'] == TOLD)
+						{
+							$one->btn3 = str_replace(array($mod->Lang('confirmed'),FIRM),array($mod->Lang('notified'),TOLD),$one->btn3);
+						}
+						elseif ($mdata['status'] == ASOFT || $mdata['status'] == AFIRM)
 						{
 							$one->btn2 = str_replace('value="'.SOFT,'value="'.ASOFT,$one->btn2);
 							$one->btn3 = str_replace('value="'.FIRM,'value="'.AFIRM,$one->btn3);
@@ -1230,6 +1234,7 @@ EOS;
 							$one->btn2 = str_replace(' />',' checked="checked" />',$one->btn2);
 							break;
 						 case FIRM:
+						 case TOLD:
 						 case AFIRM:
 							$one->btn3 = str_replace(' />',' checked="checked" />',$one->btn3);
 							break;
@@ -1255,6 +1260,9 @@ EOS;
 					 case FIRM:
 					 case AFIRM:
 						$one->btn3 = $mod->Lang('confirmed');
+						break;
+ 					 case TOLD:
+						$one->btn3 = $mod->Lang('notified');
 						break;
 					 default:
 						$one->btn3 = $mod->Lang('notyet');
