@@ -1316,7 +1316,7 @@ EOS;
 
 			$jsfuncs[] = <<< EOS
 function match_count() {
- var cb = $('#tmt_matches > tbody').find('input:checked');
+ var cb = $('#tmt_matches > tbody').find('input[type=checkbox]:checked');
  return cb.length;
 }
 function matches_selected(ev,btn) {
@@ -1378,7 +1378,7 @@ EOS;
 
 EOS;
 			$smarty->assign('notify',$mod->CreateInputSubmit($id,'notify',$mod->Lang('notify'),
-				'title="'.$mod->Lang('notify_tip').'"')); // onclick="matches_notify(event,this);"'));
+				'title="'.$mod->Lang('notify_tip').'"')); //modal confirm for this
 			if($plan)
 			{
 				$bdata = array(
@@ -1388,6 +1388,7 @@ EOS;
 				 'type'=>$data->type,
 				 'chartcss'=>$data->chartcss,
 				 'timezone'=>$data->timezone,
+				 'atformat'=>$data->atformat,
 				 'final'=>$data->final,
 				 'semi'=>$data->semi,
 				 'quarter'=>$data->quarter,
