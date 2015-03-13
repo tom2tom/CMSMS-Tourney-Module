@@ -298,7 +298,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			if($prevo < $prevm) //previous report from lower-numbered match
 			{
 				$vals = array($oid,$tid); //store this winner as teamB
-				if($vals[0] == -1) //bye
+				if($oid == -1) //bye
 					$status = WONB;
 				elseif($tid == -1)
 					$status = WONA;
@@ -306,17 +306,23 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			else
 			{
 				$vals = array($tid,$oid); //store as teamA
-				if($vals[1] == -1)
+				if($oid == -1)
 					$status = WONA;
 				elseif($tid == -1)
 					$status = WONB;
 			}
 			if($status == 0)
 			{
-				if($mdata['status'] == ASOFT)
+				switch($mdata['status'])
+				{
+				 case ASOFT:
 					$status = SOFT;
-				elseif($mdata['status'] == AFIRM)
+					break;
+				 case AFIRM:
+				 case TOLD:
 					$status = FIRM;
+					break;
+				}
 			}
 		}
 		$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamA=?,teamB=?';
