@@ -151,9 +151,11 @@ if(isset($params['apply']) || isset($params['submit']))
 								$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
 							if(!$when || !$on) $on = NULL;
 							$at = trim($row['place']);
-							if($at == FALSE) $at = NULL;
+							if($at == FALSE)
+								$at = NULL;
 							$stat = (int)$row['status'];
-							if($stat < 0) $stat = 0;
+							if($stat < 0)
+								$stat = ($on) ? ASOFT:0;
 							if ($mid > 0)
 								$db->Execute($sql,array($on,$at,$stat,$mid));
 							else
@@ -347,16 +349,18 @@ elseif(isset($params['update']))
 				$at = trim($params['mat_playwhere'][$indx]);
 				if(!$at) $at = NULL;
 				$stat = (int)$params['mat_status'][$mid];
-				if(!$on)
+				if($on)
 				{
-					$on = NULL;
-					if($stat < ANON) $stat = 0;
-					elseif($stat == AFIRM) $stat = ASOFT;
+					if($stat < 0) //notyet
+						$stat = ASOFT;
 				}
-				if($stat < 0) //notyet
+				else
 				{
-					$stat = 0;
 					$on = NULL;
+					if($stat < ANON)
+						$stat = 0;
+					elseif($stat == AFIRM)
+						$stat = ASOFT;
 				}
 				if($mid > 0)
 					$db->Execute($sql,array($on,$at,$stat,$mid));
