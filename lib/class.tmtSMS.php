@@ -258,7 +258,7 @@ class tmtSMS
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$smarty->assign('toall',$toall);
 				if ((int)$mdata['teamB'] > 0)
-					$op = $mod->TeamName($mdata['teamB']));
+					$op = $mod->TeamName($mdata['teamB']);
 				else
 				{
 /*				switch($bdata['type'])
@@ -299,7 +299,7 @@ class tmtSMS
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$smarty->assign('toall',$toall);
 				if ((int)$mdata['teamA'] > 0)
-					$op = $mod->TeamName($mdata['teamA']));
+					$op = $mod->TeamName($mdata['teamA']);
 				else
 				{
 /*				switch($bdata['type'])
