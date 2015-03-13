@@ -252,7 +252,21 @@ class tmtMail
 				$tc = count($to);
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$smarty->assign('toall',$toall);
-				$smarty->assign('opponent',$mod->TeamName($mdata['teamB']));
+				if ((int)$mdata['teamB'] > 0)
+					$op = $mod->TeamName($mdata['teamB']));
+				else
+				{
+					switch($bdata['type'])
+					{
+					 case KOTYPE:
+						$op = $mod->Lang('anonwinner');
+						break;
+					 default:
+						$op = $mod->Lang('anonother');
+					  break;
+					}
+				}
+				$smarty->assign('opponent',$op);
 				list($resA,$msg) = self::DoSend($mod,$bdata,$to,$cc,$tpl);
 				if(!$resA)
 				{
@@ -275,7 +289,21 @@ class tmtMail
 				$tc = count($to);
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$smarty->assign('toall',$toall);
-				$smarty->assign('opponent',$mod->TeamName($mdata['teamA']));
+				if ((int)$mdata['teamA'] > 0)
+					$op = $mod->TeamName($mdata['teamA']));
+				else
+				{
+					switch($bdata['type'])
+					{
+					 case KOTYPE:
+						$op = $mod->Lang('anonwinner');
+						break;
+					 default:
+						$op = $mod->Lang('anonother');
+					  break;
+					}
+				}
+				$smarty->assign('opponent',$op);
 				list($resB,$msg) = self::DoSend($mod,$bdata,$to,$cc,$tpl);
 				if(!$resB)
 				{

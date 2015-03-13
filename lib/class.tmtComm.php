@@ -79,7 +79,18 @@ class tmtComm
 		if($tA && $tB)
 			$smarty->assign('teams',$tA.', '.$tB);
 		else
-			$smarty->assign('teams',$tA.$tB);
+		{
+			switch($bdata['type'])
+			{
+			 case KOTYPE:
+				$op = $mod->Lang('anonwinner');
+				break;
+			 default:
+				$op = $mod->Lang('anonother');
+				break;
+			}
+			$smarty->assign('teams',$tA.$tB.', '.$op);
+		}
 	}
 
 	/**
