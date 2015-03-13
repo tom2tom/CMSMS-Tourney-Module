@@ -114,7 +114,7 @@
  {/foreach}
  </tbody>
 </table><br />
-<p class="pageinput">{if isset($reset)}{$reset}&nbsp;{/if}{$altmview}{if !$plan}&nbsp;{$chart}&nbsp;{$list}&nbsp;{$print}&nbsp;{$notify}{/if}{if $canmod}&nbsp;{$update2}{/if}</p>
+<p class="pageinput">{if isset($reset)}{$reset}&nbsp;{/if}{$altmview}{if !$plan}&nbsp;{$chart}&nbsp;{$list}&nbsp;{$print}{/if}&nbsp;{$notify}{if $canmod}&nbsp;{$update2}{/if}</p>
 </div>
 {if $plan}<div style="overflow:auto;"><br />{$image}</div>{/if}
 {else}
