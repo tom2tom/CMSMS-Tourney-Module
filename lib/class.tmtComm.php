@@ -151,38 +151,44 @@ class tmtComm
 		$mdata = $db->GetRow($sql,array($match_id));
 		if($mdata)
 		{
-			$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
-			$bdata = $db->GetRow($sql,array($bracket_id));
-			$smarty = cmsms()->GetSmarty();
-			//general vars for template
-			$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
-			//team-specific vars recipient(for email),toall,opponent set downstream
-			$res = FALSE;
-			$msgs = array();
-			if($this->text)
+		 //need at least 1 non-bye, known-team, to tell
+			$tA = (int)$mdata['teamA'];
+			$tB = (int)$mdata['teamB'];
+			if($tA > 0 || $tB > 0)
 			{
-				list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+				$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
+				$bdata = $db->GetRow($sql,array($bracket_id));
+				$smarty = cmsms()->GetSmarty();
+				//general vars for template
+				$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
+				//team-specific vars recipient(for email),toall,opponent set downstream
+				$res = FALSE;
+				$msgs = array();
+				if($this->text)
+				{
+					list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+					if($ok)
+						$res = TRUE;
+					else
+						$msgs[] = $msg1;
+				}
+				if($this->mail)
+				{
+					list($ok,$msg1) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+					if($ok)
+						$res = TRUE;
+					else
+						$msgs[] = $msg1;
+				}
+				list($ok,$msg1) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
 				if($ok)
 					$res = TRUE;
 				else
 					$msgs[] = $msg1;
+				if($res)
+					return array(TRUE,'');
+				return array(FALSE,implode('<br />',$msgs));
 			}
-			if($this->mail)
-			{
-				list($ok,$msg1) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
-				if($ok)
-					$res = TRUE;
-				else
-					$msgs[] = $msg1;
-			}
-			list($ok,$msg1) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
-			if($ok)
-				$res = TRUE;
-			else
-				$msgs[] = $msg1;
-			if($res)
-				return array(TRUE,'');
-			return array(FALSE,implode('<br />',$msgs));
 		}
 		return array(FALSE,$mod->Lang('err_match'));
 	}
