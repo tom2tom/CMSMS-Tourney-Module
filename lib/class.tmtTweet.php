@@ -368,7 +368,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 						$op = $mod->TeamName($mdata['teamB']));
 					else
 					{
-						switch($bdata['type'])
+/*					switch($bdata['type'])
 						{
 						 case KOTYPE:
 							$op = $mod->Lang('anonwinner');
@@ -377,6 +377,8 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 							$op = $mod->Lang('anonother');
 							break;
 						}
+*/
+						$op = '';
 					}
 					$smarty->assign('opponent',$op);
 					if($owner)
@@ -412,7 +414,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 						$op = $mod->TeamName($mdata['teamA']));
 					else
 					{
-						switch($bdata['type'])
+/*					switch($bdata['type'])
 						{
 						 case KOTYPE:
 							$op = $mod->Lang('anonwinner');
@@ -421,6 +423,8 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 							$op = $mod->Lang('anonother');
 							break;
 						}
+*/
+						$op = '';
 					}
 					$smarty->assign('opponent',$op);
 					if($owner)

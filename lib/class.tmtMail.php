@@ -256,7 +256,7 @@ class tmtMail
 					$op = $mod->TeamName($mdata['teamB']));
 				else
 				{
-					switch($bdata['type'])
+/*				switch($bdata['type'])
 					{
 					 case KOTYPE:
 						$op = $mod->Lang('anonwinner');
@@ -265,6 +265,8 @@ class tmtMail
 						$op = $mod->Lang('anonother');
 					  break;
 					}
+*/
+					$op = '';
 				}
 				$smarty->assign('opponent',$op);
 				list($resA,$msg) = self::DoSend($mod,$bdata,$to,$cc,$tpl);
@@ -293,7 +295,7 @@ class tmtMail
 					$op = $mod->TeamName($mdata['teamA']));
 				else
 				{
-					switch($bdata['type'])
+/*				switch($bdata['type'])
 					{
 					 case KOTYPE:
 						$op = $mod->Lang('anonwinner');
@@ -302,6 +304,8 @@ class tmtMail
 						$op = $mod->Lang('anonother');
 					  break;
 					}
+*/
+					$op = '';
 				}
 				$smarty->assign('opponent',$op);
 				list($resB,$msg) = self::DoSend($mod,$bdata,$to,$cc,$tpl);

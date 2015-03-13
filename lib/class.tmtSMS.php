@@ -261,7 +261,7 @@ class tmtSMS
 					$op = $mod->TeamName($mdata['teamB']));
 				else
 				{
-					switch($bdata['type'])
+/*				switch($bdata['type'])
 					{
 					 case KOTYPE:
 						$op = $mod->Lang('anonwinner');
@@ -270,6 +270,8 @@ class tmtSMS
 						$op = $mod->Lang('anonother');
 					  break;
 					}
+*/
+					$op = '';
 				}
 				$smarty->assign('opponent',$op);
 				if($owner)
@@ -300,7 +302,7 @@ class tmtSMS
 					$op = $mod->TeamName($mdata['teamA']));
 				else
 				{
-					switch($bdata['type'])
+/*				switch($bdata['type'])
 					{
 					 case KOTYPE:
 						$op = $mod->Lang('anonwinner');
@@ -309,6 +311,8 @@ class tmtSMS
 						$op = $mod->Lang('anonother');
 					  break;
 					}
+*/
+					$op = '';
 				}
 				$smarty->assign('opponent',$op);
 				if($owner)
