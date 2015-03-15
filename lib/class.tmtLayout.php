@@ -151,10 +151,10 @@ class tmtLayout
 		$showrows = array();
 		foreach($matches as $mid=>$mdata)
 		{
-			if($mdata['status']==0)
+			if($mdata['status'] == 0)
 				continue; //filter out the matches of no interest here
 			//bye(s)?
-			if ($mdata['teamA'] == -1)
+/*		if ($mdata['teamA'] == -1)
 			{
 				if (!($front || $mdata['teamB'] == -1))
 					$showrows[] = $mod->TeamName($mdata['teamB']).' '.$bdata['bye'];
@@ -165,6 +165,8 @@ class tmtLayout
 					$showrows[] = $mod->TeamName($mdata['teamA']).' '.$bdata['bye'];
 			}
 			else
+*/
+			if ($mdata['teamA'] != -1 && $mdata['teamB'] != -1)
 			{
 				$tA = ($mdata['teamA']) ? $mod->TeamName($mdata['teamA']) : FALSE;
 				$tB = ($mdata['teamB']) ? $mod->TeamName($mdata['teamB']) : FALSE;
@@ -189,16 +191,20 @@ class tmtLayout
 				 case SOFT:
 				 case FIRM:
 				 case TOLD:
-					$str = sprintf($relations['vs'],$tA,$tB).$at;
-					$showrows[] = $str;
-					break;
+				 	if($tA && $tB)
+					{
+						$str = sprintf($relations['vs'],$tA,$tB).$at;
+						$showrows[] = $str;
+						break;
+					}
+				 //no break here
 				 case ASOFT:
 				 case AFIRM:
-				 	if(!($tA || $tB))
+				 	if(!($tA || $tB || $mdata['playwhen']))
 						break;
 //						$str = $mod->Lang('anonanon'); //TODO AorB vs CorD, or relevant roundname
-					else
-					{
+//					else
+//					{
 						switch($bdata['type'])
 						{
 						 case KOTYPE:
@@ -225,6 +231,11 @@ class tmtLayout
 									$prev = $mod->Lang('numwinner',$rnd->LevelName($mod,$bdata,$level-1,$levelmax));
 								}
 							}
+							else
+							{
+							 	$level = $rnd->MatchLevel($tc,$matches,$mid);
+								$name = $rnd->LevelName($mod,$bdata,$level-1,$levelmax);
+							}
 						 	break;
 						 case DETYPE:
 							if($tA)
@@ -246,18 +257,26 @@ class tmtLayout
 								if(!$prev)
 									$prev = $rnd->AnonLevelName($mod,$bdata,$tc,$level);
 							}
-						 	break;
+						 	else
+							{
+							 	$level = $rnd->MatchLevel($tc,$matches,$mid);
+								$name = $rnd->AnonLevelName($mod,$bdata,$tc,$level);
+							}
+							break;
 						 case RRTYPE:
 							$prev = $anon;
+							$name = '';
 							break;
 						 default:
 							return 'err_value';
 						}
 						if($tA)
 							$str = sprintf($relations['vs'],$tA,$prev);
-						else
+						elseif($tB)
 							$str = sprintf($relations['vs'],$prev,$tB);
-					}
+						else
+							$str = $name;
+//					}
 					$str .= $at;
 					$showrows[] = $str;
 				 	break;
