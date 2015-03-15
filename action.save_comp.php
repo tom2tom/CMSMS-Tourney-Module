@@ -172,7 +172,6 @@ if(isset($params['apply']) || isset($params['submit']))
 						else
 							$this->Redirect($id,'defaultadmin','',
 								array('tmt_message'=>$this->PrettyMessage('err_match',FALSE)));
-	
 					}
 				}
 				//results data next priority
@@ -193,17 +192,22 @@ if(isset($params['apply']) || isset($params['submit']))
 						{
 							$indx = array_search($mid,$ids);
 							$tA = $params['res_teamA'][$indx];
-							if(!$tA) $tA = NULL;
+							if(!$tA)
+								$tA = NULL;
 							$tB = $params['res_teamB'][$indx];
-							if(!$tB) $tB = NULL;
+							if(!$tB)
+								$tB = NULL;
 							$when = $row['playwhen'];
 							if($when)
 								$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
-							if(!$when || !$on) $on = NULL;
+							if(!$when || !$on)
+								$on = NULL;
 							$how = trim($row['score']);
-							if($how == FALSE) $how = NULL;
+							if(!$how)
+								$how = NULL;
 							$stat = (int)$row['status'];
-							if($stat < 0) $stat = 0;
+							if($stat < 0)
+								$stat = 0;
 							$db->Execute($sql2,array($on,$stat,$how,$mid));
 						}
 						else
@@ -212,7 +216,7 @@ if(isset($params['apply']) || isset($params['submit']))
 					}
 				}
 			}
-			//next,team-changes(which may change matches)
+			//next,team-changes (which may change matches)
 			$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags=2';
 			$gone = $db->GetCol($sql,array($bracket_id));
 			if($gone)
@@ -399,9 +403,11 @@ elseif(isset($params['update']))
 				{
 					$when = $params['res_playwhen'][$indx];
 					$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
-					if(!$on) $on = NULL;
+					if(!$on)
+						$on = NULL;
 					$how = trim($params['res_score'][$indx]);
-					if(!$how) $how = NULL;
+					if(!$how)
+						$how = NULL;
 					$db->Execute($sql,array($on,$stat,$how,$mid));
 				}
 			}
