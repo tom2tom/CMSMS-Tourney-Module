@@ -1361,10 +1361,10 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		{
 			if($mdata['status'] != $status[$id])
 			{
-				switch($mdata['status'])
+				switch((int)$mdata['status'])
 				{
 				 case WONA:
-				 case FORB:
+				 case FORFB:
 					//ensure teamA is one of teams in nextm & beyond
 					$args = array($mdata['teamA'],$mdata['nextm'],$mdata['teamB']);
 					$db->Execute($sql,$args);
@@ -1378,7 +1378,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 					}
 					break;
 				 case WONB:
-				 case FORA:
+				 case FORFA:
 					//ensure teamB is one of teams in nextm & beyond
 					$args = array($mdata['teamB'],$mdata['nextm'],$mdata['teamA']);
 					$db->Execute($sql,$args);
