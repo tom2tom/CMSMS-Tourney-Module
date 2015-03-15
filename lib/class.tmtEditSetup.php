@@ -835,8 +835,8 @@ EOS;
 
 		$smarty->assign('names',$names);
 
-		$smarty->assign('print',$mod->CreateInputSubmit($id,'print',$mod->Lang('plain'),
-			'title="'.$mod->Lang('plain_tip').'" onclick="set_params(this);"'));
+		$smarty->assign('print',$mod->CreateInputSubmit($id,'print',$mod->Lang('print'),
+			'title="'.$mod->Lang('print_tip').'" onclick="set_params(this);"'));
 
 //========= TEAMS ==========
 
