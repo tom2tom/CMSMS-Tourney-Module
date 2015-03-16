@@ -41,13 +41,14 @@ class tmtSchedule
 
 	/**
 	OrderMatches:
-	@teamcount: the actual no. of starting competitors i.e exclude byes
+	@teamcount: the actual no. of starting competitors i.e. exclude byes
 	@seedcount: no. (<= @teamcount) of competitors to be 'specially assigned' per @seedtype
 	@seedtype: enum
 	 0 no special treatment of seeds
 	 1 seeds 1 & 2 in opposite halves of draw (in which case @seedcount >= 2)
 	 2 all seeds alternate, with ratings closer than for option 3
 	 3 all seeds alternate, with ratings as divergent as possible
+	 4 (random 2 or 3) but not seen here due to upstream subsititution
 	@fixcount: 0 or even no. (<= @teamcount) of competitors to be excluded from random assignment
 	Returns: Array of team indices in match-order.
 	The array keys are ascending, 1 to 0.5 * a power of 2 which is equal to
@@ -111,6 +112,8 @@ class tmtSchedule
 		$r = $full - $seedcount;
 		//next, pairs of slots for fixers, if any
 		$fp = 1; //placement enum
+		$f1 = $fixcount; //CHECKME fudge-factor ??
+		$f2 = $f1 + 1;
 		while($fixcount)
 		{
 			//try to bias fixers' positions toward centre of bracket (maybe lower-ranked vicinity)
@@ -120,8 +123,8 @@ class tmtSchedule
 				{
 				 case 1:
 				 case 3:
-					$vs = $i - $fp - 4; //CHECKME -4 fudge-factor ??
-					if($i > ($fp-5) && $i < ($full+$fp+5) && !isset($order[$vs]) && !isset($order[$vs-1]))
+					$vs = $i - $fp - $f2; //CHECKME fudge-factor
+					if($i > ($fp-$f2) && $i < ($full+$fp+$f2) && !isset($order[$vs]) && !isset($order[$vs-1]))
 					{
 						$order[$vs] = -5; //anything < 0 will do
 						$order[$vs-1] = -5;
@@ -134,8 +137,8 @@ class tmtSchedule
 					break;
 				 case 2:
 				 case 4:
-					$vs = $full - $i - $fp + 1 + 4; //$fp-1 {1,3} CHECKME +4 fudge-factor ??
-					if($i > (4-$fp) && $i < ($full-$fp+4) && !isset($order[$vs]) && !isset($order[$vs-1]))
+					$vs = $full - $i - $fp + $f2; //$fp-1 {1,3} CHECKME fudge-factor
+					if($i > ($f1-$fp) && $i < ($full-$fp+$f1) && !isset($order[$vs]) && !isset($order[$vs-1]))
 					{
 						$order[$vs] = -10;
 						$order[$vs-1] = -10;
@@ -633,7 +636,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		if($numteams > $numseeds)
 			$randoms = self::RandomOrder($numseeds+1,$numteams-$numseeds);
 		$allteams = array_keys($allteams); //team-id's now values
-		$order = self::OrderMatches($numteams,$numseeds,$stype,$numfix);
+		$order = self::OrderMatches($numteams+$numfix,$numseeds,$stype,$numfix);
 		foreach($order as $i=>$tid)
 		{
 			if($tid < 0)
