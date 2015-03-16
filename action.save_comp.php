@@ -143,30 +143,40 @@ if(isset($params['apply']) || isset($params['submit']))
 						{
 							$indx = array_search($mid,$ids);
 							$tA = $params['mat_teamA'][$indx];
-							if(!$tA) $tA = NULL;
 							$tB = $params['mat_teamB'][$indx];
-							if(!$tB) $tB = NULL;
 							$when = $row['playwhen'];
 							if($when)
 								$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
-							if(!$when || !$on) $on = NULL;
+							if(!$when || !$on)
+								$on = NULL;
 							$at = trim($row['place']);
 							if($at == FALSE)
 								$at = NULL;
 							$stat = (int)$row['status'];
-							if($stat < 0)
-								$stat = ($on) ? ASOFT:0;
+							if($on)
+							{
+								if($stat < 0) //notyet
+									$stat = ($tA && $tB) ? SOFT:ASOFT;
+							}
+							else
+							{
+								if($stat < ANON)
+									$stat = 0;
+								elseif($stat == AFIRM)
+									$stat = ASOFT;
+							}
+							$matches[$mid]['status'] = $stat; //for use during results processing
 							if ($mid > 0)
 								$db->Execute($sql,array($on,$at,$stat,$mid));
 							else
 							{
 								//create RRTYPE match on-the-fly
 								$mid = $db->GenID($pref.'module_tmt_matches_seq');
-								$db->Execute($sql2,array(
-									$mid,$params['bracket_id'],
-									$params['mat_teamA'][$indx],
-									$params['mat_teamB'][$indx],
-									$on,$at,$stat));
+								if(!$tA)
+									$tA = NULL;
+								if(!$tB)
+									$tB = NULL;
+								$db->Execute($sql2,array($mid,$bracket_id,$tA,$tB,$on,$at,$stat));
 							}
 						}
 						else
@@ -190,14 +200,9 @@ if(isset($params['apply']) || isset($params['submit']))
 					{
 						if(in_array($mid,$current))
 						{
-							$indx = array_search($mid,$ids);
-							$tA = $params['res_teamA'][$indx];
-							if(!$tA)
-								$tA = NULL;
-							$tB = $params['res_teamB'][$indx];
-							if(!$tB)
-								$tB = NULL;
 							$when = $row['playwhen'];
+							if(!$when && !empty($matches[$mid]['playwhen']))
+								$when = $matches[$mid]['playwhen'];
 							if($when)
 								$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
 							if(!$when || !$on)
@@ -206,8 +211,8 @@ if(isset($params['apply']) || isset($params['submit']))
 							if(!$how)
 								$how = NULL;
 							$stat = (int)$row['status'];
-							if($stat < 0)
-								$stat = 0;
+							if($stat < MRES)
+								$stat = $matches[$mid]['status'];
 							$db->Execute($sql2,array($on,$stat,$how,$mid));
 						}
 						else
@@ -340,6 +345,7 @@ elseif(isset($params['update']))
 	 case 'matches':
 		if(isset($params['msel']))
 		{
+			$bracket_id = (int)$params['bracket_id'];
 			$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?,place=?,status=? WHERE match_id=?';
 			//for new matches specified in RRTYPE plan view
 			$sql2 = 'INSERT INTO '.$pref.'module_tmt_matches (match_id,bracket_id,teamA,teamB,playwhen,place,status) VALUES (?,?,?,?,?,?,?)';
@@ -348,19 +354,24 @@ elseif(isset($params['update']))
 			foreach($params['msel'] as $mid)
 			{
 				$indx = array_search($mid,$known);
+				$tA = $params['mat_teamA'][$indx];
+				$tB = $params['mat_teamB'][$indx];
 				$when = $params['mat_playwhen'][$indx];
-				$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
+				if($when)
+					$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
+				if(!$when || !$on)
+					$on = NULL;
 				$at = trim($params['mat_playwhere'][$indx]);
-				if(!$at) $at = NULL;
+				if(!$at)
+					$at = NULL;
 				$stat = (int)$params['mat_status'][$mid];
 				if($on)
 				{
 					if($stat < 0) //notyet
-						$stat = ASOFT;
+						$stat = ($tA && $tB) ? SOFT:ASOFT;
 				}
 				else
 				{
-					$on = NULL;
 					if($stat < ANON)
 						$stat = 0;
 					elseif($stat == AFIRM)
@@ -371,11 +382,11 @@ elseif(isset($params['update']))
 				else
 				{
 					$mid = $db->GenID($pref.'module_tmt_matches_seq');
-					$db->Execute($sql2,array(
-						$mid,$params['bracket_id'],
-						$params['mat_teamA'][$indx],
-						$params['mat_teamB'][$indx],
-						$on,$at,$stat));
+					if(!$tA)
+						$tA = NULL;
+					if(!$tB)
+						$tB = NULL;
+					$db->Execute($sql2,array($mid,$bracket_id,$tA,$tB,$on,$at,$stat));
 				}
 			}
 			$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=1 WHERE bracket_id=?';
