@@ -42,7 +42,7 @@ class tmtData
 		if (!empty($params['bracket_id']))
 		{
 			$data->bracket_id = (int)$params['bracket_id'];
-			$data->groupid = (int)$params['groupid'];
+			$data->groupid = (int)$params['tmt_groupid'];
 		}
 		if(!empty($params['newbracket']))
 		{
