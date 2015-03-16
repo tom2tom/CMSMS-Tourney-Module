@@ -63,6 +63,11 @@ if (!$list)
 		list($height,$width) = $lyt->GetChartSize();
 		$smarty->assign('image',$this->CreateImageObject($config['root_url'].'/tmp/'.$basename,(int)$height+30));
 		$tpl = 'admin_chart.tpl';
+		if($titles == 0)
+			//force refresh next time
+			$db->Execute(
+			'UPDATE '.$pref.'module_tmt_brackets SET chartbuild = 1 WHERE bracket_id=?',
+			array($bracket_id));
 	}
 	else
 	{
