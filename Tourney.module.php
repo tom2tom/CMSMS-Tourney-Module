@@ -415,26 +415,25 @@ class Tourney extends CMSModule
 
 		$timezones = array();
 		foreach($regions as $region)
-		{
 			$timezones = array_merge($timezones, DateTimeZone::listIdentifiers($region));
-		}
+
 		ksort($timezones);
 
 		$current = new DateTime();
 		$timezone_offsets = array();
-		foreach($timezones as $timezone)
+		foreach($timezones as $onezone)
 		{
-			$tz = new DateTimeZone($timezone);
-			$timezone_offsets[$timezone] = $tz->getOffset($current);
+			$tz = new DateTimeZone($onezone);
+			$timezone_offsets[$onezone] = $tz->getOffset($current);
 		}
 
 		$timezone_list = array();
-		foreach($timezone_offsets as $timezone => $offset)
+		foreach($timezone_offsets as $onezone => $offset)
 		{
 			$offset_prefix = $offset < 0 ? '-' : '+';
 			$offset_formatted = gmdate('G:i', abs($offset));
-			$pretty_offset = "GMT${offset_prefix}${offset_formatted}";
-			$timezone_list["$timezone (${pretty_offset})"] = $timezone;
+			$pretty_offset = "UTC${offset_prefix}${offset_formatted}";
+			$timezone_list["$onezone (${pretty_offset})"] = $onezone;
 		}
 
 		return $timezone_list;
