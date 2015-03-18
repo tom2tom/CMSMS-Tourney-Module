@@ -138,7 +138,7 @@ class tmtChartDE extends tmtChartBase
 		$fmt = $bdata['atformat'];
 		if(!$fmt)
 			$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
-		$dt = new DateTime('now',new DateTimeZone($bdata['timezone']));
+		$dt = new DateTime('1900-01-01 00:00:00',new DateTimeZone($bdata['timezone']));
 		$relations = $this->mod->ResultTemplates($bracket_id);
 
 		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';

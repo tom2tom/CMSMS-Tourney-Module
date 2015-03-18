@@ -146,7 +146,7 @@ class tmtLayout
 		$fmt = $bdata['atformat'];
 		if(!$fmt)
 			$fmt = $mod->GetZoneDateFormat($bdata['timezone']).' '.$mod->GetPreference('time_format');
-		$dt = new DateTime('now',new DateTimeZone($bdata['timezone']));
+		$dt = new DateTime('1900-01-01 00:00:00',new DateTimeZone($bdata['timezone']));
 		$relations = $mod->ResultTemplates($bdata['bracket_id'],FALSE);
 		$showrows = array();
 		foreach($matches as $mid=>$mdata)

@@ -87,7 +87,7 @@ class tmtChartRR extends tmtChartBase
 		$fmt = $bdata['atformat'];
 		if(!$fmt)
 			$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
-		$dt = new DateTime('now',new DateTimeZone($bdata['timezone']));
+		$dt = new DateTime('1900-01-01 00:00:00',new DateTimeZone($bdata['timezone']));
 		$relations = $this->mod->ResultTemplates($bdata['bracket_id']);
 		$anon = $this->mod->Lang('anonother');
 		//process all recorded matches
