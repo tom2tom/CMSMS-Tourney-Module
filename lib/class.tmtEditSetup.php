@@ -18,7 +18,7 @@ class tmtEditSetup
 	@bracket_id: bracket being processed
 	Check for existence of any match for the bracket, and any 'locked in' match
 	Sets self::any, self::committed
-	See also: tmtSchedule::MatchCommitted() which replicates some of this function
+	See also: tmtSchedule::MatchCommitted() which is similar to this function
 	Returns: Nothing
 	*/
 	function MatchExists($bracket_id)
