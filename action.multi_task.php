@@ -42,7 +42,7 @@ elseif(isset($params['notify']))
 		$ok = TRUE;
 		$sql = 'UPDATE '.cms_db_prefix().'module_tmt_matches SET status='.TOLD.' WHERE match_id=?';
 		$errs = array();
-		$ids = array_keys($params['mat_status']);
+		$ids = array_keys($params['mat_status']); //match id's
 		$funcs = new tmtComm($this);
 		foreach ($params['msel'] as $mid)
 		{
@@ -53,9 +53,18 @@ elseif(isset($params['notify']))
 			{
 				$ok = FALSE;
 				$idx = array_search($mid,$ids);
-				$errs[] = sprintf($this->Lang('or_fmt',
-					$this->TeamName($params['mat_teamA'][$idx]),
-					$this->TeamName($params['mat_teamB'][$idx]))).' '.$errmsg;
+				$tA = (int)$params['mat_teamA'][$idx];
+				$tB = (int)$params['mat_teamB'][$idx];
+				if($tA > 0 && $tB > 0)
+					$errs[] = sprintf($this->Lang('or_fmt',
+						$this->TeamName($tA),
+						$this->TeamName($tB))).' '.$errmsg;
+				elseif($tA > 0)
+					$errs[] = $this->TeamName($tA).' '.$errmsg;
+				elseif($tB > 0)
+					$errs[] = $this->TeamName($tB).' '.$errmsg;
+				else
+					$errs[] = $errmsg;
 			}
 		}
 		if(!$ok)
