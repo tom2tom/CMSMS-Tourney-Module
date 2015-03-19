@@ -32,6 +32,7 @@ $lang['err_system']='System error!';
 $lang['err_tag']='Invalid page definition';
 $lang['err_token']='failed to save token';
 $lang['err_template']='Display-template error';
+$lang['err_text']='Invalid SMS content';
 $lang['err_value']='Invalid parameter value'; 
 $lang['noname']='name missing';
 
