@@ -70,7 +70,7 @@ class tmtSMS
 			if(!$this->gateway->send())
 			{
 				if($err) $err .= '<br />';
-				$err .= $ph.': '.$this->gateway->get_statusmsg();
+				$err .= $num.': '.$this->gateway->get_statusmsg();
 			}
 		}
 		return array(($err==''),$err);
@@ -120,7 +120,7 @@ class tmtSMS
 	private function AdjustPhone($number,$country,$pattern)
 	{
 		$n = str_replace(' ','',$number);
-		if(preg_match($pattern,$n) === FALSE)
+		if(!preg_match($pattern,$n))
 			return FALSE;
 		$p = str_replace(' ','',$country);
 		$plus = ($p[0] == '+');
@@ -327,6 +327,7 @@ class tmtSMS
 				}
 			}
 		}
+
 		if($resA && $resB)
 			return array(TRUE,'');
 		return array(FALSE,$err);
