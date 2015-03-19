@@ -52,7 +52,7 @@
 {if $canmod}{$addlink}&nbsp;{$addlink2}
 {if $icount}
 <div style="margin:0;float:right;text-align:right">
-{$groupbtn} {$clonebtn} {$deletebtn} {$exportbtn}
+{$notifybtn} {$groupbtn} {$clonebtn} {$deletebtn} {$exportbtn}
 </div>
 <div class="clearb"></div>
 {/if}

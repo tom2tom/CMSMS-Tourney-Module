@@ -202,6 +202,8 @@ EOS;
 
 	if ($pmod)
 	{
+		$smarty->assign('notifybtn',$this->CreateInputSubmit($id,'notify',$this->Lang('notify'),
+			'title="'.$this->Lang('notifysel_tip').'" onclick="return confirm_selitm_count();"'));
 		if ($selgrp)
 			$t = $this->CreateInputSubmit($id,'group',$this->Lang('title_group'),
 			'title="'.$this->Lang('groupsel_tip').'" onclick="return confirm_selitm_count();"');

@@ -80,6 +80,42 @@ elseif(isset($params['delete_item'])) //delete selected bracket(s)
 		$funcs->DeleteBracket($this,$vals);
 	}
 }
+elseif(isset($params['notify']))
+{
+	$vals = array_flip($params['selitems']); //convert strings
+	$vals = array_flip($vals);
+	if($vals)
+	{
+		$vc = count($vals);
+		$fillers = str_repeat('?,',$vc-1).'?';
+		$pref = cms_db_prefix();
+		$sql = 'SELECT match_id,bracket_id FROM '.$pref.'module_tmt_matches WHERE bracket_id IN ('.$fillers.
+		') AND status<'.MRES.
+		' AND playwhen IS NOT NULL AND ((teamA IS NOT NULL AND teamA>0) OR (teamB IS NOT NULL AND teamB>0))';
+		$matches = $db->GetAssoc($sql,$vals);
+		if($matches)
+		{
+			$allmsg = '';
+			$sql = 'UPDATE '.$pref.'module_tmt_matches SET status='.TOLD.' WHERE match_id=?';
+			$funcs = new tmtComm($this);
+			foreach($matches as $mid=>$bid)
+			{
+				list($res,$errmsg) = $funcs->TellTeams((int)$bid,$mid);
+				if($res)
+					$db->Execute($sql,array($mid));
+				elseif($errmsg)
+				{
+					if($allmsg)
+						$allmsg .= '<br />';
+					$allmsg .= $errmsg;
+				}
+			}
+			if($allmsg)
+				$this->Redirect($id,'defaultadmin','',
+					array('tmt_message'=>$this->PrettyMessage($allmsg,FALSE,FALSE,FALSE)));
+		}
+	}
+}
 elseif(isset($params['export']))
 {
 	$vals = array_flip($params['selitems']); //convert strings

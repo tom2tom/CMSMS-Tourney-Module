@@ -97,6 +97,7 @@ $lang['update_tip']='save data for selected rows';
 $lang['submit_tip']='send result to tournament manager';
 $lang['err_save']='Error during data save.';
 
+$lang['notifysel_tip']='send notices about scheduled matches to participants in selected tournaments';
 $lang['groupsel_tip']='put selected tournaments into a group';
 $lang['clonesel_tip']='clone selected tournaments';
 $lang['deletesel_tip']='delete selected tournaments';
