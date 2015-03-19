@@ -115,32 +115,26 @@ class tmtComm
 			//general vars for template
 			$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
 			//channel-specific var report set downstream
-			$res = FALSE;
 			$msgs = array();
 			if($this->text)
 			{
 				list($ok,$msg1) = $this->text->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
-				if($ok)
-					$res = TRUE;
-				else
+				if(!$ok && $msg1)
 					$msgs[] = $msg1;
 			}
 			if($this->mail)
 			{
 				list($ok,$msg1) = $this->mail->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
-				if($ok)
-					$res = TRUE;
-				else
+				if(!$ok && $msg1)
 					$msgs[] = $msg1;
 			}
 			list($ok,$msg1) = $this->tweet->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
-			if($ok)
-				$res = TRUE;
-			else
+			if(!$ok && $msg1)
 				$msgs[] = $msg1;
-			if($res)
-				return array(TRUE,'');
-			return array(FALSE,implode('<br />',$msgs));
+
+			if($msgs)
+				return array(FALSE,implode('<br />',$msgs));
+			return array(TRUE,'');
 		}
 		return array(FALSE,$mod->Lang('err_match'));
 	}
@@ -152,7 +146,8 @@ class tmtComm
 	@match_id: index of match to be processed
 	@first: TRUE to send only to first recognised address, FALSE to send per
 		the teams' respective contactall settings, optional, default FALSE
-	Returns: array with two members: 1st TRUE|FALSE representing success, 2nd specific problem message or FALSE
+	Returns: array with two members: 1st TRUE|FALSE representing success or nothing to do,
+		2nd a specific problem message or FALSE
 	*/
 	public function TellTeams($bracket_id,$match_id,$first=FALSE)
 	{
@@ -173,35 +168,29 @@ class tmtComm
 				//general vars for template
 				$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
 				//team-specific vars recipient(for email),toall,opponent set downstream
-				$res = FALSE;
 				$msgs = array();
 				if($this->text)
 				{
 					list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
-					if($ok)
-						$res = TRUE;
-					else
+					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
 				if($this->mail)
 				{
 					list($ok,$msg1) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
-					if($ok)
-						$res = TRUE;
-					else
+					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
 				list($ok,$msg1) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
-				if($ok)
-					$res = TRUE;
-				else
+				if(!$ok && $msg1)
 					$msgs[] = $msg1;
-				if($res)
-					return array(TRUE,'');
-				return array(FALSE,implode('<br />',$msgs));
+
+				if($msgs)
+					return array(FALSE,implode('<br />',$msgs));
 			}
+			return array(TRUE,'');
 		}
-		return array(FALSE,$mod->Lang('err_match'));
+		return array(FALSE,$this->mod->Lang('err_match'));
 	}
 }
 
