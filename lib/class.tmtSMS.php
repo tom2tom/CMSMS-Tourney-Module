@@ -12,55 +12,36 @@ class tmtSMS
 {
 	private $utils;
 	private $gateway;
+	private $ccmsg;
 	
 	function __construct()
 	{
 		$this->utils = new cgsms_utils(); //never FALSE, cuz class created after check
 		$this->gateway = $this->utils->get_gateway(); //maybe FALSE
+		$this->ccmsg = FALSE;
 	}
-/*
-	function TestSend($to,$body)
-	{
-		if(!$this->gateway)
-			return FALSE;
-		$to = self::ValidateAddress($to,'61','^04\d{2} ?\d{3} ?\d{3}$');
-		if($to)
-		{
-			$this->gateway->set_num($to);
-			$this->gateway->set_msg($body);
-			$err = '';
-			if(!$this->gateway->send())
-			{
-			$this->DoNothing();
-				$err = $to.': '.$this->gateway->get_statusmsg();
-			}
-			$this->DoNothing();
-			return $err;
-		}
-	$this->DoNothing();
-		return 'BADNUM';
-	}
-*/
+
 	/**
 	DoSend:
 	Sends SMS(s) about a match
 	@mod: reference to current module object
 	@codes: associative array of 4 Twitter access-codes
 	@to: array of validated phone-no(s) for recipient(s)
+	@cc: array of validated phone-no(s) for bracket owner(s), or FALSE
 	@tpl: smarty template to use for message body
 	Returns: 2-member array -
 	 [0] FALSE if no addressee or no CGSMS-module gateway, otherwise boolean cumulative result of gateway->send()
-	 [1] '' or error message e.g. from gateway->send()
+	 [1] '' or error message e.g. from gateway->send() to $to ($cc errors ignored)
 	*/
-	private function DoSend(&$mod,$to,$tpl)
+	private function DoSend(&$mod,$to,$cc,$tpl)
 	{
-		if(!$to)
+		if(!($to || $cc))
 			return array(FALSE,'');
 		if(!$this->gateway)
 			return array(FALSE,$mod->Lang('err_system'));
 		$body = $mod->ProcessDataTemplate($tpl);
-		if(!$this->utils->text_is_valid($body))
-			return array(FALSE,$mod->Lang('err_template'));
+		if(!$body || !$this->utils->text_is_valid($body))
+			return array(FALSE,$mod->Lang('err_text').' \''.$body.'\'');
 		$this->gateway->set_msg($body);
 		$err = '';
 		//assume gateway doesn't support batching
@@ -71,6 +52,15 @@ class tmtSMS
 			{
 				if($err) $err .= '<br />';
 				$err .= $num.': '.$this->gateway->get_statusmsg();
+			}
+		}
+		if($cc && ($body != $this->ccmsg))
+		{
+			$this->ccmsg = $body; //forestall duplication
+			foreach($cc as $num)
+			{
+				$this->gateway->set_num($num);
+				$this->gateway->send(); //ignore any error to cc
 			}
 		}
 		return array(($err==''),$err);
@@ -220,7 +210,7 @@ class tmtSMS
 		$tpl = $mod->GetTemplate('tweetin_'.$bdata['bracket_id'].'_template');
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('tweetin_default_template');
-		return self::DoSend($mod,$to,$tpl);
+		return self::DoSend($mod,$to,FALSE,$tpl);
 	}
 	
 	/**
@@ -243,13 +233,19 @@ class tmtSMS
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('tweetout_default_template');
 
+		$this->ccmsg = FALSE;
 		$owner = self::ValidateAddress($bdata['contact'],$bdata['smsprefix'],$bdata['smspattern']);
+		if($owner && !is_array($owner))
+			$owner = array($owner);
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
-		{
 			$to = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],$first);
+		else
+			$to = FALSE;
+		if($to || $owner)
+		{
 			if($to)
 			{
 				reset($to);
@@ -257,40 +253,31 @@ class tmtSMS
 				$tc = count($to);
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$smarty->assign('toall',$toall);
-				if ((int)$mdata['teamB'] > 0)
-					$op = $mod->TeamName($mdata['teamB']);
-				else
-				{
-/*				switch($bdata['type'])
-					{
-					 case KOTYPE:
-						$op = $mod->Lang('anonwinner');
-						break;
-					 default:
-						$op = $mod->Lang('anonother');
-					  break;
-					}
-*/
-					$op = '';
-				}
-				$smarty->assign('opponent',$op);
-				if($owner)
-					$to[] = $owner;
-				list($resA,$msg) = self::DoSend($mod,$to,$tpl);
-				if(!$resA)
-				{
-					if(!$msg)
-						$msg = $mod->Lang('err_notice');
-					$err .= $mod->TeamName($tid).': '.$msg;
-				}
+			}
+			else
+			{
+				$smarty->assign('recipient','');
+				$smarty->assign('toall',FALSE);
+			}
+			$op = ((int)$mdata['teamB'] > 0) ? $mod->TeamName($mdata['teamB']) : '';
+			$smarty->assign('opponent',$op);
+			list($resA,$msg) = self::DoSend($mod,$to,$owner,$tpl);
+			if(!$resA)
+			{
+				if(!$msg)
+					$msg = $mod->Lang('err_notice');
+				$err .= $mod->TeamName($tid).': '.$msg;
 			}
 		}
 
 		$resB = TRUE;
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
-		{
 			$to = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],$first);
+		else
+			$to = FALSE;
+		if($to || $owner)
+		{
 			if($to)
 			{
 				reset($to);
@@ -298,33 +285,21 @@ class tmtSMS
 				$tc = count($to);
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$smarty->assign('toall',$toall);
-				if ((int)$mdata['teamA'] > 0)
-					$op = $mod->TeamName($mdata['teamA']);
-				else
-				{
-/*				switch($bdata['type'])
-					{
-					 case KOTYPE:
-						$op = $mod->Lang('anonwinner');
-						break;
-					 default:
-						$op = $mod->Lang('anonother');
-					  break;
-					}
-*/
-					$op = '';
-				}
-				$smarty->assign('opponent',$op);
-				if($owner)
-					$to[] = $owner;
-				list($resB,$msg) = self::DoSend($mod,$to,$tpl);
-				if(!$resB)
-				{
-					if($err) $err .= '<br />'; 
-					if(!$msg)
-						$msg = $mod->Lang('err_notice');
-					$err .= $mod->TeamName($tid).': '.$msg;
-				}
+			}
+			else
+			{
+				$smarty->assign('recipient','');
+				$smarty->assign('toall',FALSE);
+			}
+			$op = ((int)$mdata['teamA'] > 0) ? $mod->TeamName($mdata['teamA']) : '';
+			$smarty->assign('opponent',$op);
+			list($resB,$msg) = self::DoSend($mod,$to,$owner,$tpl);
+			if(!$resB)
+			{
+				if($err) $err .= '<br />'; 
+				if(!$msg)
+					$msg = $mod->Lang('err_notice');
+				$err .= $mod->TeamName($tid).': '.$msg;
 			}
 		}
 
