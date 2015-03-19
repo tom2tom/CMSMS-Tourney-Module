@@ -1221,7 +1221,7 @@ EOS;
 						$one->btn3 = str_replace('mat_status"',$r,$choices[2]);
 						if ($mdata['status'] == TOLD)
 						{
-							$one->btn3 = str_replace(array($firmed,FIRM),array($told,TOLD),$one->btn3);
+							$one->btn3 = str_replace(array($firmed,'value="'.FIRM.'"'),array($told,'value="'.TOLD.'"'),$one->btn3);
 						}
 						elseif ($mdata['status'] == ASOFT || $mdata['status'] == AFIRM)
 						{
