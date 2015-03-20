@@ -1182,14 +1182,14 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 	@pref: database tables prefix
 	@bracket_id: the bracket identifier
 	@zone: bracket timezone, optional, default FALSE
-	See also: tmtEditSetup::MatchExists()
+	See also: tmtEditSetup::MatchExists() which is similar to this (except tests MRES)
 	Returns: TRUE if any match in bracket @bracket_id is 'locked in'
 	*/
 	private function MatchCommitted(&$db,$pref,$bracket_id,$zone=FALSE)
 	{
 		$sql = 'SELECT 1 AS yes FROM '.$pref.
-		'module_tmt_matches WHERE bracket_id=? AND status>='.MRES.
-		' AND teamA IS NOT NULL AND teamA!=-1 AND teamB IS NOT NULL AND teamB!=-1';
+		'module_tmt_matches WHERE bracket_id=? AND status>='.FIRM.' AND status!='.ASOFT.
+		' AND ((teamA IS NOT NULL AND teamA!=-1) OR (teamB IS NOT NULL AND teamB!=-1))';
 		$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
 		if($rs && !$rs->EOF) //match(es) other than byes recorded
 		{
@@ -1205,9 +1205,9 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				$zone = $db->GetOne($sql,array($bracket_id));
 			}			
 			$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($zone));
-			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND (status = '.FIRM.' OR status = '.TOLD.
-			') AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
-			' AND teamA IS NOT NULL AND teamA != -1 AND teamB IS NOT NULL AND teamB != -1';
+			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND (status IN ('.FIRM.','.TOLD.','.AFIRM.
+			')) AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
+			' AND ((teamA IS NOT NULL AND teamA != -1) OR (teamB IS NOT NULL AND teamB != -1))';
 			$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
 			if($rs && !$rs->EOF) //FIRM/TOLD match(es) scheduled before min. leadtime from now
 			{
@@ -1300,14 +1300,14 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.NOWIN.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamB=-1 AND teamA'.$test;
 				$db->Execute($sql,array($args2));
 				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.FORFA.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamA'.$test;
-				$db->Execute($sql,array($args2));
 
+				$db->Execute($sql,array($args2));
 				$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamB=-1,playwhen=NULL WHERE bracket_id=? AND teamA IS NULL AND teamB'.$test;
-				$ares = $db->Execute($sql,array($args));
-				$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.NOWIN.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamA=-1 AND teamB'.$test;
-				$ares2 = $db->Execute($sql2,array($args2));
-				$sql3 = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.FORFB.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamB'.$test;
-				$ares3 = $db->Execute($sql3,array($args2));
+				$db->Execute($sql,array($args));
+				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.NOWIN.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamA=-1 AND teamB'.$test;
+				$db->Execute($sql,array($args2));
+				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.FORFB.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamB'.$test;
+				$db->Execute($sql,array($args2));
 			}
 			return TRUE;
 		}
