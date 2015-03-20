@@ -52,19 +52,22 @@ elseif(isset($params['notify']))
 			else
 			{
 				$ok = FALSE;
-				$idx = array_search($mid,$ids);
-				$tA = (int)$params['mat_teamA'][$idx];
-				$tB = (int)$params['mat_teamB'][$idx];
-				if($tA > 0 && $tB > 0)
-					$errs[] = sprintf($this->Lang('or_fmt',
-						$this->TeamName($tA),
-						$this->TeamName($tB))).' '.$errmsg;
-				elseif($tA > 0)
-					$errs[] = $this->TeamName($tA).' '.$errmsg;
-				elseif($tB > 0)
-					$errs[] = $this->TeamName($tB).' '.$errmsg;
-				else
+				if($errmsg)
 					$errs[] = $errmsg;
+				else
+				{
+					$idx = array_search($mid,$ids);
+					$tA = (int)$params['mat_teamA'][$idx];
+					$tB = (int)$params['mat_teamB'][$idx];
+					if($tA > 0 && $tB > 0)
+						$errs[] = sprintf($this->Lang('or_fmt',
+							$this->TeamName($tA),
+							$this->TeamName($tB)));
+					elseif($tA > 0)
+						$errs[] = $this->TeamName($tA);
+					elseif($tB > 0)
+						$errs[] = $this->TeamName($tB);
+				}
 			}
 		}
 		if(!$ok)
