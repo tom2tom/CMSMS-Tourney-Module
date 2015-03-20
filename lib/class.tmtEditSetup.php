@@ -980,6 +980,7 @@ EOS;
 		}
 		$smarty->assign('teamcount',$tcount);
 
+		$t = '';
 		if($pmod)
 		{
 			$this->SpareSlot($data->bracket_id,($data->type != RRTYPE));
@@ -987,10 +988,11 @@ EOS;
 			{
 				$linktext = $mod->Lang('title_add',strtolower($teamtitle));
 				//need input-object that looks like page-link, to get all form parameters upon activation
-				$smarty->assign('addteam',$mod->CreateInputLinks($id,'addteam','newobject.gif',TRUE,
-					$linktext,'onclick="set_params(this);"'));
+				$t = $mod->CreateInputLinks($id,'addteam','newobject.gif',TRUE,
+					$linktext,'onclick="set_params(this);"');
 			}
 		}
+		$smarty->assign('addteam',$t);
 
 		if($tcount)
 		{
@@ -1029,14 +1031,16 @@ EOS;
 
 			if($pmod)
 			{
-				$smarty->assign('dndhelp',$mod->Lang('help_dnd'));
-				$smarty->assign('update1',$mod->CreateInputSubmit($id,'update['.$id.'teams]',$mod->Lang('update'),
-					'title="'.$mod->Lang('update_tip').'" onclick="return teams_selected(event,this);"'));
-				$smarty->assign('delete',$mod->CreateInputSubmit($id,'delteams',$mod->Lang('delete'),
-					'title="'.$mod->Lang('delete_tip').'"'));
-				$t = ($isteam) ? $mod->Lang('sel_teams') : $mod->Lang('sel_players');
-				$t = $mod->Lang('confirm_delete',$t);
-				$jsloads[] = <<< EOS
+				if($data->matches || !$this->any) //not finished
+				{
+					$smarty->assign('dndhelp',$mod->Lang('help_dnd'));
+					$smarty->assign('update1',$mod->CreateInputSubmit($id,'update['.$id.'teams]',$mod->Lang('update'),
+						'title="'.$mod->Lang('update_tip').'" onclick="return teams_selected(event,this);"'));
+					$smarty->assign('delete',$mod->CreateInputSubmit($id,'delteams',$mod->Lang('delete'),
+						'title="'.$mod->Lang('delete_tip').'"'));
+					$t = ($isteam) ? $mod->Lang('sel_teams') : $mod->Lang('sel_players');
+					$t = $mod->Lang('confirm_delete',$t);
+					$jsloads[] = <<< EOS
  $('#{$id}delteams').modalconfirm({
   overlayID: 'confirm',
   doCheck: function(){
@@ -1054,12 +1058,23 @@ EOS;
  });
 
 EOS;
+				}
+				else //finished
+				{
+					$smarty->assign('dndhelp','');
+					$smarty->assign('update1','');
+					$smarty->assign('delete','');
+				}
 			}
 			$smarty->assign('export',$mod->CreateInputSubmit($id,'export',$mod->Lang('export'),
 				'title="'.$mod->Lang('export_tip').'" onclick="return teams_selected(event,this);"'));
 		}
-		$smarty->assign('import',$mod->CreateInputSubmit($id,'import_team',$mod->Lang('import'),
-			'title="'.$mod->Lang('import_tip').'" onclick="set_params(this);"'));
+		if($pmod && ($data->matches || !$this->any)) //not finished
+			$t = $mod->CreateInputSubmit($id,'import_team',$mod->Lang('import'),
+				'title="'.$mod->Lang('import_tip').'" onclick="set_params(this);"');
+		else
+			$t = '';
+		$smarty->assign('import',$t);
 
 //========== MATCHES ===========
 
