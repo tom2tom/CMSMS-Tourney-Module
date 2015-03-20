@@ -86,8 +86,9 @@ $rows = $db->GetAll('SELECT bracket_id,groupid,name,alias FROM '.$pref.'module_t
 if ($rows)
 {
 	$sql1 = 'SELECT COUNT(1) as num FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
-	$sql2 = $sql1.' AND status>='.MRES.' AND teamA>-1 AND teamB>-1';
-	$sql3 = $sql1.' AND status!=0 AND status<'.ANON;
+	$sql2 = $sql1.' AND status>='.MRES;
+	$sql3 = $sql2.' AND teamA>-1 AND teamB>-1';
+	$sql4 = $sql1.' AND status!=0 AND status<'.ANON;
 
 	if($pmod || $pscore)
 		$iconedit = $theme->DisplayImage('icons/system/edit.gif',$this->Lang('edit'),'','','systemicon');
@@ -117,7 +118,8 @@ if ($rows)
 			$done = $db->GetOne($sql2,array($thisid));
 			if ($done < $total)
 			{
-				$pending = $db->GetOne($sql3,array($thisid));
+				$done = $db->GetOne($sql3,array($thisid)); 
+				$pending = $db->GetOne($sql4,array($thisid));
 				$mn = ($done == 1) ? $this->Lang('match'):$this->Lang('matches');
 				$one->status = $this->Lang('status_going',$done,$mn,$pending);
 			}
