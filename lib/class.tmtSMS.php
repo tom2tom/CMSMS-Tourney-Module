@@ -13,12 +13,29 @@ class tmtSMS
 	private $utils;
 	private $gateway;
 	private $ccmsg;
-	
+	private $fromnum; //whether gateway supports a specific sender-number
+	private $addprefix; //whether gateway requires country-prefix for each phone no. or else supports phone no. as-is
+	private $addplus; //whether gateway requires a leading '+' in the country-prefix, if any
+
 	function __construct()
 	{
 		$this->utils = new cgsms_utils(); //never FALSE, cuz class created after check
 		$this->gateway = $this->utils->get_gateway(); //maybe FALSE
 		$this->ccmsg = FALSE;
+		$this->fromnum = FALSE;
+		$this->addprefix = TRUE;
+		$this->addplus = FALSE;
+		if($this->gateway)
+		{
+			if(method_exists($this->gateway,'support_custom_sender'))
+				$this->fromnum = $this->gateway->support_custom_sender();
+			if(method_exists($this->gateway,'require_country_prefix'))
+			{
+				$this->addprefix = $this->gateway->require_country_prefix();
+				if($this->addprefix && method_exists($this->gateway,'require_plus_prefix'))
+					$this->addplus = $this->gateway->require_plus_prefix();
+			}
+		}
 	}
 
 	/**
@@ -28,12 +45,13 @@ class tmtSMS
 	@codes: associative array of 4 Twitter access-codes
 	@to: array of validated phone-no(s) for recipient(s)
 	@cc: array of validated phone-no(s) for bracket owner(s), or FALSE
+	@from: validated phone-no to be used (if possible) as sender, or FALSE
 	@tpl: smarty template to use for message body
 	Returns: 2-member array -
 	 [0] FALSE if no addressee or no CGSMS-module gateway, otherwise boolean cumulative result of gateway->send()
 	 [1] '' or error message e.g. from gateway->send() to $to ($cc errors ignored)
 	*/
-	private function DoSend(&$mod,$to,$cc,$tpl)
+	private function DoSend(&$mod,$to,$cc,$from,$tpl)
 	{
 		if(!($to || $cc))
 			return array(FALSE,'');
@@ -42,6 +60,8 @@ class tmtSMS
 		$body = $mod->ProcessDataTemplate($tpl);
 		if(!$body || !$this->utils->text_is_valid($body))
 			return array(FALSE,$mod->Lang('err_text').' \''.$body.'\'');
+		if($from && $this->fromnum)
+			$this->gateway->set_from($from);
 		$this->gateway->set_msg($body);
 		$err = '';
 		//assume gateway doesn't support batching
@@ -60,6 +80,13 @@ class tmtSMS
 			foreach($cc as $num)
 			{
 				$this->gateway->set_num($num);
+				if($from && $this->fromnum)
+				{
+					if($num == $from)
+						$this->gateway->set_from(FALSE);
+					else
+						$this->gateway->set_from($from);
+				}
 				$this->gateway->send(); //ignore any error to cc
 			}
 		}
@@ -112,6 +139,8 @@ class tmtSMS
 		$n = str_replace(' ','',$number);
 		if(!preg_match($pattern,$n))
 			return FALSE;
+		if(!$this->addprefix)
+			return $n;
 		$p = str_replace(' ','',$country);
 		$plus = ($p[0] == '+');
 		if($plus)
@@ -125,9 +154,9 @@ class tmtSMS
 					$n = $p.substr($n,1);
 			}
 		}
-		if($plus && $n[0] != '+')
+		if($this->addplus && $n[0] != '+')
 			$n = '+'.$n;
-		elseif(!$plus && $n[0] == '+')
+		elseif(!$this->addplus && $n[0] == '+')
 			$n = substr($n,1); //assume it's already a full number i.e. +countrylocal
 		return $n;
 	}
@@ -204,13 +233,18 @@ class tmtSMS
 			if($more)
 				$to = array_merge($to,$more);
 		}
+		//maybe >1 owner
+		$from = self::ValidateAddress($bdata['smsfrom'],$bdata['smsprefix'],$bdata['smspattern']);
+		if(is_array($from))
+			$from = reset($from);
+
 		//submitted data
 		$smarty->assign('report',implode(' ',$lines));
 
 		$tpl = $mod->GetTemplate('tweetin_'.$bdata['bracket_id'].'_template');
 		if($tpl == FALSE)
 			$tpl = $mod->GetTemplate('tweetin_default_template');
-		return self::DoSend($mod,$to,FALSE,$tpl);
+		return self::DoSend($mod,$to,FALSE,$from,$tpl);
 	}
 	
 	/**
@@ -234,9 +268,15 @@ class tmtSMS
 			$tpl = $mod->GetTemplate('tweetout_default_template');
 
 		$this->ccmsg = FALSE;
+		$from = self::ValidateAddress($bdata['smsfrom'],$bdata['smsprefix'],$bdata['smspattern']);
 		$owner = self::ValidateAddress($bdata['contact'],$bdata['smsprefix'],$bdata['smspattern']);
-		if($owner && !is_array($owner))
-			$owner = array($owner);
+		if($owner)
+		{
+			if(!is_array($owner))
+				$owner = array($owner);
+			if(!$from)
+				$from = reset($owner);
+		}
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
 		$tid = (int)$mdata['teamA'];
@@ -261,7 +301,7 @@ class tmtSMS
 			}
 			$op = ((int)$mdata['teamB'] > 0) ? $mod->TeamName($mdata['teamB']) : '';
 			$smarty->assign('opponent',$op);
-			list($resA,$msg) = self::DoSend($mod,$to,$owner,$tpl);
+			list($resA,$msg) = self::DoSend($mod,$to,$owner,$from,$tpl);
 			if(!$resA)
 			{
 				if(!$msg)
@@ -293,7 +333,7 @@ class tmtSMS
 			}
 			$op = ((int)$mdata['teamA'] > 0) ? $mod->TeamName($mdata['teamA']) : '';
 			$smarty->assign('opponent',$op);
-			list($resB,$msg) = self::DoSend($mod,$to,$owner,$tpl);
+			list($resB,$msg) = self::DoSend($mod,$to,$owner,$from,$tpl);
 			if(!$resB)
 			{
 				if($err) $err .= '<br />'; 
