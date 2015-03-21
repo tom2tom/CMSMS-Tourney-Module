@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------
 # CMS Made Simple module: Tourney.
 # Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
-# Version: 0.1.2
+# Version: 0.2.0
 # This module allows ...
 # More info at http://dev.cmsmadesimple.org/projects/tourney
 #-------------------------------------------------------------------------
@@ -186,7 +186,7 @@ class Tourney extends CMSModule
 				&& isset($request['m1_export']))
 					return TRUE; //export selected team-member(s)
 			if (strpos($request['mact'],',process_items,')
-				&& isset($request['m1_export']))
+				&& (isset($request['m1_print']) || isset($request['m1_export'])))
 					return TRUE; //export selected bracket(s)
 		}
 		return FALSE;

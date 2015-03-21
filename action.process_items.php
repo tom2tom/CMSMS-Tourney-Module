@@ -116,6 +116,72 @@ elseif(isset($params['notify']))
 		}
 	}
 }
+elseif(isset($params['print']))
+{
+	$vals = array_flip($params['selitems']); //convert strings
+	$vals = array_flip($vals);
+	if($vals)
+	{
+		$pref = cms_db_prefix();
+		$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
+		$sql2 = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild = 1 WHERE bracket_id=?';
+		$sch = new tmtSchedule();
+		$lyt = new tmtLayout();
+		$message = '';
+		@ob_clean(); //new re-usable buffer
+		foreach($vals as $bid)
+		{
+			$bdata = $db->GetRow($sql,array($bid));
+			//refresh the matches table, if necessary
+			switch ($bdata['type'])
+			{
+			 case DETYPE:
+				$sch->UpdateDEMatches ($this,$bid);
+				break;
+			 case RRTYPE:
+				$sch->NextRRMatches($this,$bid);
+				break;
+			 default:
+			// case KOTYPE:
+				$sch->UpdateKOMatches($this,$bid);
+				break;
+			}
+			$bdata['chartbuild'] = 1; //tell downstream that rebuild is needed
+			list($chartfile,$errkey) = $lyt->GetChart($this,$bdata,FALSE,0);
+			if ($chartfile)
+			{
+				//force refresh next time
+				$db->Execute($sql2,array($bid));
+				//export $chartfile
+				$content = file_get_contents($chartfile);
+				$fn = basename($chartfile);
+				header('Pragma: public');
+				header('Expires: 0');
+				header('Cache-Control: must-revalidate,post-check=0,pre-check=0');
+				header('Cache-Control: private',FALSE);
+				header('Content-Description: File Transfer');
+				header('Content-Type: application/pdf');
+				header('Content-Length: '.strlen($content));
+				header('Content-Disposition: attachment; filename="'.$fn.'"');
+				echo $content;
+				@ob_flush();
+			}
+			else
+			{
+				if(!$message)
+					$message = $this->PrettyMessage('err_chart',FALSE);
+				$message .= '<br />'.$bdata['name'];
+				if($errkey)
+					$message .= ': '.$this->Lang($errkey);
+			}
+		}
+		unset($sch);
+		unset($lyt);
+		if(!$message)
+			exit;
+		$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$message));
+	}
+}
 elseif(isset($params['export']))
 {
 	$vals = array_flip($params['selitems']); //convert strings

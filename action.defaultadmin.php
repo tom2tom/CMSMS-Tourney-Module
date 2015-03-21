@@ -202,6 +202,21 @@ EOS;
 		$t = '';
 	$smarty->assign('selectall_items',$t);
 
+	$smarty->assign('printbtn',$this->CreateInputSubmit($id,'print',$this->Lang('print'),
+		'title="'.$this->Lang('printsel_tip').'" onclick="return confirm_selitm_count();"'));
+	$smarty->assign('exportbtn',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
+		'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"'));
+	$jsfuncs[] = <<< EOS
+function selitm_count()
+{
+ var cb = $('input[name="{$id}selitems[]"]:checked');
+ return cb.length;
+}
+function confirm_selitm_count()
+{
+ return (selitm_count() > 0);
+}
+EOS;
 	if ($pmod)
 	{
 		$smarty->assign('notifybtn',$this->CreateInputSubmit($id,'notify',$this->Lang('notify'),
@@ -216,22 +231,11 @@ EOS;
 			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"'));
 		$smarty->assign('deletebtn',$this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
 			'title="'.$this->Lang('deletesel_tip').'"')); //$(#$id.delete_item) modalconfirm
-		$smarty->assign('exportbtn',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
-			'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"'));
 		//for popup confirmation
 		$smarty->assign('no',$this->Lang('no'));
 		$smarty->assign('yes',$this->Lang('yes'));
 		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.min.js"></script>';
 		$jsfuncs[] = <<< EOS
-function selitm_count()
-{
- var cb = $('input[name="{$id}selitems[]"]:checked');
- return cb.length;
-}
-function confirm_selitm_count()
-{
- return (selitm_count() > 0);
-}
 $(document).ready(function(){
  $('.delitmlink').modalconfirm({
   overlayID: 'confirm',

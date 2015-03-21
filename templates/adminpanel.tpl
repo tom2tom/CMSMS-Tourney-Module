@@ -49,17 +49,18 @@
 <p>{$notourn}</p>
 {/if}
 <div class="pageoptions">
-{if $canmod}{$addlink}&nbsp;{$addlink2}
+{if $canmod}{$addlink}&nbsp;{$addlink2}{/if}
 {if $icount}
 <div style="margin:0;float:right;text-align:right">
-{$notifybtn} {$groupbtn} {$clonebtn} {$deletebtn} {$exportbtn}
+{$printbtn}{if $canmod} {$notifybtn} {$groupbtn} {$clonebtn} {$deletebtn}{/if} {$exportbtn}
 </div>
 <div class="clearb"></div>
 {/if}
-  <div class="pageoverflow">
-   <p class="pagetext">{$title_import}:</p>
-   <p class="pageinput">{$input_import}&nbsp;&nbsp;{$submitxml}</p>
- </div>
+{if $canmod}
+<div class="pageoverflow">
+ <p class="pagetext">{$title_import}:</p>
+ <p class="pageinput">{$input_import}&nbsp;&nbsp;{$submitxml}</p>
+</div>
 {/if}
 </div>
 {$end_form}
