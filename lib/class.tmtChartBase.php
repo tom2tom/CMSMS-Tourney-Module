@@ -77,15 +77,20 @@ class tmtChartBase
 		//chart margins
 		$tp = $css->pxsize($css->GetSide('.chart','padding','top'));
 		if($tp < 2) $tp = 2;
+		if($titles == 0 && $tp < 40) $tp = 40;
 		$th = $css->pxsize($css->GetWithDefault('.chart','font-size','12pt')); //space for title string
 		$params['tm'] = $tp + $th; //top
 		$p = $css->pxsize($css->GetSide('.chart','padding','right'));
 		$rm = ($bhm+$p >= 5) ? $p:5;
+		if($titles == 0 && $rm < 40) $rm = 40;
 		$params['rm'] = $rm; //right
 		$p = $css->pxsize($css->GetSide('.chart','padding','bottom'));
-		$params['bm'] = ($bvm+$p >= 5) ? $p:5; //bottom
+		$bm = ($bvm+$p >= 5) ? $p:5;
+		if($titles == 0 && $bm < 40) $bm = 40;
+		$params['bm'] = $bm; //bottom
 		$p = $css->pxsize($css->GetSide('.chart','padding','left'));
 		$lm = ($bhm+$p >= 5) ? $p:5;
+		if($titles == 0 && $lm < 40) $lm = 40;
 		$params['lm'] = $lm; //left
 		//box parameters
 		$bh = $css->pxsize($css->GetWithDefault('.box','height','40px'));
