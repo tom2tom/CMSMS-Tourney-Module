@@ -65,7 +65,20 @@ if(isset($params['apply']) || isset($params['submit']))
 		$mainfields = (array)$data;
 
 		$newtype = ($bdata['type'] != $data->type);
-		$mainfields['chartbuild'] = ($newtype || $matches)?1:0; //assume dirty if any match saved here
+		//assume dirty if any match saved here, or if all matches completed
+		$stat = ($matches || $newtype)?1:0;
+		if(!($stat || $matches))
+		{
+			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
+			$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
+			if($rs)
+			{
+				if(!$rs->EOF) //match(es) exist, so must be completed bracket
+					$stat = 1;
+				$rs->Close();
+			}
+		}
+		$mainfields['chartbuild'] = $stat;
 
 		$fields = implode('=?,',array_keys($mainfields)).'=?';
 		$sql = 'UPDATE '.$pref.'module_tmt_brackets SET '.$fields.' WHERE bracket_id=?';
@@ -120,7 +133,7 @@ if(isset($params['apply']) || isset($params['submit']))
 			{
 				if($matches || $results)
 				{
-					$sql = 'SELECT match_id FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
+					$sql = 'SELECT match_id FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
 					$current = $db->GetCol($sql,array($bracket_id));
 					if(!$current && $matches)
 					{
