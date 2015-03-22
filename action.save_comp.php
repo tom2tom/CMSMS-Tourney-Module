@@ -397,7 +397,8 @@ elseif(isset($params['update']))
 	 case 'results':
 		if(isset($params['rsel']))
 		{
-			if($params['resultview'] == 'past')
+			$past = ($params['resultview'] == 'past'); 
+			if($past)
 			{
 				//before any update of recorded match data, check for status-change
 				//if so, do consequential team-change(s) in nextm(,nextlm)
@@ -410,15 +411,25 @@ elseif(isset($params['update']))
 			{
 				$indx = array_search($mid,$params['res_matchid']);
 				$stat = (int)$params['res_status'][$mid];
-				if($stat != -1) //process only if a result is specified
+				if($past || $stat != NOTYET) //past always, future only if a result is specified
 				{
 					$when = $params['res_playwhen'][$indx];
 					$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
 					if(!$on)
 						$on = NULL;
-					$how = trim($params['res_score'][$indx]);
-					if(!$how)
-						$how = NULL;
+					if($past)
+					{
+						if($stat == NOTYET)
+							$stat = 0;
+						if($stat < MRES)
+							$how = NULL;
+					}
+					else
+					{
+						$how = trim($params['res_score'][$indx]);
+						if(!$how)
+							$how = NULL;
+					}
 					$db->Execute($sql,array($on,$stat,$how,$mid));
 				}
 			}

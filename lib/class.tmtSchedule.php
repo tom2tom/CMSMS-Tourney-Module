@@ -1334,10 +1334,12 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 	@type: enumerator of bracket type, KOTYPE etc
 	@mid: match id, or array of match id's, to be processed
 	@status: match status corresponding to non-array @mid, or array of match statuses (each member like $mid=>$status)
-	For 'plan' view match results processing.
+	For 'plan' or 'history' view match results processing.
 	Adjust matches to reflect result of each match identified by @mid.
-	If a status >= MRES is changed, the winner (and loser if relevant) are used
-	to update the teams in subsequent match(es).
+	If a status >= MRES is changed to another one, the winner (and loser
+	if relevant) are used to update the teams in subsequent match(es).
+	Or if a status >= MRES is changed to < MRES, the winner (and loser
+	if relevant) are used to NULL relevant teams in subsequent match(es).
 	Recorded match status,score,venue etc are not changed here.
 	*/
 	function ConformNewResults($bracket_id,$type,$mid,$status)
@@ -1364,38 +1366,56 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		{
 			if($mdata['status'] != $status[$id])
 			{
-				switch((int)$mdata['status'])
+				if($status[$id] >= MRES)
 				{
-				 case WONA:
-				 case FORFB:
-					//ensure teamA is one of teams in nextm & beyond
-					$args = array($mdata['teamA'],$mdata['nextm'],$mdata['teamB']);
-					$db->Execute($sql,$args);
-					$db->Execute($sql2,$args);
-					if($type == DETYPE)
+					switch((int)$mdata['status'])
 					{
-						//ensure teamB is one of teams in nextlm & beyond
-						$args = array($mdata['teamB'],$mdata['nextlm'],$mdata['teamA']);
+					 case WONA:
+					 case FORFB:
+						//ensure teamA is one of teams in nextm & beyond
+						$args = array($mdata['teamA'],$mdata['nextm'],$mdata['teamB']);
 						$db->Execute($sql,$args);
 						$db->Execute($sql2,$args);
-					}
-					break;
-				 case WONB:
-				 case FORFA:
-					//ensure teamB is one of teams in nextm & beyond
-					$args = array($mdata['teamB'],$mdata['nextm'],$mdata['teamA']);
-					$db->Execute($sql,$args);
-					$db->Execute($sql2,$args);
-					if($type == DETYPE)
-					{
-						//ensure teamA is one of teams in nextlm & beyond
-						$args = array($mdata['teamA'],$mdata['nextlm'],$mdata['teamB']);
+						if($type == DETYPE)
+						{
+							//ensure teamB is one of teams in nextlm & beyond
+							$args = array($mdata['teamB'],$mdata['nextlm'],$mdata['teamA']);
+							$db->Execute($sql,$args);
+							$db->Execute($sql2,$args);
+						}
+						break;
+					 case WONB:
+					 case FORFA:
+						//ensure teamB is one of teams in nextm & beyond
+						$args = array($mdata['teamB'],$mdata['nextm'],$mdata['teamA']);
 						$db->Execute($sql,$args);
 						$db->Execute($sql2,$args);
-					}
+						if($type == DETYPE)
+						{
+							//ensure teamA is one of teams in nextlm & beyond
+							$args = array($mdata['teamA'],$mdata['nextlm'],$mdata['teamB']);
+							$db->Execute($sql,$args);
+							$db->Execute($sql2,$args);
+						}
 					break;
 				 default:
 					break;
+					}
+				}
+				elseif((int)$mdata['status'] >= MRES)
+				{
+					//ensure neither teamA or teamB is in nextm & beyond
+					$args = array(NULL,$mdata['nextm'],$mdata['teamA']);
+					$db->Execute($sql,$args);
+					$args = array(NULL,$mdata['nextm'],$mdata['teamB']);
+					$db->Execute($sql2,$args);
+					if($type == DETYPE)
+					{
+						$args = array(NULL,$mdata['nextlm'],$mdata['teamA']);
+						$db->Execute($sql,$args);
+						$args = array(NULL,$mdata['nextlm'],$mdata['teamB']);
+						$db->Execute($sql2,$args);
+					}
 				}
 			}
 		}

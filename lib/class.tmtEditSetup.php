@@ -1491,8 +1491,14 @@ EOS;
 
 		if($data->results) //matching results in the database
 		{
-			if($future)
-				$selone = $mod->Lang('chooseone');
+			if($pmod)
+			{
+				$extras = ($future) ?
+				 array($mod->Lang('chooseone')=>-1):
+				 array($mod->Lang('notyet')=>NOTYET,
+						$mod->Lang('possible')=>SOFT,
+						$mod->Lang('confirmed')=>FIRM);
+			}
 			$relations = $mod->ResultTemplates($data->bracket_id,FALSE);
 			$results = array();
 			$rowclass = 'row1';
@@ -1514,7 +1520,7 @@ EOS;
 						$one->actual = preg_replace($finds,$repls,$tmp);
 						$one->teamA = $mod->TeamName($mdata['teamA']);
 						$one->teamB = $mod->TeamName($mdata['teamB']);
-						$choices = array(
+						$choices = $extras + array(
 							str_replace('%s',$one->teamA,$relations['won'])=>WONA,
 							str_replace('%s',$one->teamB,$relations['won'])=>WONB,
 							str_replace('%s',$one->teamA,$relations['forf'])=>FORFA,
@@ -1523,13 +1529,7 @@ EOS;
 						if($data->cantie)
 							$choices[$data->tied] = MTIED;
 						$choices[$data->nomatch] = NOWIN;
-						if($future)
-						{
-							$choices = array($selone=>-1) + $choices;
-							$sel = -1;
-						}
-						else
-							$sel = intval($mdata['status']);
+						$sel = ($future) ? -1 : (int)$mdata['status'];
 						$one->result = $mod->CreateInputDropdown($id,'res_status['.$mid.']',$choices,'',$sel);
 						$tmp = $mod->CreateInputText($id,'res_score[]',$mdata['score'],15,30);
 						$repls = array('class="res_score $1"','');
