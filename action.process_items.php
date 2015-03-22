@@ -90,7 +90,7 @@ elseif(isset($params['notify']))
 		$fillers = str_repeat('?,',$vc-1).'?';
 		$pref = cms_db_prefix();
 		$sql = 'SELECT match_id,bracket_id FROM '.$pref.'module_tmt_matches WHERE bracket_id IN ('.$fillers.
-		') AND status<'.MRES.
+		') AND flags=0 AND status<'.MRES.
 		' AND playwhen IS NOT NULL AND ((teamA IS NOT NULL AND teamA>0) OR (teamB IS NOT NULL AND teamB>0))';
 		$matches = $db->GetAssoc($sql,$vals);
 		if($matches)

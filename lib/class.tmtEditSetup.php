@@ -26,7 +26,7 @@ class tmtEditSetup
 		$this->any = FALSE;
 		$this->committed = FALSE;
 		$pref = cms_db_prefix();
-		$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
+		$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
 		$db = cmsms()->GetDb();
 		$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
 		if($rs && !$rs->EOF) //any match exists
@@ -45,7 +45,7 @@ class tmtEditSetup
 				$sql = 'SELECT timezone FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 				$zone = $db->GetOne($sql,array($bracket_id));
 				$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($zone));
-				$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND (status = '.FIRM.' OR status = '.TOLD.
+				$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND (status = '.FIRM.' OR status = '.TOLD.
 				') AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
 				' AND teamA IS NOT NULL AND teamA != -1 AND teamB IS NOT NULL AND teamB != -1';
 				$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
@@ -71,20 +71,20 @@ class tmtEditSetup
 		if($elim)
 		{
 			//for KO/DE bracket - 1st-round matches with a bye and corresponding 2nd round match not committed
-			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status >= '.FIRM.' AND NOT (teamA = -1 OR teamB = -1)';
+			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status >= '.FIRM.' AND NOT (teamA = -1 OR teamB = -1)';
 			$fc = $db->GetOne($sql,array($bracket_id));
 			if(!$fc)
 			{
 				$this->spare = TRUE;
 				return;
 			}
-			$sql = 'SELECT match_id,nextm FROM '.$pref.'module_tmt_matches WHERE bracket_id=?
+			$sql = 'SELECT match_id,nextm FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0
 AND (teamA = -1 OR teamB = -1)
-AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND nextm IS NOT NULL)';
+AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND nextm IS NOT NULL)';
 			$maybe = $db->GetAssoc($sql,array($bracket_id,$bracket_id));
 			if($maybe)
 			{
-				$sql = 'SELECT status FROM '.$pref.'module_tmt_matches WHERE match_id=?';
+				$sql = 'SELECT status FROM '.$pref.'module_tmt_matches WHERE match_id=? AND flags=0';
 				foreach($maybe as $next)
 				{
 					$nstat = $db->GetOne($sql,array($next));
@@ -101,7 +101,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			//for RR bracket - relatively few matches played
 			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2';
 			$tc = $db->GetOne($sql,array($bracket_id));
-			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status >= '.FIRM;
+			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status >= '.FIRM;
 			$mc = $db->GetOne($sql,array($bracket_id));
 			$this->spare = ($tc <= 5)?($tc >= $mc) :($tc >= $mc * 2);
 		}

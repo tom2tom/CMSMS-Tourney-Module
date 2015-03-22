@@ -28,7 +28,7 @@ if (!empty($params['send']))
 	{
 		if (isset($params['match']))
 		{
-			$sql = 'SELECT teamA,teamB,playwhen,place FROM '.$pref.'module_tmt_matches WHERE match_id=?';
+			$sql = 'SELECT teamA,teamB,playwhen,place FROM '.$pref.'module_tmt_matches WHERE match_id=? AND flags=0';
 			$mdata = $db->GetRow($sql,array($params['match']));
 			$tA = $this->TeamName($mdata['teamA']);
 			$tB = $this->TeamName($mdata['teamB']);
@@ -206,7 +206,7 @@ $smarty->assign('description',$desc);
 $jsfuncs = array();
 $jsloads = array();
 
-$sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status<'.
+$sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'.
  ANON.' AND teamA IS NOT NULL AND teamA!=-1 AND teamB IS NOT NULL AND teamB!=-1';
 $mdata = $db->GetAssoc($sql,array($bracket_id));
 if ($mdata)

@@ -105,7 +105,7 @@ class tmtComm
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
-		$sql = 'SELECT teamA,teamB,place,playwhen FROM '.$pref.'module_tmt_matches WHERE match_id=?';
+		$sql = 'SELECT teamA,teamB,place,playwhen FROM '.$pref.'module_tmt_matches WHERE match_id=? AND flags=0';
 		$mdata = $db->GetRow($sql,array($match_id));
 		if($mdata)
 		{
@@ -153,7 +153,7 @@ class tmtComm
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
-		$sql = 'SELECT teamA,teamB,place,playwhen FROM '.$pref.'module_tmt_matches WHERE match_id=?';
+		$sql = 'SELECT teamA,teamB,place,playwhen FROM '.$pref.'module_tmt_matches WHERE match_id=? AND flags=0';
 		$mdata = $db->GetRow($sql,array($match_id));
 		if($mdata)
 		{

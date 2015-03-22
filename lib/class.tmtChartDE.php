@@ -141,7 +141,7 @@ class tmtChartDE extends tmtChartBase
 		$dt = new DateTime('1900-01-01 00:00:00',new DateTimeZone($bdata['timezone']));
 		$relations = $this->mod->ResultTemplates($bracket_id);
 
-		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';
+		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 ORDER BY match_id';
 		$matches = $db->GetAssoc($sql,array($bracket_id));
 		//don't use $matches internal pointer for iterating, downstream zaps that
 		$allmids = array_keys($matches); //don't assume contiguous

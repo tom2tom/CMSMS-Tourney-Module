@@ -185,7 +185,7 @@ else
 	 default:
 		//refresh matches if appropriate
 		$pref = cms_db_prefix();
-		$sql = 'SELECT COUNT(match_id) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
+		$sql = 'SELECT COUNT(match_id) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
 		if ($db->GetOne($sql,array($bid)))
 		{
 			$sch = new tmtSchedule();

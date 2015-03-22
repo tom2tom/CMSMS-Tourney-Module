@@ -212,9 +212,9 @@ class tmtSchedule
 	{
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
-		$sql = 'SELECT match_id,teamA,teamB,nextm FROM '.$pref.'module_tmt_matches WHERE bracket_id=?
+		$sql = 'SELECT match_id,teamA,teamB,nextm FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0
 AND (teamA = -1 OR teamB = -1)
-AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND nextm IS NOT NULL)';
+AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND nextm IS NOT NULL)';
 		$byes = $db->GetAssoc($sql,array($bracket_id,$bracket_id));
 		if($byes)
 		{
@@ -288,14 +288,14 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 	{
 		$status = 0;
 		$field = ($loser) ? 'nextlm':'nextm';
-		$sql = 'SELECT match_id FROM '.$pref.'module_tmt_matches WHERE '.$field.'=? AND match_id!=? AND status>='.ANON;
+		$sql = 'SELECT match_id FROM '.$pref.'module_tmt_matches WHERE '.$field.'=? AND match_id!=? AND flags=0 AND status>='.ANON;
 		$prevo = $db->GetOne($sql,array($mid,$prevm));
 		if($prevo == FALSE) //this is the 1st report for this match
 			$vals = array($tid,NULL); //store this winner as teamA (even if a bye)
 		else
 		{
 			//store winners in match-order so they will be displayed in same order as previous matches
-			$sql = 'SELECT teamA,status FROM '.$pref.'module_tmt_matches WHERE match_id=?';
+			$sql = 'SELECT teamA,status FROM '.$pref.'module_tmt_matches WHERE match_id=? AND flags=0';
 			$mdata = $db->GetRow($sql,array($mid));
 			$oid = ($mdata['teamA']) ? (int)$mdata['teamA'] : NULL; //don't convert NULL to 0
 			if($prevo < $prevm) //previous report from lower-numbered match
@@ -373,7 +373,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		
 		//matches in DESC order so next foreach overwrites newer ones in $allteams array
 		//CHECKME also get SOFT matches before now?
-		$sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status<'
+		$sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'
 		 .ANON.' AND playwhen IS NULL AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id DESC';
 		$mdata = $db->GetAssoc($sql,array($bracket_id));
 		if($mdata == FALSE)
@@ -381,8 +381,8 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$tz = new DateTimeZone($bdata['timezone']);
 		$playorder = array();
 		$allteams = array(); 
-		$sql1 = 'SELECT MAX(playwhen) AS last FROM '.$pref.'module_tmt_matches WHERE teamA=? OR teamA=?';
-		$sql2 = 'SELECT MAX(playwhen) AS last FROM '.$pref.'module_tmt_matches WHERE teamB=? OR teamB=?';
+		$sql1 = 'SELECT MAX(playwhen) AS last FROM '.$pref.'module_tmt_matches WHERE (teamA=? OR teamA=?) AND flags=0';
+		$sql2 = 'SELECT MAX(playwhen) AS last FROM '.$pref.'module_tmt_matches WHERE (teamB=? OR teamB=?) AND flags=0';
 		foreach($mdata as $mid=>$mteams)
 		{
 			$t = $db->GetOne($sql1,array($mteams['teamA'],$mteams['teamB']));
@@ -1088,7 +1088,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			$played['T'.$mdata] = array(); //must be text key,to preserve in array_multisort()
 		unset($allteams);
 
-		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=?';
+		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
 		$stored = $db->GetAll($sql,array($bracket_id));
 		if($stored)
 		{
@@ -1205,7 +1205,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				$zone = $db->GetOne($sql,array($bracket_id));
 			}			
 			$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($zone));
-			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND (status IN ('.FIRM.','.TOLD.','.AFIRM.
+			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND (status IN ('.FIRM.','.TOLD.','.AFIRM.
 			')) AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
 			' AND ((teamA IS NOT NULL AND teamA != -1) OR (teamB IS NOT NULL AND teamB != -1))';
 			$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
@@ -1350,12 +1350,12 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		if(is_array($mid))
 		{
 			$fillers = str_repeat('?,',count($mid)-1).'?';
-			$sql .= ' IN ('.$fillers.') ORDER BY match_id';
+			$sql .= ' IN ('.$fillers.') AND flags=0 ORDER BY match_id';
 			$args = $mid;
 		}
 		else
 		{
-			$sql .= '=?';
+			$sql .= '=? AND flags=0';
 			$args = array($mid);
 			$status = array($mid=>$status);
 		}
@@ -1430,7 +1430,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 	{
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
-		$sql = 'SELECT COUNT(match_id) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status<'
+		$sql = 'SELECT COUNT(match_id) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'
 		 .ANON.' AND teamA IS NOT NULL AND teamB IS NOT NULL';
 		return $db->GetOne($sql,array($bracket_id));
 	}

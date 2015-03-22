@@ -69,7 +69,7 @@ class tmtXML
 		$sql = 'SELECT * FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY team_id';
 		$sql2 = 'SELECT P.* FROM '.$pref.'module_tmt_people P JOIN '.$pref.
 			'module_tmt_teams T ON P.id = T.team_id WHERE T.bracket_id=? AND T.flags!=2 AND P.flags!=2 ORDER BY P.id,P.displayorder';
-		$sql3 = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? ORDER BY match_id';
+		$sql3 = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 ORDER BY match_id';
 
 		foreach($bracket_id as $thisid)
 		{
