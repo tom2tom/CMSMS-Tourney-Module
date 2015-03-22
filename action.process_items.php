@@ -128,7 +128,21 @@ elseif(isset($params['print']))
 		$sch = new tmtSchedule();
 		$lyt = new tmtLayout();
 		$message = '';
-		@ob_clean(); //new re-usable buffer
+		$onefile = (count($vals) == 1);
+		if($onefile)
+			$zip = FALSE;
+		else
+		{
+			$fn = 'brackets-charts-'.implode('-',$vals).'.zip';
+			$fp = cms_join_path($config['root_path'],'tmp',$fn);
+			$zip = new ZipArchive();
+			if($zip->open($fp,ZipArchive::CREATE) !== TRUE)
+			{
+				$message = $this->PrettyMessage('err_zip',FALSE);
+				$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$message));
+			}
+		}
+		
 		foreach($vals as $bid)
 		{
 			$bdata = $db->GetRow($sql,array($bid));
@@ -148,23 +162,15 @@ elseif(isset($params['print']))
 			}
 			$bdata['chartbuild'] = 1; //tell downstream that rebuild is needed
 			list($chartfile,$errkey) = $lyt->GetChart($this,$bdata,FALSE,0);
-			if ($chartfile)
+			if($chartfile)
 			{
 				//force refresh next time
 				$db->Execute($sql2,array($bid));
-				//export $chartfile
-				$content = file_get_contents($chartfile);
-				$fn = basename($chartfile);
-				header('Pragma: public');
-				header('Expires: 0');
-				header('Cache-Control: must-revalidate,post-check=0,pre-check=0');
-				header('Cache-Control: private',FALSE);
-				header('Content-Description: File Transfer');
-				header('Content-Type: application/pdf');
-				header('Content-Length: '.strlen($content));
-				header('Content-Disposition: attachment; filename="'.$fn.'"');
-				echo $content;
-				@ob_flush();
+				if(!$onefile && is_file($chartfile))
+				{
+					$zip->addFile($chartfile,basename($chartfile));
+					//cannot delete $chartfile yet
+				}
 			}
 			else
 			{
@@ -177,9 +183,47 @@ elseif(isset($params['print']))
 		}
 		unset($sch);
 		unset($lyt);
-		if(!$message)
-			exit;
-		$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$message));
+		if($onefile)
+		{
+			if($chartfile && is_file($chartfile))
+			{
+				//export $chartfile
+				$content = file_get_contents($chartfile);
+				$fn = basename($chartfile);
+				$ft = 'application/pdf';
+			}
+			else
+				$content = FALSE;
+		}
+		elseif($zip)
+		{
+			$zip->close();
+			if(is_file($fp))
+			{
+				$content = file_get_contents($fp);
+				unlink($fp);
+				$ft = 'application/zip';
+			}
+			else
+				$content = FALSE;
+		}
+
+		if($content)
+		{
+			@ob_clean();
+			header('Pragma: public');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate,post-check=0,pre-check=0');
+			header('Cache-Control: private',FALSE);
+			header('Content-Description: File Transfer');
+			header('Content-Type: '.$ft);
+			header('Content-Length: '.strlen($content));
+			header('Content-Disposition: attachment; filename="'.$fn.'"');
+			echo $content;
+			if(!$message)
+				exit;
+			$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$message));
+		}
 	}
 }
 elseif(isset($params['export']))
