@@ -1081,6 +1081,10 @@ EOS;
 		if(empty($data->matchview))
 			$data->matchview = 'actual';
 		$plan = ($data->matchview != 'actual');
+		//these labels are shared with results tab, and may be used for history-view when all matches finished i.e. none displayed now
+		$smarty->assign('scheduledtitle',$mod->Lang('scheduled'));
+		$smarty->assign('placetitle',$mod->Lang('title_venue'));
+		$smarty->assign('statustitle',$mod->Lang('title_status'));
 
 		if($data->matches)
 		{
@@ -1345,9 +1349,6 @@ function matches_selected(ev,btn) {
 }
 
 EOS;
-			$smarty->assign('scheduledtitle',$mod->Lang('scheduled'));
-			$smarty->assign('placetitle',$mod->Lang('title_venue'));
-			$smarty->assign('statustitle',$mod->Lang('title_status'));
 			if($pmod)
 			{
 				$smarty->assign('update2',$mod->CreateInputSubmit($id,'update['.$id.'matches]',$mod->Lang('update'),
@@ -1573,7 +1574,6 @@ EOS;
 					($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
 				}
 			}
-
 			if($results) //there's something other than a bye
 			{
 				$smarty->assign('results',$results);
