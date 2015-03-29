@@ -504,6 +504,8 @@ EOS;
 	}
 	else
 	{
+		if ($pmod)
+			$smarty->assign('sortbtn2','');
 		$t = '';
 		$cb = '';
 	}
