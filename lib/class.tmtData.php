@@ -103,7 +103,8 @@ class tmtData
 		$data->sametime = self::GetIntegerFor($params['tmt_sametime']);
 		if ($data->sametime == 0)
 			$data->sametime = null;
-		$data->calendarid = $params['tmt_calendarid'];
+		if(isset ($params['tmt_calendarid'])) //relevant bookings module present
+			$data->calendarid = $params['tmt_calendarid'];
 		$tmp = $params['tmt_playgaptype'];
 		switch ($tmp)
 		{
