@@ -1360,26 +1360,27 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			$status = array($mid=>$status);
 		}
 		$matches = $db->GetAssoc($sql,$args);
-		$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamA=? WHERE match_id>=? AND teamA=?';
-		$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET teamB=? WHERE match_id>=? AND teamB=?';
+		$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamA=? WHERE bracket_id=? AND match_id>=? AND teamA=?';
+		$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET teamB=? WHERE bracket_id=? AND match_id>=? AND teamB=?';
 		foreach($matches as $id=>$mdata)
 		{
 			if($mdata['status'] != $status[$id])
 			{
-				if($status[$id] >= MRES)
+				$newstat = (int)$status[$id];
+				if($newstat >= MRES)
 				{
-					switch((int)$mdata['status'])
+					switch($newstat)
 					{
 					 case WONA:
 					 case FORFB:
 						//ensure teamA is one of teams in nextm & beyond
-						$args = array($mdata['teamA'],$mdata['nextm'],$mdata['teamB']);
+						$args = array($mdata['teamA'],$bracket_id,(int)$mdata['nextm'],$mdata['teamB']);
 						$db->Execute($sql,$args);
 						$db->Execute($sql2,$args);
 						if($type == DETYPE)
 						{
 							//ensure teamB is one of teams in nextlm & beyond
-							$args = array($mdata['teamB'],$mdata['nextlm'],$mdata['teamA']);
+							$args = array($mdata['teamB'],$bracket_id,(int)$mdata['nextlm'],$mdata['teamA']);
 							$db->Execute($sql,$args);
 							$db->Execute($sql2,$args);
 						}
@@ -1387,13 +1388,13 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 					 case WONB:
 					 case FORFA:
 						//ensure teamB is one of teams in nextm & beyond
-						$args = array($mdata['teamB'],$mdata['nextm'],$mdata['teamA']);
+						$args = array($mdata['teamB'],$bracket_id,(int)$mdata['nextm'],$mdata['teamA']);
 						$db->Execute($sql,$args);
 						$db->Execute($sql2,$args);
 						if($type == DETYPE)
 						{
 							//ensure teamA is one of teams in nextlm & beyond
-							$args = array($mdata['teamA'],$mdata['nextlm'],$mdata['teamB']);
+							$args = array($mdata['teamA'],$bracket_id,(int)$mdata['nextlm'],$mdata['teamB']);
 							$db->Execute($sql,$args);
 							$db->Execute($sql2,$args);
 						}
@@ -1405,15 +1406,15 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				elseif((int)$mdata['status'] >= MRES)
 				{
 					//ensure neither teamA or teamB is in nextm & beyond
-					$args = array(NULL,$mdata['nextm'],$mdata['teamA']);
+					$args = array(NULL,$bracket_id,(int)$mdata['nextm'],$mdata['teamA']);
 					$db->Execute($sql,$args);
-					$args = array(NULL,$mdata['nextm'],$mdata['teamB']);
+					$args = array(NULL,$bracket_id,(int)$mdata['nextm'],$mdata['teamB']);
 					$db->Execute($sql2,$args);
 					if($type == DETYPE)
 					{
-						$args = array(NULL,$mdata['nextlm'],$mdata['teamA']);
+						$args = array(NULL,$bracket_id,(int)$mdata['nextlm'],$mdata['teamA']);
 						$db->Execute($sql,$args);
-						$args = array(NULL,$mdata['nextlm'],$mdata['teamB']);
+						$args = array(NULL,$bracket_id,(int)$mdata['nextlm'],$mdata['teamB']);
 						$db->Execute($sql2,$args);
 					}
 				}
