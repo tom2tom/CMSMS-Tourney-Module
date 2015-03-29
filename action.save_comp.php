@@ -410,40 +410,61 @@ elseif(isset($params['update']))
 	 case 'results':
 		if(isset($params['rsel']))
 		{
-			$past = ($params['resultview'] == 'past'); 
+			$past = ($params['resultview'] == 'past');
 			if($past)
 			{
 				//before any update of recorded match data, check for status-change
-				//if so, do consequential team-change(s) in nextm(,nextlm)
+				//if so, do consequential team-change(s) in nextm[,nextlm]
 				$funcs = new tmtSchedule();
 				$funcs->ConformNewResults($params['bracket_id'],$params['tmt_type'],$params['rsel'],$params['res_status']);
 			}
 			$funcs = new tmtData();
 			$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?,status=?,score=? WHERE match_id=?';
+			$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET status=?,score=? WHERE match_id=?';
 			foreach($params['rsel'] as $mid)
 			{
 				$indx = array_search($mid,$params['res_matchid']);
 				$stat = (int)$params['res_status'][$mid];
-				if($past || $stat != NOTYET) //past always, future only if a result is specified
+				if(!$past) //future-view
 				{
-					$when = $params['res_playwhen'][$indx];
-					$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
-					if(!$on)
-						$on = NULL;
-					if($past)
+				 	if($stat != NOTYET) //non-default status applies
 					{
-						if($stat == NOTYET)
-							$stat = 0;
-						if($stat < MRES)
-							$how = NULL;
-					}
-					else
-					{
+						$when = $params['res_playwhen'][$indx];
+						$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
+						if(!$on)
+							$on = NULL;
 						$how = trim($params['res_score'][$indx]);
 						if(!$how)
 							$how = NULL;
+						$db->Execute($sql,array($on,$stat,$how,$mid));
 					}
-					$db->Execute($sql,array($on,$stat,$how,$mid));
+					else
+						$db->Execute($sql2,array(0,NULL,$mid));
+				}
+				else //past-view: process always
+				{
+					$when = $params['res_playwhen'][$indx];
+					if($when)
+					{
+						$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
+						if(!$on)
+							$on = NULL;
+					}
+					//else don't change the 'played-when' field
+					if($stat == NOTYET)
+						$stat = 0;
+					if($stat < MRES)
+						$how = NULL;
+					else
+					{
+							$how = trim($params['res_score'][$indx]);
+							if(!$how)
+								$how = NULL;
+					}
+					if($when)
+						$db->Execute($sql,array($on,$stat,$how,$mid));
+					else
+						$db->Execute($sql2,array($stat,$how,$mid));
 				}
 			}
 			$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=1 WHERE bracket_id=?';
