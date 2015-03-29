@@ -56,14 +56,10 @@ class Tourney extends CMSModule
 	protected $PermModName = 'Modify Brackets';
 	protected $PermScoreName = 'Modify BracketData';
 	protected $PermSeeName = 'See Brackets';
-	protected $smarty3;
 
 	function __construct()
 	{
 		parent::__construct();
-
-		$smarty = cmsms()->GetSmarty();
-		$this->smarty3 = (strpos($smarty->_version,'-3.') !== FALSE);
 		$this->RegisterModulePlugin();
 	}
 
@@ -802,16 +798,7 @@ Europe/Vilnius'
 
 	function ProcessDataTemplate($data, $display=FALSE)
 	{
-		$smarty = cmsms()->GetSmarty();
-		if($this->smarty3)
-			$result = $smarty->fetch('string:'.$data);
-		else
-		{
-			$smarty->_compile_source('data',$data,$compiled);
-			@ob_start();
-			$result = ($smarty->_eval('?>'.$compiled) !== FALSE) ? @ob_get_contents():FALSE;
-			@ob_end_clean();
-		}
+		$result = $this->ProcessTemplatefromData($data);
 		if(!$display)
 			return $result;
 		echo ($result !== FALSE) ? $result:$this->Lang('err_template');
