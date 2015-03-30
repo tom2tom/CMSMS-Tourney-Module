@@ -518,6 +518,7 @@ EOS;
 		'description',
 		'owner',
 		'contact',
+		'smsfrom',
 		'where',
 		'when',
 		'date',

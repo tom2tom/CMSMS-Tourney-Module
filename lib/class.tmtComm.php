@@ -63,6 +63,7 @@ class tmtComm
 		$smarty->assign('description',$bdata['description']);
 		$smarty->assign('owner',$bdata['owner']);
 		$smarty->assign('contact',$bdata['contact']);
+		$smarty->assign('smsfrom',$bdata['smsfrom']);
 		$smarty->assign('where',$mdata['place']);
 		$tfmt = $mod->GetPreference('time_format');
 		$dfmt = $mod->GetZoneDateFormat($bdata['timezone']);
