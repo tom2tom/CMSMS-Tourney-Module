@@ -90,6 +90,34 @@ switch ($oldversion)
 	$db->Execute($sql);
 
  case '0.1.2':
+	$fn = cms_join_path(dirname(__FILE__),'templates','email_cancelled.tpl');
+	$s = @file_get_contents($fn);
+	if ($s == FALSE)
+		$s = '{$title}'."\n\n".$this->Lang('cancelled_email','{$when}');
+	$this->SetTemplate('mailcancel_default_template',$s);
+
+	$fn = cms_join_path(dirname(__FILE__),'templates','email_request.tpl');
+	$s = @file_get_contents($fn);
+	if ($s == FALSE)
+		$s = '{$title}'."\n\n".
+		$this->Lang('title_mid').'{if $where} {$where}{/if}{if $when} {$when}{/if} {$teams}'."\n\n".
+		$this->Lang('tpl_mailresult','{if $contact}{$contact}{elseif $smsfrom}{$smsfrom}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
+	$this->SetTemplate('mailrequest_default_template',$s);
+
+	$fn = cms_join_path(dirname(__FILE__),'templates','tweet_cancelled.tpl');
+	$s = @file_get_contents($fn);
+	if ($s == FALSE)
+		$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' '.
+		 mb_strtoupper($this->Lang('cancelled')).'{if $when}, '.mb_strtoupper($this->Lang('not')).' {$when}{elseif $opponent},'.$this->Lang('name_against').' {$opponent}{/if}';
+	$this->SetTemplate('tweetcancel_default_template',$s);
+
+	$fn = cms_join_path(dirname(__FILE__),'templates','tweet_request.tpl');
+	$s = @file_get_contents($fn);
+	if ($s == FALSE)
+		$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' {$where} {$when} {$teams} '.
+		 $this->Lang('tpl_tweetresult','{if $smsfrom}{$smsfrom}{elseif $contact}{$contact}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
+	$this->SetTemplate('tweetrequest_default_template',$s);
+
 	$fields = "
 		group_id I(2) KEY,
 		name C(128),
