@@ -195,6 +195,24 @@ class tmtData
 		}
 		else
 			$data->motemplate = NULL;
+		if(isset($params['tmt_mcanctemplate']))
+		{
+			if($params['tmt_mcanctemplate'])
+				$data->mcanctemplate = $params['tmt_mcanctemplate'];
+			else
+				$data->mcanctemplate = $mod->GetTemplate('mailcancel_default_template');
+		}
+		else
+			$data->mcanctemplate = NULL;
+		if(isset($params['tmt_mreqtemplate']))
+		{
+			if($params['tmt_mreqtemplate'])
+				$data->mreqtemplate = $params['tmt_mreqtemplate'];
+			else
+				$data->mreqtemplate = $mod->GetTemplate('mailrequest_default_template');
+		}
+		else
+			$data->mreqtemplate = NULL;
 		if(isset($params['tmt_mitemplate']))
 		{
 			if($params['tmt_mitemplate'])
@@ -204,6 +222,7 @@ class tmtData
 		}
 		else
 			$data->mitemplate = NULL;
+
 		if(isset($params['tmt_totemplate']))
 		{
 			if($params['tmt_totemplate'])
@@ -213,6 +232,24 @@ class tmtData
 		}
 		else
 			$data->totemplate = NULL;
+		if(isset($params['tmt_tcanctemplate']))
+		{
+			if($params['tmt_tcanctemplate'])
+				$data->tcanctemplate = $params['tmt_tcanctemplate'];
+			else
+				$data->tcanctemplate = $mod->GetTemplate('tweetcancel_default_template');
+		}
+		else
+			$data->tcanctemplate = NULL;
+		if(isset($params['tmt_treqtemplate']))
+		{
+			if($params['tmt_treqtemplate'])
+				$data->treqtemplate = $params['tmt_treqtemplate'];
+			else
+				$data->treqtemplate = $mod->GetTemplate('tweetrequest_default_template');
+		}
+		else
+			$data->treqtemplate = NULL;
 		if(isset($params['tmt_titemplate']))
 		{
 			if($params['tmt_titemplate'])
@@ -351,8 +388,12 @@ class tmtData
 			$data->feu_editgroup = 'none';
 
 			$data->motemplate = $mod->GetTemplate('mailout_default_template');
+			$data->mcanctemplate = $mod->GetTemplate('mailcancel_default_template');
+			$data->mreqtemplate = $mod->GetTemplate('mailrequest_default_template');
 			$data->mitemplate = $mod->GetTemplate('mailin_default_template');
 			$data->totemplate = $mod->GetTemplate('tweetout_default_template');
+			$data->tcanctemplate = $mod->GetTemplate('tweetcancel_default_template');
+			$data->treqtemplate = $mod->GetTemplate('tweetrequest_default_template');
 			$data->titemplate = $mod->GetTemplate('tweetin_default_template');
 			$data->html = 0;
 			$data->logic = '';
@@ -429,8 +470,12 @@ class tmtData
 			$data->feu_editgroup = $row['feu_editgroup'];
 
 			$data->motemplate = $mod->GetTemplate('mailout_'.$row['bracket_id'].'_template');
+			$data->mcanctemplate = $mod->GetTemplate('mailcancel_'.$row['bracket_id'].'_template');
+			$data->mreqtemplate = $mod->GetTemplate('mailrequest_'.$row['bracket_id'].'_template');
 			$data->mitemplate = $mod->GetTemplate('mailin_'.$row['bracket_id'].'_template');
 			$data->totemplate = $mod->GetTemplate('tweetout_'.$row['bracket_id'].'_template');
+			$data->tcanctemplate = $mod->GetTemplate('tweetcancel_'.$row['bracket_id'].'_template');
+			$data->treqtemplate = $mod->GetTemplate('tweetrequest_'.$row['bracket_id'].'_template');
 			$data->titemplate = $mod->GetTemplate('tweetin_'.$row['bracket_id'].'_template');
 			$data->html = (int)$row['html'];
 			$data->logic = $row['logic'];

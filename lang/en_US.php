@@ -66,11 +66,11 @@ $lang['submit']='Submit';
 $lang['submit2']='Submit Result';
 $lang['list']='List';
 $lang['print']='Print';
-$lang['print_tip']='Prepare chart without match-labels';
+$lang['print_tip']='prepare chart without match-labels';
 $lang['plan']='Plan';
-$lang['plan_tip']='Show all matches';
+$lang['plan_tip']='show all matches';
 $lang['actual']='Actual';
-$lang['actual_tip']='Show pending matches';
+$lang['actual_tip']='show pending matches';
 
 $lang['confirm_delete']='Are you sure you want to delete %s?';
 $lang['confirm_deletethis']='Are you sure you want to delete this %s?';
@@ -174,6 +174,12 @@ $lang['no']='No';
 $lang['one']='One';
 //$lang['any']='Any';
 $lang['all']='All';
+$lang['cancelled']='Cancelled';
+$lang['not']='Not';
+//for use in smarty templates, %s replaced by template code
+$lang['tpl_tweetresult']='Send result to %s'; //tweet/SMS
+$lang['tpl_mailresult']='Please send the match result to %s'; //email
+$lang['organisers']='the organisers';
 
 $lang['title_import']='Import tournament from XML file';
 $lang['err_import_failed']='Tournament import failed.';
@@ -377,24 +383,31 @@ $lang['title_emailhtml']='Generate HTML email';
 $lang['title_emailcoding']='Email character-encoding';
 $lang['title_mailouttemplate']='Match-announcement email template';
 $lang['title_tweetouttemplate']='Match-announcement text/tweet template';
-$lang['title_mailintemplate']='Match-result email template';
-$lang['title_tweetintemplate']='Match-result text/tweet template';
+$lang['title_mailcanceltemplate']='Match-cancellation email template';
+$lang['title_tweetcanceltemplate']='Match-cancellation text/tweet template';
+$lang['title_mailrequesttemplate']='Match-result-request email template';
+$lang['title_tweetrequesttemplate']='Match-result-request text/tweet template';
+$lang['title_mailintemplate']='Match-result-report email template';
+$lang['title_tweetintemplate']='Match-result-report text/tweet template';
+
 $lang['title_logic']='Result validation';
 
 $lang['help_template']='The following smarty variables are available for use in the template.';
 $lang['help_chttemplate']='At a minimmum, include {$image}';
-$lang['seeabove']='See corresponding information about email, above';
+$lang['seeabove']='See corresponding information about announcement-email, above';
 
 $lang['desc_title']='the title as specified on the Tournament tab';
 $lang['desc_description']='the description as specified on the Tournament tab';
 $lang['desc_owner']='the responsible person as specified on the Tournament tab';
 $lang['desc_contact']='contact information for the responsible person as specified on the Tournament tab';
+$lang['desc_smsfrom']='phone number identified as source of SMS messages, if allowed by gateway';
 $lang['desc_image']='an XHTML string specifying the image file to be displayed';
 $lang['desc_imgdate']='formatted date/time when the image file was created or last changed';
 $lang['desc_imgheight']='height of the displayed image';
 $lang['desc_imgwidth']='width of the displayed image';
 
 $lang['default_email']='Your next match: %s starting at %s';
+$lang['cancelled_email']='Your match that was to start at %s has been cancelled';
 $lang['desc_where']='the venue for the match';
 $lang['desc_when']='the scheduled date and start-time for the match';
 $lang['desc_date']='the date component of $when';
@@ -497,17 +510,21 @@ $lang['down']='Move down';
 
 $lang['schedule']='Schedule';
 $lang['reset']='Reset';
-$lang['reset_tip']='Clear and renew all match data';
+$lang['reset_tip']='clear and renew all match data';
 $lang['history']='History';
-$lang['history_tip']='Show completed matches';
+$lang['history_tip']='show completed matches';
 $lang['future']='Pending';
-$lang['future_tip']='Show matches not yet completed';
+$lang['future_tip']='show matches not yet completed';
+$lang['request']='Request';
+$lang['request_tip']='send score-report request to teams for selected rows';
 
 $lang['notify']='Notify';
-$lang['notify_tip']='Send match-time message to teams for selected rows';
+$lang['notify_tip']='send match-time message to teams for selected rows';
+$lang['abandon']='Abandon';
+$lang['abandon_tip']='send cancelled-match message to teams for selected rows';
 
 $lang['changes']='Changelog';
-$lang['changes_tip']='Show log of changes to match results';
+$lang['changes_tip']='show log of changes to match results';
 $lang['title_changelog']='Logged result-changes for \'%s\' tournament';
 $lang['nochanges']='There is no recorded change.';
 $lang['title_changer']='Changer';
@@ -529,6 +546,7 @@ $lang['info_noresult2']='All results are complete.';
 $lang['title_mid']='Match';
 $lang['title_venue']='Venue';
 $lang['possible']='Maybe';
+$lang['asked']='Requested';
 $lang['confirmed']='Confirmed';
 $lang['notified']='Notified';
 $lang['title_result']='Result';
@@ -572,7 +590,7 @@ $lang['saved']='Saved';
 
 //any ' in these prompts must be double-escaped for js inclusion
 $lang['allsaved']='Are all matches\\\' data saved ?';
-$lang['abandon']='Abandon changes ?';
+$lang['allabandon']='Abandon changes ?';
 
 $lang['title_auth']='Authorise tournament-related tweets from a specific twitter account';
 $lang['help_auth1']='Tournament: %s';
@@ -590,7 +608,7 @@ $lang['close']='Close';
 $lang['prefs_updated']='Settings updated.';
 //$lang['browser']='Browser %s';
 $lang['apply']='Apply';
-$lang['apply_tip']='Save and continue editing';
+$lang['apply_tip']='save and continue editing';
 
 $lang['params_tmt_alias']='Tournament alias.';
 $lang['params_view_type']='Tournament display type: \'chart\' or \'list\'.';

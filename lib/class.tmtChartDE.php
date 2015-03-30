@@ -171,6 +171,7 @@ class tmtChartDE extends tmtChartBase
 								//no break here
 							case FIRM:
 							case TOLD:
+							case ASKED:
 							case AFIRM:
 								$type = 'firm';
 firm1:
@@ -240,6 +241,7 @@ firm1:
 							//no break here
 						 case FIRM:
 						 case TOLD:
+						 case ASKED:
 						 case AFIRM:
 							$type = 'firm';
 firm2:
@@ -277,6 +279,7 @@ firm2:
 							break;
 						 case FIRM:
 						 case TOLD:
+						 case ASKED:
 						 case AFIRM:
 							$type = 'firm';
 							break;

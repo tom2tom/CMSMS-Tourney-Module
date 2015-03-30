@@ -57,8 +57,12 @@ class tmtDelete
 
 			$bid = $params['bracket_id'];
 			$mod->DeleteTemplate('mailout_'.$bid.'_template');
+			$mod->DeleteTemplate('mailcancel_'.$bid.'_template');
+			$mod->DeleteTemplate('mailrequest_'.$bid.'_template');
 			$mod->DeleteTemplate('mailin_'.$bid.'_template');
 			$mod->DeleteTemplate('tweetout_'.$bid.'_template');
+			$mod->DeleteTemplate('tweetcancel_'.$bid.'_template');
+			$mod->DeleteTemplate('tweetrequest_'.$bid.'_template');
 			$mod->DeleteTemplate('tweetin_'.$bid.'_template');
 			$mod->DeleteTemplate('chart_'.$bid.'_template');
 		}

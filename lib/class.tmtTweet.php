@@ -333,17 +333,33 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 	@smarty: reference to CMSMS smarty object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
+	@tpl: enum for type of message: 1 = announcement, 2 = cancellation, 3 = score-request
 	@first: TRUE to send only to first recognised address, FALSE to send per
 		the teams' respective contactall settings, optional, default FALSE
 	Returns: 2-member array -
 	 [0] TRUE|FALSE representing success, or TRUE if nobody to send to
 	 [1] '' or specific failure message
 	*/
-	public function TellTeams(&$mod,&$smarty,&$bdata,&$mdata,$first=FALSE)
+	public function TellTeams(&$mod,&$smarty,&$bdata,&$mdata,$tpl,$first=FALSE)
 	{
-		$tpl = $mod->GetTemplate('tweetout_'.$bdata['bracket_id'].'_template');
-		if($tpl == FALSE)
-			$tpl = $mod->GetTemplate('tweetout_default_template');
+		switch($tpl)
+		{
+		 case 1:
+			$tpl = $mod->GetTemplate('tweetout_'.$bdata['bracket_id'].'_template');
+			if($tpl == FALSE)
+				$tpl = $mod->GetTemplate('tweetout_default_template');
+			break;
+		 case 2:
+			$tpl = $mod->GetTemplate('tweetcancel_'.$bdata['bracket_id'].'_template');
+			if($tpl == FALSE)
+				$tpl = $mod->GetTemplate('tweetcancel_default_template');
+			break;
+		 case 3:
+			$tpl = $mod->GetTemplate('tweetrequest_'.$bdata['bracket_id'].'_template');
+			if($tpl == FALSE)
+				$tpl = $mod->GetTemplate('tweetrequest_default_template');
+			break;
+		}
 
 		$owner = self::ValidateAddress($bdata['contact']);
 		if($owner)

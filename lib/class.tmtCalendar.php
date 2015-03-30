@@ -187,6 +187,7 @@ class tmtCalendar extends Calendar
 	{
 		if($this->conds == FALSE)
 			return FALSE;
+/*
 		$sunstuff = self::_GetSunData($bdata,$start);
 		$maxhours = self::_GetSlotHours($bdata);
 		$dstart = floor($start/86400);
@@ -197,6 +198,7 @@ class tmtCalendar extends Calendar
 			//TODO
 		}
 		unset($cond);
+*/
 		return FALSE;
 	}
 
@@ -219,6 +221,7 @@ class tmtCalendar extends Calendar
 	{
 		if($this->conds == FALSE)
 			return FALSE;
+/*
 		$sunstuff = self::_GetSunData($bdata,$start);
 		$maxhours = self::_GetSlotHours($bdata);
 		$dstart = floor($start/86400);
@@ -260,10 +263,11 @@ class tmtCalendar extends Calendar
 								uset($cond);
 								return $X; //TODO + $cond[1]>day-index * 86400 + zone offset seconds
 							}
-				*/
+				* /
 			}
 		}
 		unset($cond);
+*/
 		return FALSE;
 	}
 

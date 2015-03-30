@@ -124,6 +124,7 @@ ORDER BY T1.displayorder';
 					//no break here
 				case FIRM:
 				case TOLD:
+				case ASKED:
 					$type = 'firm';
 firm2:
 					$rel = sprintf($relations['vs'],$tA,$tB);
@@ -202,6 +203,7 @@ firm2:
 					break;
 				 case FIRM:
 				 case TOLD:
+				 case ASKED:
 				 case AFIRM:
 					$type = 'firm';
 					break;

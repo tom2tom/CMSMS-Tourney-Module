@@ -37,10 +37,10 @@ const FIRM = 2;
 const TOLD = 3;	//notification sent (including cancellation)
 const ASKED = 4; //match-result request sent
 // threshold for scheduled matches with NULL teamA and/or teamB, not stored
-const ANON = 6;
+const ANON = 7;
 // scheduled matches with unknown participant(s) >= ANON < MRES
-const ASOFT = 6;
-const AFIRM = 7;
+const ASOFT = 7;
+const AFIRM = 8;
 // threshold between schedules and results, not stored
 const MRES = 11;
 // match result (>=MRES)
@@ -904,6 +904,8 @@ Europe/Vilnius'
 					$name = 'delete_team';
 					break;
 				 case 'notify':
+				 case 'abandon':
+				 case 'request':
 				 case 'export':
 					$name = 'multi_task';
 					break;

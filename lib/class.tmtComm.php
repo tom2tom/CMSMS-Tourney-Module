@@ -145,12 +145,13 @@ class tmtComm
 	Sends message via relevant channel(s) to one or all members of both teams in the match
 	@bracket_id: index of competition to be processed
 	@match_id: index of match to be processed
+	@tpl: enum for type of message: 1 = announcement, 2 = cancellation, 3 = score-request
 	@first: TRUE to send only to first recognised address, FALSE to send per
 		the teams' respective contactall settings, optional, default FALSE
 	Returns: array with two members: 1st TRUE|FALSE representing success or nothing to do,
 		2nd a specific problem message or FALSE
 	*/
-	public function TellTeams($bracket_id,$match_id,$first=FALSE)
+	public function TellTeams($bracket_id,$match_id,$tpl,$first=FALSE)
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
@@ -172,17 +173,17 @@ class tmtComm
 				$msgs = array();
 				if($this->text)
 				{
-					list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+					list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$tpl,$first);
 					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
 				if($this->mail)
 				{
-					list($ok,$msg1) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+					list($ok,$msg1) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$tpl,$first);
 					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
-				list($ok,$msg1) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$first);
+				list($ok,$msg1) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$tpl,$first);
 				if(!$ok && $msg1)
 					$msgs[] = $msg1;
 

@@ -84,10 +84,18 @@ if ($add)
 	$db->Execute($sql,array_values($args));
 	if ($data->motemplate)
 		$this->SetTemplate('mailout_'.$data->bracket_id.'_template',$data->motemplate);
+	if($data->mcanctemplate)
+		$this->SetTemplate('mailcancel_'.$data->bracket_id.'_template',$data->mcanctemplate);
+	if($data->mreqtemplate)
+		$this->SetTemplate('mailrequest_'.$data->bracket_id.'_template',$data->mreqtemplate);
 	if ($data->mitemplate)
 		$this->SetTemplate('mailin_'.$data->bracket_id.'_template',$data->mitemplate);
 	if ($data->totemplate)
 		$this->SetTemplate('tweetout_'.$data->bracket_id.'_template',$data->totemplate);
+	if($data->tcanctemplate)
+		$this->SetTemplate('tweetcancel_'.$data->bracket_id.'_template',$data->tcanctemplate);
+	if($data->treqtemplate)
+		$this->SetTemplate('tweetrequest_'.$data->bracket_id.'_template',$data->treqtemplate);
 	if ($data->titemplate)
 		$this->SetTemplate('tweetin_'.$data->bracket_id.'_template',$data->titemplate);
 	if ($data->chttemplate)

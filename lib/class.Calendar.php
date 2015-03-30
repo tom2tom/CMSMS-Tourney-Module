@@ -582,7 +582,7 @@ class Calendar
 				$e = self::_EndRange($str,$p);
 				if($s != -1 && $e != -1)
 				{
-					//cannot safely create range-array before $parts[] sort and de-dup 
+					//can't safely create range sub-array before $parts[] sort and de-dup 
 					$t = self::_ParseRange(substr($str,$s,$e-$s+1),TRUE);
 					if($t !== FALSE)
 					{
@@ -1028,12 +1028,16 @@ plaintimes:
 				else //$p > 0 || $e
 					if($p > 0 && $e)
 				{
-					list($parsed[0],$parsed[1]) = self::_PeriodClean($one,$report);
+					$parsed[1] = self::_PeriodClean($one,$report);
+					if(!$report)
+						$parsed[0] = $parsed[1]['focus'];
 					$parsed[2] = FALSE;
 				}
 				elseif($p > 0)
 				{
-					list($parsed[0],$parsed[1]) = self::_PeriodClean(substr($one,0,$p),$report);
+					$parsed[1] = self::_PeriodClean(substr($one,0,$p),$report);
+					if(!$report)
+						$parsed[0] = $parsed[1]['focus'];
 					$parsed[2] = self::_TimeClean(substr($one,$p+1),$report);
 				}
 			}
@@ -1075,7 +1079,9 @@ plaintimes:
 				}
 				elseif($condtype == 2) //period
 				{
-					list($parsed[0],$parsed[1]) = self::_PeriodClean($one,$report);
+					$parsed[1] = self::_PeriodClean($one,$report);
+					if(!$report)
+						$parsed[0] = $parsed[1]['focus'];
 					$parsed[2] = FALSE;
 				}
 				else //could be either - re-consider, after all are known
@@ -1280,7 +1286,8 @@ plaintimes:
 			$this->conds = FALSE;
 			return TRUE;
 		}
-		return self::_CreateConditions($available,$locale);
+//	return self::_CreateConditions($available,$locale);
+		return TRUE;
 	}
 
 	/**
@@ -1304,7 +1311,8 @@ plaintimes:
 			$this->conds = FALSE;
 			return '';
 		}
-		return self::_CreateConditions($available,$locale,TRUE);
+//		return self::_CreateConditions($available,$locale,TRUE);
+		return trim($available);
 	}
 
 }

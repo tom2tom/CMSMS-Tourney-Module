@@ -191,6 +191,7 @@ class tmtLayout
 				 case SOFT:
 				 case FIRM:
 				 case TOLD:
+				 case ASKED:
 				 	if($tA && $tB)
 					{
 						$str = sprintf($relations['vs'],$tA,$tB).$at;

@@ -323,7 +323,8 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 					break;
 				 case AFIRM:
 				 case TOLD:
-					$status = FIRM;
+				 case ASKED:
+					$status = FIRM; //revert to this
 					break;
 				}
 			}
@@ -1205,11 +1206,11 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				$zone = $db->GetOne($sql,array($bracket_id));
 			}			
 			$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($zone));
-			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND (status IN ('.FIRM.','.TOLD.','.AFIRM.
-			')) AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
+			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status IN ('.FIRM.','.TOLD.','.ASKED.','.AFIRM.
+			') AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
 			' AND ((teamA IS NOT NULL AND teamA != -1) OR (teamB IS NOT NULL AND teamB != -1))';
 			$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
-			if($rs && !$rs->EOF) //FIRM/TOLD match(es) scheduled before min. leadtime from now
+			if($rs && !$rs->EOF) //FIRM/TOLD/ASKED match(es) scheduled before min. leadtime from now
 			{
 				$rs->Close();
 				return TRUE;

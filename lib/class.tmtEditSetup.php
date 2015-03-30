@@ -45,11 +45,11 @@ class tmtEditSetup
 				$sql = 'SELECT timezone FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 				$zone = $db->GetOne($sql,array($bracket_id));
 				$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($zone));
-				$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND (status = '.FIRM.' OR status = '.TOLD.
+				$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status IN('.FIRM.','.TOLD.','.ASKED.
 				') AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
 				' AND teamA IS NOT NULL AND teamA != -1 AND teamB IS NOT NULL AND teamB != -1';
 				$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
-				if($rs && !$rs->EOF) //FIRM/TOLD match(es) scheduled before min. leadtime from now
+				if($rs && !$rs->EOF) //FIRM/TOLD/ASKED match(es) scheduled before min. leadtime from now
 					$this->committed = TRUE;
 			}
 		}
@@ -557,6 +557,41 @@ EOS;
 			$data->totemplate,
 			(($mail)?$mod->Lang('seeabove'):$help)
 		);  //TODO maybe specific $tplhelp[]
+		if($mail)
+		{
+			$adv[] = array(
+				$mod->Lang('title_mailcanceltemplate'),
+				($pmod) ?
+				$mod->CreateTextArea(FALSE,$id,$data->mcanctemplate,'tmt_mcanctemplate','','','','',65,10,'','','style="height:8em"') :
+				$data->mcanctemplate,
+				(($mail)?$mod->Lang('seeabove'):$help)
+			);
+		}
+		$adv[] = array(
+			$mod->Lang('title_tweetcanceltemplate'),
+			($pmod) ?
+			$mod->CreateTextArea(FALSE,$id,$data->tcanctemplate,'tmt_tcanctemplate','','','','',65,3,'','','style="height:3em"') :
+			$data->tcanctemplate,
+			(($mail)?$mod->Lang('seeabove'):$help)
+		);  //TODO maybe specific $tplhelp[]
+		if($mail)
+		{
+			$adv[] = array(
+				$mod->Lang('title_mailrequesttemplate'),
+				($pmod) ?
+				$mod->CreateTextArea(FALSE,$id,$data->mreqtemplate,'tmt_mreqtemplate','','','','',65,10,'','','style="height:8em"') :
+				$data->mreqtemplate,
+				(($mail)?$mod->Lang('seeabove'):$help)
+			);
+		}
+		$adv[] = array(
+			$mod->Lang('title_tweetrequesttemplate'),
+			($pmod) ?
+			$mod->CreateTextArea(FALSE,$id,$data->treqtemplate,'tmt_treqtemplate','','','','',65,3,'','','style="height:3em"') :
+			$data->totemplate,
+			(($mail)?$mod->Lang('seeabove'):$help)
+		);  //TODO maybe specific $tplhelp[]
+	
 		$tplhelp = array();
 		$tplhelp[] = $mod->Lang('help_template');
 		foreach(array(
@@ -1118,6 +1153,7 @@ EOS;
 			{
 				$firmed = $mod->Lang('confirmed');
 				$told = $mod->Lang('notified');
+				$asked = $mod->Lang('asked');
 				$items = array(
 					$mod->Lang('notyet')=>NOTYET,
 					$mod->Lang('possible')=>SOFT,
@@ -1239,17 +1275,23 @@ EOS;
 						$one->btn1 = str_replace('mat_status"',$r,$choices[0]);
 						$one->btn2 = str_replace('mat_status"',$r,$choices[1]);
 						$one->btn3 = str_replace('mat_status"',$r,$choices[2]);
-						if ($mdata['status'] == TOLD)
+						//tailor content
+						switch ((int)$mdata['status'])
 						{
+						 case TOLD:
 							$one->btn3 = str_replace(array($firmed,'value="'.FIRM.'"'),array($told,'value="'.TOLD.'"'),$one->btn3);
-						}
-						elseif ($mdata['status'] == ASOFT || $mdata['status'] == AFIRM)
-						{
+							break;
+						 case ASKED:
+							$one->btn3 = str_replace(array($firmed,'value="'.FIRM.'"'),array($asked,'value="'.ASKED.'"'),$one->btn3);
+							break;
+						 case ASOFT:
+						 case AFIRM:
 							$one->btn2 = str_replace('value="'.SOFT,'value="'.ASOFT,$one->btn2);
 							$one->btn3 = str_replace('value="'.FIRM,'value="'.AFIRM,$one->btn3);
+							break;
 						}
 						//select relevant radio item
-						switch(intval($mdata['status']))
+						switch((int)$mdata['status'])
 						{
 						 case SOFT:
 						 case ASOFT:
@@ -1257,6 +1299,7 @@ EOS;
 							break;
 						 case FIRM:
 						 case TOLD:
+	 					 case ASKED:
 						 case AFIRM:
 							$one->btn3 = str_replace(' />',' checked="checked" />',$one->btn3);
 							break;
@@ -1285,6 +1328,9 @@ EOS;
 						break;
  					 case TOLD:
 						$one->btn3 = $mod->Lang('notified');
+						break;
+					 case ASKED:
+						$one->btn3 = $mod->Lang('asked');
 						break;
 					 default:
 						$one->btn3 = $mod->Lang('notyet');
@@ -1377,7 +1423,7 @@ EOS;
 			}
 
 			$jsloads[] = <<< EOS
- $('#{$id}notify').modalconfirm({
+ $('#{$id}notify,#{$id}abandon').modalconfirm({
   overlayID: 'confirm',
   doCheck: function(){
 	 return (match_count() > 0);
@@ -1396,6 +1442,8 @@ EOS;
 EOS;
 			$smarty->assign('notify',$mod->CreateInputSubmit($id,'notify',$mod->Lang('notify'),
 				'title="'.$mod->Lang('notify_tip').'"')); //modal confirm for this
+			$smarty->assign('abandon',$mod->CreateInputSubmit($id,'abandon',$mod->Lang('abandon'),
+				'title="'.$mod->Lang('abandon_tip').'"')); //modal confirm for this
 			if($plan)
 			{
 				$bdata = array(
@@ -1674,6 +1722,8 @@ EOS;
 				'title="'.$mod->Lang('future_tip').'" onclick="results_view(this);"'));
 		$smarty->assign('changes',$mod->CreateInputSubmit($id,'changelog',$mod->Lang('changes'),
 			'title="'.$mod->Lang('changes_tip').'" onclick="set_action(this);"'));
+		$smarty->assign('request',$mod->CreateInputSubmit($id,'request',$mod->Lang('request'),
+			'title="'.$mod->Lang('request_tip').'" onclick="return results_selected(event,this);"'));
 
 //===============================
 
@@ -1720,7 +1770,7 @@ EOS;
   doCheck: {$test},
   preShow: function(d){
 	 var para = d.children('p:first')[0];
-	 para.innerHTML = '{$mod->Lang('abandon')}';
+	 para.innerHTML = '{$mod->Lang('allabandon')}';
   },
   onCheckFail: true,
   onConfirm: function(){

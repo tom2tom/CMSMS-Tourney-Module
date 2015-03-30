@@ -39,10 +39,18 @@ if(isset($params['apply']) || isset($params['submit']))
 		//these values may be NULL if not present in data from UI
 		$motpl = $data->motemplate;
 		unset($data->motemplate);
+		$mctpl = $data->mcanctemplate;
+		unset($data->mcanctemplate);
+		$mrtpl = $data->mreqtemplate;
+		unset($data->mreqtemplate);
 		$mitpl = $data->mitemplate;
 		unset($data->mitemplate);
 		$totpl = $data->totemplate;
 		unset($data->totemplate);
+		$tctpl = $data->tcanctemplate;
+		unset($data->tcanctemplate);
+		$trtpl = $data->treqtemplate;
+		unset($data->treqtemplate);
 		$titpl = $data->titemplate;
 		unset($data->titemplate);
 		if($data->html == NULL)
@@ -95,6 +103,20 @@ if(isset($params['apply']) || isset($params['submit']))
 				else
 					$this->DeleteTemplate('mailout_'.$bracket_id.'_template');
 			}
+			if($mctpl != NULL)
+			{
+				if($mctpl)
+					$this->SetTemplate('mailcancel_'.$bracket_id.'_template',$mctpl);
+				else
+					$this->DeleteTemplate('mailcancel_'.$bracket_id.'_template');
+			}
+			if($mrtpl != NULL)
+			{
+				if($mrtpl)
+					$this->SetTemplate('mailrequest_'.$bracket_id.'_template',$mrtpl);
+				else
+					$this->DeleteTemplate('mailrequest_'.$bracket_id.'_template');
+			}
 			if($mitpl != NULL)
 			{
 				if($mitpl)
@@ -108,6 +130,20 @@ if(isset($params['apply']) || isset($params['submit']))
 					$this->SetTemplate('tweetout_'.$bracket_id.'_template',$totpl);
 				else
 					$this->DeleteTemplate('tweetout_'.$bracket_id.'_template');
+			}
+			if($tctpl != NULL)
+			{
+				if($tctpl)
+					$this->SetTemplate('tweetcancel_'.$bracket_id.'_template',$tctpl);
+				else
+					$this->DeleteTemplate('tweetcancel_'.$bracket_id.'_template');
+			}
+			if($trtpl != NULL)
+			{
+				if($trtpl)
+					$this->SetTemplate('tweetrequest_'.$bracket_id.'_template',$trtpl);
+				else
+					$this->DeleteTemplate('tweetrequest_'.$bracket_id.'_template');
 			}
 			if($titpl != NULL)
 			{
@@ -496,8 +532,12 @@ elseif(isset($params['cancel']))
 		$sql = 'DELETE FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 		$db->Execute($sql,array($bracket_id));
 		$this->DeleteTemplate('mailout_'.$bracket_id.'_template');
+		$this->DeleteTemplate('mailcancel_'.$bracket_id.'_template');
+		$this->DeleteTemplate('mailrequest_'.$bracket_id.'_template');
 		$this->DeleteTemplate('mailin_'.$bracket_id.'_template');
 		$this->DeleteTemplate('tweetout_'.$bracket_id.'_template');
+		$this->DeleteTemplate('tweetcancel_'.$bracket_id.'_template');
+		$this->DeleteTemplate('tweetrequest_'.$bracket_id.'_template');
 		$this->DeleteTemplate('tweetin_'.$bracket_id.'_template');
 		$this->DeleteTemplate('chart_'.$bracket_id.'_template');
 	}

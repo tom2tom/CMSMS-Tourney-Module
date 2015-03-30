@@ -771,7 +771,7 @@ EOS;
   doCheck: {$test},
   preShow: function(d){
    var para = d.children('p:first')[0];
-   para.innerHTML = '{$this->Lang('abandon')}';
+   para.innerHTML = '{$this->Lang('allabandon')}';
   },
   onCheckFail: true
  });

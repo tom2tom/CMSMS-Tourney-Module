@@ -71,12 +71,24 @@ class tmtClone
 			$tpl = $mod->GetTemplate('mailout_'.$sid.'_template');
 			if ($tpl)
 				$mod->SetTemplate('mailout_'.$did.'_template',$tpl);
+			$tpl = $mod->GetTemplate('mailcancel_'.$sid.'_template');
+			if ($tpl)
+				$mod->SetTemplate('mailcancel_'.$did.'_template',$tpl);
+			$tpl = $mod->GetTemplate('mailrequest_'.$sid.'_template');
+			if ($tpl)
+				$mod->SetTemplate('mailrequest_'.$did.'_template',$tpl);
 			$tpl = $mod->GetTemplate('mailin_'.$sid.'_template');
 			if ($tpl)
 				$mod->SetTemplate('mailin_'.$did.'_template',$tpl);
 			$tpl = $mod->GetTemplate('tweetout_'.$sid.'_template');
 			if ($tpl)
 				$mod->SetTemplate('tweetout_'.$did.'_template',$tpl);
+			$tpl = $mod->GetTemplate('tweetcancel_'.$sid.'_template');
+			if ($tpl)
+				$mod->SetTemplate('tweetcancel_'.$did.'_template',$tpl);
+			$tpl = $mod->GetTemplate('tweetrequest_'.$sid.'_template');
+			if ($tpl)
+				$mod->SetTemplate('tweetrequest__'.$did.'_template',$tpl);
 			$tpl = $mod->GetTemplate('tweetin_'.$sid.'_template');
 			if ($tpl)
 				$mod->SetTemplate('tweetin_'.$did.'_template',$tpl);

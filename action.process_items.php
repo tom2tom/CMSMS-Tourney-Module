@@ -100,7 +100,7 @@ elseif(isset($params['notify']))
 			$funcs = new tmtComm($this);
 			foreach($matches as $mid=>$bid)
 			{
-				list($res,$errmsg) = $funcs->TellTeams((int)$bid,$mid);
+				list($res,$errmsg) = $funcs->TellTeams((int)$bid,$mid,1); //1 >> announcement template
 				if($res)
 					$db->Execute($sql,array($mid));
 				elseif($errmsg)
