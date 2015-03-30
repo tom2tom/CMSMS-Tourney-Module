@@ -34,7 +34,8 @@ const LEADHOURS = 48;
 const NOTYET = -1; //runtime data sometimes, not stored
 const SOFT = 1;
 const FIRM = 2;
-const TOLD = 3;	//notification sent
+const TOLD = 3;	//notification sent (including cancellation)
+const ASKED = 4; //match-result request sent
 // threshold for scheduled matches with NULL teamA and/or teamB, not stored
 const ANON = 6;
 // scheduled matches with unknown participant(s) >= ANON < MRES
