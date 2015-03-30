@@ -42,7 +42,7 @@ class tmtCSV
 	{
 		if($count)
 		{
-			$ret = array('##Teamname','#Seeded');
+			$ret = array('#Teamname','#Seeded');
 			if($count > 1)
 				$ret[] = '#Tellall';
 			for($i = 1; $i <= $count; $i++)
