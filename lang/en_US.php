@@ -394,7 +394,7 @@ $lang['title_logic']='Result validation';
 
 $lang['help_template']='The following smarty variables are available for use in the template.';
 $lang['help_chttemplate']='At a minimmum, include {$image}';
-$lang['seeabove']='See corresponding information about announcement-email, above';
+$lang['seeabove']='See corresponding information about announcement-template, above';
 
 $lang['desc_title']='the title as specified on the Tournament tab';
 $lang['desc_description']='the description as specified on the Tournament tab';
@@ -515,8 +515,8 @@ $lang['history']='History';
 $lang['history_tip']='show completed matches';
 $lang['future']='Pending';
 $lang['future_tip']='show matches not yet completed';
-$lang['request']='Request';
-$lang['request_tip']='send score-report request to teams for selected rows';
+$lang['getscore']='Request';
+$lang['getscore_tip']='send score-report request to teams for selected rows';
 
 $lang['notify']='Notify';
 $lang['notify_tip']='send match-time message to teams for selected rows';

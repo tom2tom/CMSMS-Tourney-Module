@@ -530,6 +530,7 @@ EOS;
 		) as $varname) $tplhelp[] = '&nbsp;$'.$varname.': '.$mod->Lang('desc_'.$varname);
 		$tplhelp[] = $mod->Lang('help_mailout_template');
 		$help = implode('<br />',$tplhelp);
+		$helpabove = $mod->Lang('seeabove');
 
 		if($mail)
 		{
@@ -555,7 +556,7 @@ EOS;
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->totemplate,'tmt_totemplate','','','','',65,3,'','','style="height:3em"') :
 			$data->totemplate,
-			(($mail)?$mod->Lang('seeabove'):$help)
+			(($mail)?$helpabove:$help)
 		);  //TODO maybe specific $tplhelp[]
 		if($mail)
 		{
@@ -564,7 +565,7 @@ EOS;
 				($pmod) ?
 				$mod->CreateTextArea(FALSE,$id,$data->mcanctemplate,'tmt_mcanctemplate','','','','',65,10,'','','style="height:8em"') :
 				$data->mcanctemplate,
-				(($mail)?$mod->Lang('seeabove'):$help)
+				$helpabove
 			);
 		}
 		$adv[] = array(
@@ -572,7 +573,7 @@ EOS;
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->tcanctemplate,'tmt_tcanctemplate','','','','',65,3,'','','style="height:3em"') :
 			$data->tcanctemplate,
-			(($mail)?$mod->Lang('seeabove'):$help)
+			$helpabove
 		);  //TODO maybe specific $tplhelp[]
 		if($mail)
 		{
@@ -581,7 +582,7 @@ EOS;
 				($pmod) ?
 				$mod->CreateTextArea(FALSE,$id,$data->mreqtemplate,'tmt_mreqtemplate','','','','',65,10,'','','style="height:8em"') :
 				$data->mreqtemplate,
-				(($mail)?$mod->Lang('seeabove'):$help)
+				$helpabove
 			);
 		}
 		$adv[] = array(
@@ -589,7 +590,7 @@ EOS;
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->treqtemplate,'tmt_treqtemplate','','','','',65,3,'','','style="height:3em"') :
 			$data->totemplate,
-			(($mail)?$mod->Lang('seeabove'):$help)
+			$helpabove
 		);  //TODO maybe specific $tplhelp[]
 	
 		$tplhelp = array();
@@ -621,7 +622,7 @@ EOS;
 			($pmod) ?
 			$mod->CreateTextArea(FALSE,$id,$data->titemplate,'tmt_titemplate','','','','',65,3,'','','style="height:3em"') :
 			$data->titemplate,
-			(($mail)?$mod->Lang('seeabove'):$help)
+			(($mail)?$helpabove:$help)
 		);  //TODO maybe specific $tplhelp[]
 
 		$adv[] = array(
@@ -1722,8 +1723,8 @@ EOS;
 				'title="'.$mod->Lang('future_tip').'" onclick="results_view(this);"'));
 		$smarty->assign('changes',$mod->CreateInputSubmit($id,'changelog',$mod->Lang('changes'),
 			'title="'.$mod->Lang('changes_tip').'" onclick="set_action(this);"'));
-		$smarty->assign('request',$mod->CreateInputSubmit($id,'request',$mod->Lang('request'),
-			'title="'.$mod->Lang('request_tip').'" onclick="return results_selected(event,this);"'));
+		$smarty->assign('getscore',$mod->CreateInputSubmit($id,'getscore',$mod->Lang('getscore'),
+			'title="'.$mod->Lang('getscore_tip').'" onclick="return results_selected(event,this);"'));
 
 //===============================
 

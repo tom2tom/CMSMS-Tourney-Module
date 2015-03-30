@@ -83,7 +83,7 @@ elseif(isset($params['notify']) || isset($params['abandon']))
 		}
 	}
 }
-elseif(isset($params['request']))
+elseif(isset($params['getscore']))
 {
 	$newparms = $this->GetEditParms($params,'resultstab');
 	if(!empty($params['rsel']))

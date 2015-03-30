@@ -150,7 +150,7 @@
  {/foreach}
  </tbody>
 </table><br />
-<p class="pageinput">{$chart}&nbsp;{$list}&nbsp;{$altrview}&nbsp;{$changes}&nbsp;{$request}{if $canmod}&nbsp;{$update3}{/if}</p>
+<p class="pageinput">{$chart}&nbsp;{$list}&nbsp;{$altrview}&nbsp;{$changes}&nbsp;{$getscore}{if $canmod}&nbsp;{$update3}{/if}</p>
 </div>
 {else}
 <p class="pageinput">{$noresults}

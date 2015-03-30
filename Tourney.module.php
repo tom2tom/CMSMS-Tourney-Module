@@ -905,7 +905,7 @@ Europe/Vilnius'
 					break;
 				 case 'notify':
 				 case 'abandon':
-				 case 'request':
+				 case 'getscore':
 				 case 'export':
 					$name = 'multi_task';
 					break;
