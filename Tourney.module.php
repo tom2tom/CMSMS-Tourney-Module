@@ -203,6 +203,31 @@ class Tourney extends CMSModule
 		return TRUE;
 	}
 
+	function MinimumCMSVersion()
+	{
+		return '1.9';
+	}
+
+	function MaximumCMSVersion()
+	{
+		return '1.11.99';
+	}
+
+	function InstallPostMessage()
+	{
+		return $this->Lang('postinstall');
+	}
+
+	function UninstallPreMessage()
+	{
+		return $this->Lang('confirm_uninstall');
+	}
+
+	function UninstallPostMessage()
+	{
+		return $this->Lang('postuninstall');
+	}
+
 	//setup for pre-1.10
 	function SetParameters()
 	{
@@ -252,31 +277,6 @@ class Tourney extends CMSModule
 		$this->CreateParameter('view','chart',$this->Lang('params_view_type'));
 		$this->CreateParameter('cssfile','',$this->Lang('params_chart_css'));
 		$this->CreateParameter('tweetauth','',$this->Lang('params_tweet_auth'));
-	}
-
-	function MinimumCMSVersion()
-	{
-		return '1.9';
-	}
-
-	function MaximumCMSVersion()
-	{
-		return '1.11.99';
-	}
-
-	function InstallPostMessage()
-	{
-		return $this->Lang('postinstall');
-	}
-
-	function UninstallPreMessage()
-	{
-		return $this->Lang('confirm_uninstall');
-	}
-
-	function UninstallPostMessage()
-	{
-		return $this->Lang('postuninstall');
 	}
 
 	function GetActiveTab(&$params)
