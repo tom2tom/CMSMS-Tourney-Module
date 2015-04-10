@@ -56,7 +56,7 @@ if ($add)
 	//save initial (non-default) data for bracket
 	$args = array(
 	'bracket_id' => $data->bracket_id,
-	'type' => Tourney::KOTYPE, //$data-> is empty string
+	'type' => Tourney::KOTYPE, //$data->type is empty string
 	'seedtype' => $data->seedtype,
 	'fixtype' => $data->fixtype,
 	'teamsize' => $data->teamsize,
