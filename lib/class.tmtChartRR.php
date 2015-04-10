@@ -118,13 +118,13 @@ ORDER BY T1.displayorder';
 					$type = 'deflt';
 					goto firm2;
 					//no break here
-				case SOFT:
+				case Tourney::SOFT:
 					$type = 'nonf';
 					goto firm2;
 					//no break here
-				case FIRM:
-				case TOLD:
-				case ASKED:
+				case Tourney::FIRM:
+				case Tourney::TOLD:
+				case Tourney::ASKED:
 					$type = 'firm';
 firm2:
 					$rel = sprintf($relations['vs'],$tA,$tB);
@@ -136,11 +136,11 @@ firm2:
 					}
 					$text = $rel."\n".trim($at);
 					break;
-				case ASOFT:
+				case Tourney::ASOFT:
 					$type = 'nonf';
 					//no break here
-				case AFIRM:
-					if($mdata['status'] == AFIRM)
+				case Tourney::AFIRM:
+					if($mdata['status'] == Tourney::AFIRM)
 						$type = 'firm';
 					if(!($mdata['teamA'] || $mdata['teamB'])) //should never happen for planned RR match
 						$rel = ($titles==1)?"\n".$this->mod->Lang('anonanon'):''; //TODO better descriptor
@@ -156,28 +156,28 @@ firm2:
 					}
 					$text = $rel."\n".trim($at);
 					break;
-				case FORFB:
+				case Tourney::FORFB:
 					if(!$mdata['score']) //no reason given
 						$mdata['score'] = $bdata['forfeit'];
-				case WONA:
+				case Tourney::WONA:
 					$type = 'done';
 					$rel = sprintf($relations['def'],$tA,$tB);
 					$text = $rel."\n".trim($mdata['score']);
 					break;
-				case FORFA:
+				case Tourney::FORFA:
 					if(!$mdata['score'])
 						$mdata['score'] = $bdata['forfeit'];
-				case WONB:
+				case Tourney::WONB:
 					$type = 'done';
 					$rel = sprintf($relations['def'],$tB,$tA);
 					$text = $rel."\n".trim($mdata['score']);
 					break;
-				case MTIED:
+				case Tourney::MTIED:
 					$type = 'done';
 					$rel = sprintf($relations['tied'],$tA,$tB);
 					$text = $rel."\n".trim($mdata['score']);
 					break;
-				case NOWIN:
+				case Tourney::NOWIN:
 					$type = 'done';
 					$text = sprintf($relations['nomatch'],$tA,$tB);
 					$rel = sprintf($relations['vs'],$tA,$tB);
@@ -197,14 +197,14 @@ firm2:
 				 case 0:
 					$type = 'deflt';
 					break;
-				 case SOFT:
-				 case ASOFT:
+				 case Tourney::SOFT:
+				 case Tourney::ASOFT:
 					$type = 'nonf';
 					break;
-				 case FIRM:
-				 case TOLD:
-				 case ASKED:
-				 case AFIRM:
+				 case Tourney::FIRM:
+				 case Tourney::TOLD:
+				 case Tourney::ASKED:
+				 case Tourney::AFIRM:
 					$type = 'firm';
 					break;
 				 default:

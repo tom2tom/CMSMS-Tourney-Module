@@ -38,22 +38,22 @@ if (!empty($params['send']))
 			$res = (int)$params['result'][$indx];
 			switch ($res)
 			{
-			 case WONA:
+			 case Tourney::WONA:
 				$tres = str_replace('%s',$tA,$relations['won']);
 				break;
-			 case WONB:
+			 case Tourney::WONB:
 				$tres = str_replace('%s',$tB,$relations['won']);
 				break;
-			 case FORFA:
+			 case Tourney::FORFA:
 				$tres = str_replace('%s',$tA,$relations['forf']);
 				break;
-			 case FORFB:
+			 case Tourney::FORFB:
 				$tres = str_replace('%s',$tB,$relations['forf']);
 				break;
-			 case MTIED:
+			 case Tourney::MTIED:
 				$tres = sprintf($relations['tied'],$tA,$tB);
 				break;
-			 case NOWIN:
+			 case Tourney::NOWIN:
 				$tres = sprintf($relations['nomatch'],$tA,$tB);
 				break;
 			 default:
@@ -89,7 +89,7 @@ if (!empty($params['send']))
 				$score = $params['score'][$indx];
 				if (!$score)
 				{
-					if ($res == WONA || $res == WONB)
+					if ($res == Tourney::WONA || $res == Tourney::WONB)
 						$score = $this->Lang('missing');
 				}
 				if ($score)
@@ -97,7 +97,7 @@ if (!empty($params['send']))
 					$body[] = $this->Lang('score').' '.$score;
 					$body[] = '';
 				}
-				if ($res == WONA || $res == WONB)
+				if ($res == Tourney::WONA || $res == Tourney::WONB)
 				{
 					$when = $params['when'][$indx];
 					if ($when)
@@ -207,7 +207,7 @@ $jsfuncs = array();
 $jsloads = array();
 
 $sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'.
- ANON.' AND teamA IS NOT NULL AND teamA!=-1 AND teamB IS NOT NULL AND teamB!=-1';
+ Tourney::ANON.' AND teamA IS NOT NULL AND teamA!=-1 AND teamB IS NOT NULL AND teamB!=-1';
 $mdata = $db->GetAssoc($sql,array($bracket_id));
 if ($mdata)
 {
@@ -229,14 +229,14 @@ if ($mdata)
 		'<input class="mradio" type="radio" name="'.$id.$name.'" id="'.$id.$name.$indx.'" value="'.$mid.'" /><label for="'.$id.$name.$indx.'"> '.$lbl.'</label>';
 		$choices = array(
 			$def=>-1,
-			str_replace('%s',$tA,$relations['won'])=>WONA,
-			str_replace('%s',$tB,$relations['won'])=>WONB,
-			str_replace('%s',$tA,$relations['forf'])=>FORFA,
-			str_replace('%s',$tB,$relations['forf'])=>FORFB,
+			str_replace('%s',$tA,$relations['won'])=>Tourney::WONA,
+			str_replace('%s',$tB,$relations['won'])=>Tourney::WONB,
+			str_replace('%s',$tA,$relations['forf'])=>Tourney::FORFA,
+			str_replace('%s',$tB,$relations['forf'])=>Tourney::FORFB,
 		);
 		if ($bdata['cantie'])
-			$choices[$bdata['tied']]=MTIED;
-		$choices[$bdata['nomatch']]=NOWIN;
+			$choices[$bdata['tied']]=Tourney::MTIED;
+		$choices[$bdata['nomatch']]=Tourney::NOWIN;
 
 		$one->chooser = $this->CreateInputDropdown($id,'result[]',$choices,'',-1);
 		$one->score = $this->CreateInputText($id,'score[]','',10,30);
@@ -357,7 +357,7 @@ function validate(ev,btn) {
 }
 
 EOS;
-	$jsfuncs[] = sprintf($funcstr,WONA,WONB,MTIED);
+	$jsfuncs[] = sprintf($funcstr,Tourney::WONA,Tourney::WONB,Tourney::MTIED);
 }
 else //no mdata
 	$smarty->assign('nomatches',$this->Lang('info_nomatch')); //TODO better message for frontend

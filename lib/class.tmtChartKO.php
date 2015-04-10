@@ -132,15 +132,15 @@ class tmtChartKO extends tmtChartBase
 						{
 							switch($mdata['status'])
 							{
-							case SOFT:
-							case ASOFT:
+							case Tourney::SOFT:
+							case Tourney::ASOFT:
 								$type = 'nonf';
 								goto firm1;
 								//no break here
-							case FIRM:
-							case TOLD:
-							case ASKED:
-							case AFIRM:
+							case Tourney::FIRM:
+							case Tourney::TOLD:
+							case Tourney::ASKED:
+							case Tourney::AFIRM:
 								$type = 'firm';
 firm1:
 								$rel = sprintf($relations['vs'],$nameA,$nameB);
@@ -152,23 +152,23 @@ firm1:
 								}
 								$text = $rel."\n".trim($at);
 								break;
-							case FORFB:
+							case Tourney::FORFB:
 								if(!$mdata['score']) //no reason given
 									$mdata['score'] = $bdata['forfeit'];
-							case WONA:
+							case Tourney::WONA:
 								$type = ($lvl < $lvlmax) ? 'done' : 'final';
 								$rel = sprintf($relations['def'],$nameA,$nameB);
 								$text = $rel."\n".trim($mdata['score']);
 								break;
-							case FORFA:
+							case Tourney::FORFA:
 								if(!$mdata['score'])
 									$mdata['score'] = $bdata['forfeit'];
-							case WONB:
+							case Tourney::WONB:
 								$type = ($lvl < $lvlmax) ? 'done' : 'final';
 								$rel = sprintf($relations['def'],$nameB,$nameA);
 								$text = $rel."\n".trim($mdata['score']);
 								break;
-							case NOWIN:
+							case Tourney::NOWIN:
 								$type = 'done';
 								$rel = sprintf($relations['vs'],$nameA,$nameB);
 								$text = $rel."\n".$bdata['nomatch'];
@@ -200,15 +200,15 @@ firm1:
 					{
 						switch($mdata['status'])
 						{
-						 case SOFT:
-						 case ASOFT:
+						 case Tourney::SOFT:
+						 case Tourney::ASOFT:
 							$type = 'nonf';
 							goto firm2;
 							//no break here
-						 case FIRM:
-						 case TOLD:
-						 case ASKED:
-						 case AFIRM:
+						 case Tourney::FIRM:
+						 case Tourney::TOLD:
+						 case Tourney::ASKED:
+						 case Tourney::AFIRM:
 							$type = 'firm';
 firm2:
 							if(!($tA || $tB) || $tA == '-1' || $tB == '-1')
@@ -242,18 +242,18 @@ firm2:
 				}
 				else //plan mode
 				{
-					if ($mdata['status'] < MRES)
+					if ($mdata['status'] < Tourney::MRES)
 					{
 						switch($mdata['status'])
 						{
-						 case SOFT:
-						 case ASOFT:
+						 case Tourney::SOFT:
+						 case Tourney::ASOFT:
 							$type = 'nonf';
 							break;
-						 case FIRM:
-						 case TOLD:
-						 case ASKED:
-						 case AFIRM:
+						 case Tourney::FIRM:
+						 case Tourney::TOLD:
+						 case Tourney::ASKED:
+						 case Tourney::AFIRM:
 							$type = 'firm';
 							break;
 						 default:

@@ -83,7 +83,7 @@ class tmtComm
 		{
 			switch($bdata['type'])
 			{
-			 case KOTYPE:
+			 case Tourney::KOTYPE:
 				$op = $mod->Lang('anonwinner');
 				break;
 			 default:

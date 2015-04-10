@@ -18,14 +18,14 @@ if ($type !== FALSE)
 	$sch = new tmtSchedule();
 	switch (intval($type))
 	{
-	 case DETYPE:
+	 case Tourney::DETYPE:
 		$res = $sch->InitDEMatches($this,$bid);
 		break;
-	 case RRTYPE:
+	 case Tourney::RRTYPE:
 		$res = $sch->NextRRMatches($this,$bid);
 		break;
 	 default:
-	 //case KOTYPE:
+	 //case Tourney::KOTYPE:
 		$res = $sch->InitKOMatches($this,$bid);
 		break;
 	}

@@ -23,7 +23,7 @@ switch ($oldversion)
 	$this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$');
 
 	$flds = "
-	type I(1) DEFAULT ".KOTYPE.",
+	type I(1) DEFAULT ".Tourney::KOTYPE.",
 	match_days C(256),
 	playgap N(6.2),
 	playgaptype I(1) DEFAULT 2,

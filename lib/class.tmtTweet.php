@@ -386,7 +386,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 					{
 /*					switch($bdata['type'])
 						{
-						 case KOTYPE:
+						 case Tourney::KOTYPE:
 							$op = $mod->Lang('anonwinner');
 							break;
 						 default:
@@ -432,7 +432,7 @@ SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 					{
 /*					switch($bdata['type'])
 						{
-						 case KOTYPE:
+						 case Tourney::KOTYPE:
 							$op = $mod->Lang('anonwinner');
 							break;
 						 default:

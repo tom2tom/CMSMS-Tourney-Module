@@ -90,13 +90,13 @@ elseif(isset($params['notify']))
 		$fillers = str_repeat('?,',$vc-1).'?';
 		$pref = cms_db_prefix();
 		$sql = 'SELECT match_id,bracket_id FROM '.$pref.'module_tmt_matches WHERE bracket_id IN ('.$fillers.
-		') AND flags=0 AND status<'.MRES.
+		') AND flags=0 AND status<'.Tourney::MRES.
 		' AND playwhen IS NOT NULL AND ((teamA IS NOT NULL AND teamA>0) OR (teamB IS NOT NULL AND teamB>0))';
 		$matches = $db->GetAssoc($sql,$vals);
 		if($matches)
 		{
 			$allmsg = '';
-			$sql = 'UPDATE '.$pref.'module_tmt_matches SET status='.TOLD.' WHERE match_id=?';
+			$sql = 'UPDATE '.$pref.'module_tmt_matches SET status='.Tourney::TOLD.' WHERE match_id=?';
 			$funcs = new tmtComm($this);
 			foreach($matches as $mid=>$bid)
 			{
@@ -149,14 +149,14 @@ elseif(isset($params['print']))
 			//refresh the matches table, if necessary
 			switch ($bdata['type'])
 			{
-			 case DETYPE:
+			 case Tourney::DETYPE:
 				$sch->UpdateDEMatches ($this,$bid);
 				break;
-			 case RRTYPE:
+			 case Tourney::RRTYPE:
 				$sch->NextRRMatches($this,$bid);
 				break;
 			 default:
-			// case KOTYPE:
+			// case Tourney::KOTYPE:
 				$sch->UpdateKOMatches($this,$bid);
 				break;
 			}

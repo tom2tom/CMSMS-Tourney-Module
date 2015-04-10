@@ -86,9 +86,9 @@ $rows = $db->GetAll('SELECT bracket_id,groupid,name,alias FROM '.$pref.'module_t
 if ($rows)
 {
 	$sql1 = 'SELECT COUNT(1) as num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
-	$sql2 = $sql1.' AND status>='.MRES;
+	$sql2 = $sql1.' AND status>='.Tourney::MRES;
 	$sql3 = $sql2.' AND teamA>-1 AND teamB>-1';
-	$sql4 = $sql1.' AND status!=0 AND status<'.ANON;
+	$sql4 = $sql1.' AND status!=0 AND status<'.Tourney::ANON;
 
 	if($pmod || $pscore)
 		$iconedit = $theme->DisplayImage('icons/system/edit.gif',$this->Lang('edit'),'','','systemicon');

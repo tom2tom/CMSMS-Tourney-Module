@@ -34,7 +34,7 @@ class tmtEditSetup
 			$rs->Close();
 			$this->any = TRUE;
 			$sql = 'SELECT 1 AS yes FROM '.$pref.
-			'module_tmt_matches WHERE bracket_id=? AND status>='.MRES.
+			'module_tmt_matches WHERE bracket_id=? AND status>='.Tourney::MRES.
 			' AND teamA IS NOT NULL AND teamA!=-1 AND teamB IS NOT NULL AND teamB!=-1';
 			$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
 			if($rs && !$rs->EOF) //match(es) other than byes recorded
@@ -44,8 +44,8 @@ class tmtEditSetup
 				if($rs) $rs->Close();
 				$sql = 'SELECT timezone FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 				$zone = $db->GetOne($sql,array($bracket_id));
-				$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($zone));
-				$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status IN('.FIRM.','.TOLD.','.ASKED.
+				$dt = new DateTime('+'.Tourney::LEADHOURS.' hours',new DateTimeZone($zone));
+				$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status IN('.Tourney::FIRM.','.Tourney::TOLD.','.Tourney::ASKED.
 				') AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
 				' AND teamA IS NOT NULL AND teamA != -1 AND teamB IS NOT NULL AND teamB != -1';
 				$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
@@ -71,7 +71,7 @@ class tmtEditSetup
 		if($elim)
 		{
 			//for KO/DE bracket - 1st-round matches with a bye and corresponding 2nd round match not committed
-			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status >= '.FIRM.' AND NOT (teamA = -1 OR teamB = -1)';
+			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status >= '.Tourney::FIRM.' AND NOT (teamA = -1 OR teamB = -1)';
 			$fc = $db->GetOne($sql,array($bracket_id));
 			if(!$fc)
 			{
@@ -88,7 +88,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 				foreach($maybe as $next)
 				{
 					$nstat = $db->GetOne($sql,array($next));
-					if($nstat !== FALSE && $nstat < FIRM)
+					if($nstat !== FALSE && $nstat < Tourney::FIRM)
 					{
 						$this->spare = TRUE;
 						return;
@@ -101,7 +101,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			//for RR bracket - relatively few matches played
 			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2';
 			$tc = $db->GetOne($sql,array($bracket_id));
-			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status >= '.FIRM;
+			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status >= '.Tourney::FIRM;
 			$mc = $db->GetOne($sql,array($bracket_id));
 			$this->spare = ($tc <= 5)?($tc >= $mc) :($tc >= $mc * 2);
 		}
@@ -1020,7 +1020,7 @@ EOS;
 		$t = '';
 		if($pmod)
 		{
-			$this->SpareSlot($data->bracket_id,($data->type != RRTYPE));
+			$this->SpareSlot($data->bracket_id,($data->type != Tourney::RRTYPE));
 			if($this->spare)
 			{
 				$linktext = $mod->Lang('title_add',strtolower($teamtitle));
@@ -1129,10 +1129,10 @@ EOS;
 			{
 				switch ($data->type)
 				{
-				 case RRTYPE:
+				 case Tourney::RRTYPE:
 					$anon = $mod->Lang('anonother');
 					break;
-				 case DETYPE:
+				 case Tourney::DETYPE:
 				 	$rnd = new tmtRoundsDE();
 					//partial bracket data for downstream to use when naming
 					$bdata = array(
@@ -1156,9 +1156,9 @@ EOS;
 				$told = $mod->Lang('notified');
 				$asked = $mod->Lang('asked');
 				$items = array(
-					$mod->Lang('notyet')=>NOTYET,
-					$mod->Lang('possible')=>SOFT,
-					$firmed=>FIRM);
+					$mod->Lang('notyet')=>Tourney::NOTYET,
+					$mod->Lang('possible')=>Tourney::SOFT,
+					$firmed=>Tourney::FIRM);
 				$group = $mod->CreateInputRadioGroup($id,'mat_status',$items,'','','|');
 				$choices = explode('|',$group);
 			}
@@ -1183,10 +1183,10 @@ EOS;
 					{
 						switch ($data->type)
 						{
-						 case RRTYPE:
+						 case Tourney::RRTYPE:
 							$one->teamA = $anon;
 							break;
-						 case DETYPE:
+						 case Tourney::DETYPE:
 							$level = $rnd->MatchLevel($tc,$data->matches,$mid);
 							$one->teamA = $rnd->MatchTeamID_Team($mod,$bdata,$tc,$data->matches,$mid,$level,$mdata['teamB']); //team id may be NULL or -1
 						 	break;
@@ -1214,10 +1214,10 @@ EOS;
 					{
 						switch ($data->type)
 						{
-						 case RRTYPE:
+						 case Tourney::RRTYPE:
 							$one->teamB = $anon;
 							break;
-						 case DETYPE:
+						 case Tourney::DETYPE:
 							$level = $rnd->MatchLevel($tc,$data->matches,$mid);
 							if($mdata['teamA'])
 								$name = $rnd->MatchTeamID_Team($mod,$bdata,$tc,$data->matches,$mid,$level,$mdata['teamA']);
@@ -1259,7 +1259,7 @@ EOS;
 					$one->place = preg_replace($finds,$repls,$tmp);
 					$one->hidden = $mod->CreateInputHidden($id,'mat_teamA[]',$mdata['teamA']).
 						$mod->CreateInputHidden($id,'mat_teamB[]',$mdata['teamB']);
-					if($mdata['status'] >= MRES)
+					if($mdata['status'] >= Tourney::MRES)
 					{
 						//completed, no going back
 						$one->hidden .= $mod->CreateInputHidden($id,'mat_status['.$mid.']',$mdata['status']);
@@ -1279,29 +1279,29 @@ EOS;
 						//tailor content
 						switch ((int)$mdata['status'])
 						{
-						 case TOLD:
-							$one->btn3 = str_replace(array($firmed,'value="'.FIRM.'"'),array($told,'value="'.TOLD.'"'),$one->btn3);
+						 case Tourney::TOLD:
+							$one->btn3 = str_replace(array($firmed,'value="'.Tourney::FIRM.'"'),array($told,'value="'.Tourney::TOLD.'"'),$one->btn3);
 							break;
-						 case ASKED:
-							$one->btn3 = str_replace(array($firmed,'value="'.FIRM.'"'),array($asked,'value="'.ASKED.'"'),$one->btn3);
+						 case Tourney::ASKED:
+							$one->btn3 = str_replace(array($firmed,'value="'.Tourney::FIRM.'"'),array($asked,'value="'.Tourney::ASKED.'"'),$one->btn3);
 							break;
-						 case ASOFT:
-						 case AFIRM:
-							$one->btn2 = str_replace('value="'.SOFT,'value="'.ASOFT,$one->btn2);
-							$one->btn3 = str_replace('value="'.FIRM,'value="'.AFIRM,$one->btn3);
+						 case Tourney::ASOFT:
+						 case Tourney::AFIRM:
+							$one->btn2 = str_replace('value="'.Tourney::SOFT,'value="'.Tourney::ASOFT,$one->btn2);
+							$one->btn3 = str_replace('value="'.Tourney::FIRM,'value="'.Tourney::AFIRM,$one->btn3);
 							break;
 						}
 						//select relevant radio item
 						switch((int)$mdata['status'])
 						{
-						 case SOFT:
-						 case ASOFT:
+						 case Tourney::SOFT:
+						 case Tourney::ASOFT:
 							$one->btn2 = str_replace(' />',' checked="checked" />',$one->btn2);
 							break;
-						 case FIRM:
-						 case TOLD:
-	 					 case ASKED:
-						 case AFIRM:
+						 case Tourney::FIRM:
+						 case Tourney::TOLD:
+	 					 case Tourney::ASKED:
+						 case Tourney::AFIRM:
 							$one->btn3 = str_replace(' />',' checked="checked" />',$one->btn3);
 							break;
 						 default:
@@ -1319,18 +1319,18 @@ EOS;
 					$one->btn2 = '';
 					switch(intval($mdata['status']))
 					{
-					 case SOFT:
-					 case ASOFT:
+					 case Tourney::SOFT:
+					 case Tourney::ASOFT:
 						$one->btn3 = $mod->Lang('possible');
 						break;
-					 case FIRM:
-					 case AFIRM:
+					 case Tourney::FIRM:
+					 case Tourney::AFIRM:
 						$one->btn3 = $mod->Lang('confirmed');
 						break;
- 					 case TOLD:
+ 					 case Tourney::TOLD:
 						$one->btn3 = $mod->Lang('notified');
 						break;
-					 case ASKED:
+					 case Tourney::ASKED:
 						$one->btn3 = $mod->Lang('asked');
 						break;
 					 default:
@@ -1546,9 +1546,9 @@ EOS;
 			{
 				$extras = ($future) ?
 				 array($mod->Lang('chooseone')=>-1):
-				 array($mod->Lang('notyet')=>NOTYET,
-						$mod->Lang('possible')=>SOFT,
-						$mod->Lang('confirmed')=>FIRM);
+				 array($mod->Lang('notyet')=>Tourney::NOTYET,
+						$mod->Lang('possible')=>Tourney::SOFT,
+						$mod->Lang('confirmed')=>Tourney::FIRM);
 			}
 			$relations = $mod->ResultTemplates($data->bracket_id,FALSE);
 			$results = array();
@@ -1572,14 +1572,14 @@ EOS;
 						$one->teamA = $mod->TeamName($mdata['teamA']);
 						$one->teamB = $mod->TeamName($mdata['teamB']);
 						$choices = $extras + array(
-							str_replace('%s',$one->teamA,$relations['won'])=>WONA,
-							str_replace('%s',$one->teamB,$relations['won'])=>WONB,
-							str_replace('%s',$one->teamA,$relations['forf'])=>FORFA,
-							str_replace('%s',$one->teamB,$relations['forf'])=>FORFB
+							str_replace('%s',$one->teamA,$relations['won'])=>Tourney::WONA,
+							str_replace('%s',$one->teamB,$relations['won'])=>Tourney::WONB,
+							str_replace('%s',$one->teamA,$relations['forf'])=>Tourney::FORFA,
+							str_replace('%s',$one->teamB,$relations['forf'])=>Tourney::FORFB
 						);
 						if($data->cantie)
-							$choices[$data->tied] = MTIED;
-						$choices[$data->nomatch] = NOWIN;
+							$choices[$data->tied] = Tourney::MTIED;
+						$choices[$data->nomatch] = Tourney::NOWIN;
 						$sel = ($future) ? -1 : (int)$mdata['status'];
 						$one->result = $mod->CreateInputDropdown($id,'res_status['.$mid.']',$choices,'',$sel);
 						$tmp = $mod->CreateInputText($id,'res_score[]',$mdata['score'],15,30);
@@ -1596,22 +1596,22 @@ EOS;
 						$tB = $mod->TeamName($mdata['teamB']);
 						switch(intval($mdata['status']))
 						{
-						 case WONA:
+						 case Tourney::WONA:
 							$one->result = str_replace('%s',$tA,$relations['won']);
 							break;
-						 case WONB:
+						 case Tourney::WONB:
 							$one->result = str_replace('%s',$tB,$relations['won']);
 							break;
-						 case FORFA:
+						 case Tourney::FORFA:
 							$one->result = str_replace('%s',$tA,$relations['forf']);
 							break;
-						 case FORFB:
+						 case Tourney::FORFB:
 							$one->result = str_replace('%s',$tB,$relations['forf']);
 							break;
-						 case MTIED:
+						 case Tourney::MTIED:
 							$one->result = sprintf($relations['tied'],$tA,$tB);
 							break;
-						 case NOWIN:
+						 case Tourney::NOWIN:
 							$one->result = $mod->Lang('name_abandoned');
 							break;
 						 default:

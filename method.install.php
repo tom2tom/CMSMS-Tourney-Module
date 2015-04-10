@@ -16,7 +16,7 @@ $pref = cms_db_prefix();
 $flds = "
 	bracket_id I KEY,
 	groupid I(2) DEFAULT 0,
-	type I(1) DEFAULT ".KOTYPE.",
+	type I(1) DEFAULT ".Tourney::KOTYPE.",
 	name C(128),
 	alias C(24),
 	description X,

@@ -52,20 +52,20 @@ class tmtData
 		if (!empty($params['tmt_type']))
 			$data->type = (int)$params['tmt_type'];
 		else
-			$data->type = KOTYPE; //default to knockout
+			$data->type = Tourney::KOTYPE; //default to knockout
 		if (!empty($params['tmt_name']))
 			$data->name = trim($params['tmt_name']);
 		else
 		{
 			switch ($data->type)
 			{
-			 case KOTYPE:
+			 case Tourney::KOTYPE:
 				$key = 'title_bracket_single';
 			 	break;
-			 case DETYPE:
+			 case Tourney::DETYPE:
 				$key = 'title_bracket_double';
 			 	break;
-			 case RRTYPE:
+			 case Tourney::RRTYPE:
 				$key = 'title_bracket_round';
 			 	break;
 			 default:
@@ -533,7 +533,7 @@ class tmtData
 			if($data->matchview == 'actual')
 				//sort cuz matches may be in database in reverse order
 				$sql = 'SELECT match_id,teamA,teamB,playwhen,place,status,score FROM '.
-					$pref.'module_tmt_matches WHERE bracket_id=? AND status<'.ANON.
+					$pref.'module_tmt_matches WHERE bracket_id=? AND status<'.Tourney::ANON.
 					' AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id';
 			else
 				$sql = 'SELECT match_id,nextm,nextlm,teamA,teamB,playwhen,place,status,score FROM '.
@@ -548,7 +548,7 @@ class tmtData
 				}
 				unset($mdata);
 			}
-			if($data->type == RRTYPE && $data->matchview == 'plan')
+			if($data->type == Tourney::RRTYPE && $data->matchview == 'plan')
 			{
 				$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? ORDER BY displayorder';
 				$allteams = $db->GetCol($sql,array($bracket_id));
@@ -613,9 +613,9 @@ class tmtData
 			}
 			$data->resultview = ($params && !empty($params['resultview']))?$params['resultview']:'future';
 			if ($data->resultview == 'future')
-				$cond = '<'.ANON; //or MRES if ??
+				$cond = '<'.Tourney::ANON; //or MRES if ??
 			else
-				$cond = '>='.MRES; //or ANON if ??
+				$cond = '>='.Tourney::MRES; //or ANON if ??
 			$sql = 'SELECT match_id, teamA,teamB,playwhen,place,status,score FROM '.
 				$pref.'module_tmt_matches WHERE bracket_id=? AND status'.$cond.' AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id';
 			$data->results = $db->GetAssoc($sql,array($bracket_id));
@@ -623,7 +623,7 @@ class tmtData
 			{
 				foreach ($data->results as &$mdata)
 				{
-					if (intval($mdata['status']) < MRES) $mdata['status'] = NOTYET;
+					if (intval($mdata['status']) < Tourney::MRES) $mdata['status'] = Tourney::NOTYET;
 					//strip seconds from the time
 					$mdata['playwhen'] = substr($mdata['playwhen'],0,-3);
 				}
@@ -643,9 +643,9 @@ class tmtData
 	{
 		return array(
 		 $mod->Lang('select_one')=>'',
-		 $mod->Lang('title_bracket_single')=>KOTYPE,
-		 $mod->Lang('title_bracket_double')=>DETYPE,
-		 $mod->Lang('title_bracket_round')=>RRTYPE
+		 $mod->Lang('title_bracket_single')=>Tourney::KOTYPE,
+		 $mod->Lang('title_bracket_double')=>Tourney::DETYPE,
+		 $mod->Lang('title_bracket_round')=>Tourney::RRTYPE
 		);
 	}
 

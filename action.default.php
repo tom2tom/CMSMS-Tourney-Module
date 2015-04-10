@@ -92,14 +92,14 @@ $bracket_id = $bdata['bracket_id'];
 $sch = new tmtSchedule();
 switch($bdata['type'])
 {
- case DETYPE:
+ case Tourney::DETYPE:
 	$res = $sch->UpdateDEMatches($this,$bracket_id);
 	break;
- case RRTYPE:
+ case Tourney::RRTYPE:
 	$res = $sch->NextRRMatches($this,$bracket_id);
 	break;
  default:
-// case KOTYPE:
+// case Tourney:KOTYPE:
 	$res = $sch->UpdateKOMatches($this,$bracket_id);
 	break;
 }

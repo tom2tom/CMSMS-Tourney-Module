@@ -56,7 +56,7 @@ if ($add)
 	//save initial (non-default) data for bracket
 	$args = array(
 	'bracket_id' => $data->bracket_id,
-	'type' => KOTYPE, //$data-> is empty string
+	'type' => Tourney::KOTYPE, //$data-> is empty string
 	'seedtype' => $data->seedtype,
 	'fixtype' => $data->fixtype,
 	'teamsize' => $data->teamsize,
@@ -201,14 +201,14 @@ else
 			$type = $db->GetOne($sql,array($bid));
 			switch ($type)
 			{
-			 case DETYPE:
+			 case Tourney::DETYPE:
 				$sch->UpdateDEMatches($this,$bid);
 				break;
-			 case RRTYPE:
+			 case Tourney::RRTYPE:
 				$sch->NextRRMatches($this,$bid);
 				break;
 			 default:
-			 //case KOTYPE:
+			 //case Tourney::KOTYPE:
 				$sch->UpdateKOMatches($this,$bid);
 				break;
 			}

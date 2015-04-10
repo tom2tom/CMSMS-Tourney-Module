@@ -236,7 +236,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 				$winner = (int)$mdata['teamA'];
 				$args = array($winner,$tid,$mid);
 			}
-			$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamA=?,teamB=?,status='.NOTYET.' WHERE match_id=?';
+			$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamA=?,teamB=?,status='.Tourney::NOTYET.' WHERE match_id=?';
 			$db->Execute($sql,$args);
 			$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamA=NULL,playwhen=NULL WHERE match_id=? AND teamA=?';
 			$db->Execute($sql,array($mdata['nextm'],$winner));
@@ -265,9 +265,9 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			foreach($byes as $indx=>$mdata)
 			{
 				if($mdata['teamA'] == '-1')
-					$status = ($mdata['teamB'] != '-1') ? WONB : NOWIN;
+					$status = ($mdata['teamB'] != '-1') ? Tourney::WONB : Tourney::NOWIN;
 				else //$mdata['teamB'] == '-1'
-					$status = ($mdata['teamA'] != '-1') ? WONA : NOWIN;
+					$status = ($mdata['teamA'] != '-1') ? Tourney::WONA : Tourney::NOWIN;
 				$db->Execute($sql,array($status,$indx));
 			}
 		}
@@ -288,7 +288,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 	{
 		$status = 0;
 		$field = ($loser) ? 'nextlm':'nextm';
-		$sql = 'SELECT match_id FROM '.$pref.'module_tmt_matches WHERE '.$field.'=? AND match_id!=? AND flags=0 AND status>='.ANON;
+		$sql = 'SELECT match_id FROM '.$pref.'module_tmt_matches WHERE '.$field.'=? AND match_id!=? AND flags=0 AND status>='.Tourney::ANON;
 		$prevo = $db->GetOne($sql,array($mid,$prevm));
 		if($prevo == FALSE) //this is the 1st report for this match
 			$vals = array($tid,NULL); //store this winner as teamA (even if a bye)
@@ -302,29 +302,29 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			{
 				$vals = array($oid,$tid); //store this winner as teamB
 				if($oid == -1) //bye
-					$status = WONB;
+					$status = Tourney::WONB;
 				elseif($tid == -1)
-					$status = WONA;
+					$status = Tourney::WONA;
 			}
 			else
 			{
 				$vals = array($tid,$oid); //store as teamA
 				if($oid == -1)
-					$status = WONA;
+					$status = Tourney::WONA;
 				elseif($tid == -1)
-					$status = WONB;
+					$status = Tourney::WONB;
 			}
 			if($status == 0)
 			{
 				switch($mdata['status'])
 				{
-				 case ASOFT:
-					$status = SOFT;
+				 case Tourney::ASOFT:
+					$status = Tourney::SOFT;
 					break;
-				 case AFIRM:
-				 case TOLD:
-				 case ASKED:
-					$status = FIRM; //revert to this
+				 case Tourney::AFIRM:
+				 case Tourney::TOLD:
+				 case Tourney::ASKED:
+					$status = Tourney::FIRM; //revert to this
 					break;
 				}
 			}
@@ -363,7 +363,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$sdt = new DateTime($bdata['startdate'],$tz);
 		$sstamp = $sdt->getTimestamp(); //when the tournament start{s|ed}
 		//allow minimum leadtime before the next match
-		$dt = new DateTime('+'.LEADHOURS.' hours',$tz);
+		$dt = new DateTime('+'.Tourney::LEADHOURS.' hours',$tz);
 		$stamp = $dt->getTimestamp();
  		if($stamp < $sstamp)
 			$stamp = $sstamp;
@@ -374,8 +374,8 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		
 		//matches in DESC order so next foreach overwrites newer ones in $allteams array
 		//CHECKME also get SOFT matches before now?
-		$sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'
-		 .ANON.' AND playwhen IS NULL AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id DESC';
+		$sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'.
+		 Tourney::ANON.' AND playwhen IS NULL AND teamA IS NOT NULL AND teamB IS NOT NULL ORDER BY match_id DESC';
 		$mdata = $db->GetAssoc($sql,array($bracket_id));
 		if($mdata == FALSE)
 			return FALSE;
@@ -415,7 +415,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 				$oid = ($tid == $pair['teamA']) ?(int)$pair['teamB'] :(int)$pair['teamA'];
 				if($oid != -1 && $playorder[$oid] <= $threshold) //teams $tid & $oid both last-played before $threshold
 				{
-					$db->Execute($sql,array($save,SOFT,$mid));
+					$db->Execute($sql,array($save,Tourney::SOFT,$mid));
 					if(!empty($slotcount))
 					{
 						if(--$slotcount == 0)
@@ -513,7 +513,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		if($allteams == FALSE)
 			return 'info_nomatch'; //no teams means no matches
 		$numteams = count($allteams);
-		list($min,$max) = $mod->GetLimits(KOTYPE);
+		list($min,$max) = $mod->GetLimits(Tourney::KOTYPE);
 		if($numteams > $max || $numteams < $min)
 			return 'err_value';
 		$numseeds = count(array_filter($allteams));
@@ -705,7 +705,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$db = cmsms()->GetDb();
 		$sql1 = 'SELECT M.*,N.teamA AS nexttA,N.teamB AS nexttB
 FROM '.$pref.'module_tmt_matches M JOIN '.$pref.'module_tmt_matches N ON M.nextm=N.match_id
-WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS NULL)';
+WHERE M.bracket_id=? AND M.status>='.Tourney::ANON.' AND (N.teamA IS NULL OR N.teamB IS NULL)';
 		$so = ' ORDER BY M.match_id';
 		$done = FALSE;
 		$skips = array();
@@ -717,15 +717,15 @@ WHERE M.bracket_id=? AND M.status>='.ANON.' AND (N.teamA IS NULL OR N.teamB IS N
 			{
 				switch($mdata['status'])
 				{
-				case WONA:
-				case FORFB:
+				case Tourney::WONA:
+				case Tourney::FORFB:
 					$winner = $mdata['teamA'];
 					break;
-				case WONB:
-				case FORFA:
+				case Tourney::WONB:
+				case Tourney::FORFA:
 					$winner = $mdata['teamB'];
 					break;
-				case NOWIN:
+				case Tourney::NOWIN:
 					$winner = -1; //propagate a bye
 					break;
 				default:
@@ -779,7 +779,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		if($allteams == FALSE)
 			return 'info_nomatch';
 		$numteams = count($allteams);
-		list($min,$max) = $mod->GetLimits(DETYPE);
+		list($min,$max) = $mod->GetLimits(Tourney::DETYPE);
 		if($numteams < $min || $numteams > $max)
 			return 'err_value';
 		$numseeds = count(array_filter($allteams));
@@ -999,7 +999,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		$db = cmsms()->GetDb();
 		$sql1 = 'SELECT M.*,N.teamA AS nexttA,N.teamB as nexttB
 FROM '.$pref.'module_tmt_matches M JOIN '.$pref.'module_tmt_matches N ON M.nextm=N.match_id
-WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS NULL)';
+WHERE M.bracket_id=? AND M.status>='.Tourney::MRES.' AND (N.teamA IS NULL OR N.teamB IS NULL)';
 		$so = ' ORDER BY M.match_id';
 		$done = FALSE;
 		$skips = array();
@@ -1011,17 +1011,17 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			{
 				switch($mdata['status'])
 				{
-				case WONA:
-				case FORFB:
+				case Tourney::WONA:
+				case Tourney::FORFB:
 					$winner = $mdata['teamA'];
 					$loser = $mdata['teamB'];
 					break;
-				case WONB:
-				case FORFA:
+				case Tourney::WONB:
+				case Tourney::FORFA:
 					$winner = $mdata['teamB'];
 					$loser = $mdata['teamA'];
 					break;
-				case NOWIN:
+				case Tourney::NOWIN:
 					$winner = -1; //propagate a bye
 					$loser = -1;
 					break;
@@ -1080,7 +1080,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		if($allteams == FALSE)
 			return 'info_nomatch';
 		$numteams = count($allteams);
-		list($min,$max) = $mod->GetLimits(RRTYPE);
+		list($min,$max) = $mod->GetLimits(Tourney::RRTYPE);
 		if($numteams > $max || $numteams < $min)
 			return 'err_value';
 		shuffle($allteams);
@@ -1189,7 +1189,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 	private function MatchCommitted(&$db,$pref,$bracket_id,$zone=FALSE)
 	{
 		$sql = 'SELECT 1 AS yes FROM '.$pref.
-		'module_tmt_matches WHERE bracket_id=? AND status>='.FIRM.' AND status!='.ASOFT.
+		'module_tmt_matches WHERE bracket_id=? AND status>='.Tourney::FIRM.' AND status!='.Tourney::ASOFT.
 		' AND ((teamA IS NOT NULL AND teamA!=-1) OR (teamB IS NOT NULL AND teamB!=-1))';
 		$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
 		if($rs && !$rs->EOF) //match(es) other than byes recorded
@@ -1205,8 +1205,8 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				$sql = 'SELECT timezone FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 				$zone = $db->GetOne($sql,array($bracket_id));
 			}			
-			$dt = new DateTime('+'.LEADHOURS.' hours',new DateTimeZone($zone));
-			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status IN ('.FIRM.','.TOLD.','.ASKED.','.AFIRM.
+			$dt = new DateTime('+'.Tourney::LEADHOURS.' hours',new DateTimeZone($zone));
+			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status IN ('.Tourney::FIRM.','.Tourney::TOLD.','.Tourney::ASKED.','.Tourney::AFIRM.
 			') AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
 			' AND ((teamA IS NOT NULL AND teamA != -1) OR (teamB IS NOT NULL AND teamB != -1))';
 			$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
@@ -1238,7 +1238,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 
 		if(self::MatchCommitted($db,$pref,$bracket_id,$zone))
 		{
-			if($type != RRTYPE)
+			if($type != Tourney::RRTYPE)
 			{
 				if(!is_array($tid))
 					$tid = array($tid);
@@ -1285,11 +1285,11 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				$args[] = $tid;
 			}
 
-			if($type == RRTYPE)
+			if($type == Tourney::RRTYPE)
 			{
-				$sql = 'DELETE FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status<'.MRES.' AND teamA'.$test;
+				$sql = 'DELETE FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status<'.Tourney::MRES.' AND teamA'.$test;
 				$db->Execute($sql,array($args));
-				$sql = 'DELETE FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status<'.MRES.' AND teamB'.$test;
+				$sql = 'DELETE FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND status<'.Tourney::MRES.' AND teamB'.$test;
 				$db->Execute($sql,array($args));
 			}
 			else
@@ -1298,16 +1298,16 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 				array_unshift($args2,$mod->Lang('teamgone'));
 				$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamA=-1,playwhen=NULL WHERE bracket_id=? AND teamB IS NULL AND teamA'.$test;
 				$db->Execute($sql,array($args));
-				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.NOWIN.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamB=-1 AND teamA'.$test;
+				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.Tourney::NOWIN.',score=? WHERE bracket_id=? AND status<'.Tourney::MRES.' AND teamB=-1 AND teamA'.$test;
 				$db->Execute($sql,array($args2));
-				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.FORFA.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamA'.$test;
+				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.Tourney::FORFA.',score=? WHERE bracket_id=? AND status<'.Tourney::MRES.' AND teamA'.$test;
 
 				$db->Execute($sql,array($args2));
 				$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamB=-1,playwhen=NULL WHERE bracket_id=? AND teamA IS NULL AND teamB'.$test;
 				$db->Execute($sql,array($args));
-				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.NOWIN.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamA=-1 AND teamB'.$test;
+				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.Tourney::NOWIN.',score=? WHERE bracket_id=? AND status<'.Tourney::MRES.' AND teamA=-1 AND teamB'.$test;
 				$db->Execute($sql,array($args2));
-				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.FORFB.',score=? WHERE bracket_id=? AND status<'.MRES.' AND teamB'.$test;
+				$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=NULL,status='.Tourney::FORFB.',score=? WHERE bracket_id=? AND status<'.Tourney::MRES.' AND teamB'.$test;
 				$db->Execute($sql,array($args2));
 			}
 			return TRUE;
@@ -1318,12 +1318,12 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			$db->Execute($sql,array($bracket_id));
 			switch($type)
 			{
-			 case DETYPE:
+			 case Tourney::DETYPE:
 				return (self::InitDEMatches($mod,$bracket_id) === TRUE);
-			 case RRTYPE:
+			 case Tourney::RRTYPE:
 				return (self::NextRRMatches($mod,$bracket_id) === TRUE);
 			 default:
-			 //case KOTYPE:
+			 //case Tourney::KOTYPE:
 				return (self::InitKOMatches($mod,$bracket_id) === TRUE);
 			}
 		}
@@ -1368,17 +1368,17 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 			if($mdata['status'] != $status[$id])
 			{
 				$newstat = (int)$status[$id];
-				if($newstat >= MRES)
+				if($newstat >= Tourney::MRES)
 				{
 					switch($newstat)
 					{
-					 case WONA:
-					 case FORFB:
+					 case Tourney::WONA:
+					 case Tourney::FORFB:
 						//ensure teamA is one of teams in nextm & beyond
 						$args = array($mdata['teamA'],$bracket_id,(int)$mdata['nextm'],$mdata['teamB']);
 						$db->Execute($sql,$args);
 						$db->Execute($sql2,$args);
-						if($type == DETYPE)
+						if($type == Tourney::DETYPE)
 						{
 							//ensure teamB is one of teams in nextlm & beyond
 							$args = array($mdata['teamB'],$bracket_id,(int)$mdata['nextlm'],$mdata['teamA']);
@@ -1386,13 +1386,13 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 							$db->Execute($sql2,$args);
 						}
 						break;
-					 case WONB:
-					 case FORFA:
+					 case Tourney::WONB:
+					 case Tourney::FORFA:
 						//ensure teamB is one of teams in nextm & beyond
 						$args = array($mdata['teamB'],$bracket_id,(int)$mdata['nextm'],$mdata['teamA']);
 						$db->Execute($sql,$args);
 						$db->Execute($sql2,$args);
-						if($type == DETYPE)
+						if($type == Tourney::DETYPE)
 						{
 							//ensure teamA is one of teams in nextlm & beyond
 							$args = array($mdata['teamA'],$bracket_id,(int)$mdata['nextlm'],$mdata['teamB']);
@@ -1404,14 +1404,14 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 					break;
 					}
 				}
-				elseif((int)$mdata['status'] >= MRES)
+				elseif((int)$mdata['status'] >= Tourney::MRES)
 				{
 					//ensure neither teamA or teamB is in nextm & beyond
 					$args = array(NULL,$bracket_id,(int)$mdata['nextm'],$mdata['teamA']);
 					$db->Execute($sql,$args);
 					$args = array(NULL,$bracket_id,(int)$mdata['nextm'],$mdata['teamB']);
 					$db->Execute($sql2,$args);
-					if($type == DETYPE)
+					if($type == Tourney::DETYPE)
 					{
 						$args = array(NULL,$bracket_id,(int)$mdata['nextlm'],$mdata['teamA']);
 						$db->Execute($sql,$args);
@@ -1433,7 +1433,7 @@ WHERE M.bracket_id=? AND M.status>='.MRES.' AND (N.teamA IS NULL OR N.teamB IS N
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
 		$sql = 'SELECT COUNT(match_id) AS num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'
-		 .ANON.' AND teamA IS NOT NULL AND teamB IS NOT NULL';
+		 .Tourney::ANON.' AND teamA IS NOT NULL AND teamB IS NOT NULL';
 		return $db->GetOne($sql,array($bracket_id));
 	}
 

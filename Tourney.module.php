@@ -18,41 +18,41 @@
 # of that license, read it online at: www.gnu.org/licenses/licenses.html#AGPL
 #-------------------------------------------------------------------------
 
-const KOTYPE = 0;
-const DETYPE = 1;
-const RRTYPE = 2;
-const KOMIN = 2;
-const KOMAX = 256;
-const DEMIN = 3;
-const DEMAX = 128;
-const RRMIN = 2;
-const RRMAX = 20;
-//time interval (hours) before which new matches aren't scheduled and within which FIRM matches are considered 'committed'
-const LEADHOURS = 48;
-//match-status enum values
-// scheduled (<MRES,!=0)
-const NOTYET = -1; //runtime data sometimes, not stored
-const SOFT = 1;
-const FIRM = 2;
-const TOLD = 3;	//notification sent (including cancellation)
-const ASKED = 4; //match-result request sent
-// threshold for scheduled matches with NULL teamA and/or teamB, not stored
-const ANON = 7;
-// scheduled matches with unknown participant(s) >= ANON < MRES
-const ASOFT = 7;
-const AFIRM = 8;
-// threshold between schedules and results, not stored
-const MRES = 11;
-// match result (>=MRES)
-const WONA = 11;
-const WONB = 12;
-const FORFA = 13;
-const FORFB = 14;
-const MTIED = 15;
-const NOWIN = 16;
-
 class Tourney extends CMSModule
 {
+	const KOTYPE = 0;
+	const DETYPE = 1;
+	const RRTYPE = 2;
+	const KOMIN = 2;
+	const KOMAX = 256;
+	const DEMIN = 3;
+	const DEMAX = 128;
+	const RRMIN = 2;
+	const RRMAX = 20;
+	//time interval (hours) before which new matches aren't scheduled and within which FIRM matches are considered 'committed'
+	const LEADHOURS = 48;
+	//match-status enum values
+	// scheduled (<MRES,!=0)
+	const NOTYET = -1; //runtime data sometimes, not stored
+	const SOFT = 1;
+	const FIRM = 2;
+	const TOLD = 3;	//notification sent (including cancellation)
+	const ASKED = 4; //match-result request sent
+	// threshold for scheduled matches with NULL teamA and/or teamB, not stored
+	const ANON = 7;
+	// scheduled matches with unknown participant(s) >= ANON < MRES
+	const ASOFT = 7;
+	const AFIRM = 8;
+	// threshold between schedules and results, not stored
+	const MRES = 11;
+	// match result (>=MRES)
+	const WONA = 11;
+	const WONB = 12;
+	const FORFA = 13;
+	const FORFB = 14;
+	const MTIED = 15;
+	const NOWIN = 16;
+
 	protected $PermAdminName = 'Modify TourneyModule Settings';
 	protected $PermModName = 'Modify Brackets';
 	protected $PermScoreName = 'Modify BracketData';
@@ -384,16 +384,16 @@ class Tourney extends CMSModule
 		return '<'.$this->Lang('noname').'>';
 	}
 
-	function GetLimits($type=KOTYPE)
+	function GetLimits($type=Tourney::KOTYPE)
 	{
 		switch ($type)
 		{
-		case KOTYPE:
-		 return array (KOMIN,KOMAX);
-		case DETYPE:
-		 return array (DEMIN,DEMAX);
-		case RRTYPE:
-		 return array (RRMIN,RRMAX);
+		case Tourney::KOTYPE:
+		 return array (Tourney::KOMIN,Tourney::KOMAX);
+		case Tourney::DETYPE:
+		 return array (Tourney::DEMIN,Tourney::DEMAX);
+		case Tourney::RRTYPE:
+		 return array (Tourney::RRMIN,Tourney::RRMAX);
 		default:
 		 return array (0,0);
 		}

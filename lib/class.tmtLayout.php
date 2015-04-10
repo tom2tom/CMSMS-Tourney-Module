@@ -34,14 +34,14 @@ class tmtLayout
 			//chart needs to be reconstructed
 			switch ($bdata['type'])
 			{
-			 case DETYPE:
+			 case Tourney::DETYPE:
 				$cht = new tmtChartDE();
 				break;
-			 case RRTYPE:
+			 case Tourney::RRTYPE:
 				$cht = new tmtChartRR();
 				break;
 			 default:
-//			 case KOTYPE:
+//			 case Tourney::KOTYPE:
 				$cht = new tmtChartKO();
 				break;
 			}
@@ -66,11 +66,11 @@ class tmtLayout
 			$num = $db->GetOne($sql,array($bdata['bracket_id']));
 			switch ($bdata['type'])
 			{
-			 case RRTYPE:
+			 case Tourney::RRTYPE:
 				$ht = $num * 50;
 				$wd = ($num-1) * 130;
 				break;
-			 case DETYPE:
+			 case Tourney::DETYPE:
 			 	$BC = ((log($num,2)-0.0001)|0) + 1; //last band in losers' draw
 				$ht = pow(2,$BC) * 1.5 * 50;
 				$wd = ($BC*2 - 1) * 130; //cols no. = BF-(BC+1)+1, BF = 3BC-1
@@ -120,7 +120,7 @@ class tmtLayout
 		$matches = $db->GetAssoc($sql,array($bracket_id));
 		if ($matches == FALSE)
 			return 'nomatch';
-		if($bdata['type'] != RRTYPE)
+		if($bdata['type'] != Tourney::RRTYPE)
 		{
 			$sql = 'SELECT COUNT(1) AS num FROM '.$pref.
 				'module_tmt_teams WHERE bracket_id=? AND flags != 2';
@@ -128,16 +128,16 @@ class tmtLayout
 		}
 		switch($bdata['type'])
 		{
-		 case RRTYPE:
+		 case Tourney::RRTYPE:
 			$anon = $mod->Lang('anonother');
 		 	break;
-		 case DETYPE:
-			if ($tc < DEMIN || $tc > DEMAX)
+		 case Tourney::DETYPE:
+			if ($tc < Tourney::DEMIN || $tc > Tourney::DEMAX)
 				return 'err_value';
 			$rnd = new tmtRoundsDE();
 			break;
 		 default:
-			if ($tc < KOMIN || $tc > KOMAX)
+			if ($tc < Tourney::KOMIN || $tc > Tourney::KOMAX)
 				return 'err_value';
 			$rnd = new tmtRoundsKO();
 			$levelmax = $rnd->LevelMax($tc);
@@ -170,7 +170,7 @@ class tmtLayout
 			{
 				$tA = ($mdata['teamA']) ? $mod->TeamName($mdata['teamA']) : FALSE;
 				$tB = ($mdata['teamB']) ? $mod->TeamName($mdata['teamB']) : FALSE;
-				if ($mdata['status'] < MRES)
+				if ($mdata['status'] < Tourney::MRES)
 				{
 					if ($mdata['playwhen'])
 					{
@@ -187,11 +187,11 @@ class tmtLayout
 
 				switch ($mdata['status'])
 				{
-				 case NOTYET:
-				 case SOFT:
-				 case FIRM:
-				 case TOLD:
-				 case ASKED:
+				 case Tourney::NOTYET:
+				 case Tourney::SOFT:
+				 case Tourney::FIRM:
+				 case Tourney::TOLD:
+				 case Tourney::ASKED:
 				 	if($tA && $tB)
 					{
 						$str = sprintf($relations['vs'],$tA,$tB).$at;
@@ -199,8 +199,8 @@ class tmtLayout
 						break;
 					}
 				 //no break here
-				 case ASOFT:
-				 case AFIRM:
+				 case Tourney::ASOFT:
+				 case Tourney::AFIRM:
 				 	if(!($tA || $tB || $mdata['playwhen']))
 						break;
 //						$str = $mod->Lang('anonanon'); //TODO AorB vs CorD, or relevant roundname
@@ -208,7 +208,7 @@ class tmtLayout
 //					{
 						switch($bdata['type'])
 						{
-						 case KOTYPE:
+						 case Tourney::KOTYPE:
 							if($tA)
 							{
 								if($tB)
@@ -238,7 +238,7 @@ class tmtLayout
 								$name = $rnd->LevelName($mod,$bdata,$level-1,$levelmax);
 							}
 						 	break;
-						 case DETYPE:
+						 case Tourney::DETYPE:
 							if($tA)
 							{
 								if($tB)
@@ -264,7 +264,7 @@ class tmtLayout
 								$name = $rnd->AnonLevelName($mod,$bdata,$tc,$level);
 							}
 							break;
-						 case RRTYPE:
+						 case Tourney::RRTYPE:
 							$prev = $anon;
 							$name = '';
 							break;
@@ -281,24 +281,24 @@ class tmtLayout
 					$str .= $at;
 					$showrows[] = $str;
 				 	break;
-				 case WONA:
+				 case Tourney::WONA:
 					$showrows[] = sprintf($relations['def'],$tA,$tB).' '.$mdata['score'];
 					break;
-				 case WONB:
+				 case Tourney::WONB:
 					$showrows[] = sprintf($relations['def'],$tB,$tA).' '.$mdata['score'];
 					break;
-				 case FORFA:
+				 case Tourney::FORFA:
 				 	$str = ($mdata['score']) ? $mdata['score'] : $bdata['forfeit']; //maybe a reason
 					$showrows[] = sprintf($relations['def'],$tB,$tA).' '.$str;
 					break;
-				 case FORFB:
+				 case Tourney::FORFB:
 				 	$str = ($mdata['score']) ? $mdata['score'] : $bdata['forfeit']; 
 					$showrows[] = sprintf($relations['def'],$tA,$tB).' '.$str;
 					break;
-				 case MTIED:
+				 case Tourney::MTIED:
 					$showrows[] = sprintf($relations['tied'],$tA,$tB).' '.$mdata['score'];
 					break;
-				 case NOWIN:
+				 case Tourney::NOWIN:
 					$showrows[] = sprintf($relations['nomatch'],$tA,$tB);
 					break;
 				 default:

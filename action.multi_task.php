@@ -44,7 +44,7 @@ elseif(isset($params['notify']) || isset($params['abandon']))
 		else //isset($params['abandon'])
 			$tpltype = 2;
 		$ok = TRUE;
-		$sql = 'UPDATE '.cms_db_prefix().'module_tmt_matches SET status='.TOLD.' WHERE match_id=?';
+		$sql = 'UPDATE '.cms_db_prefix().'module_tmt_matches SET status='.Tourney::TOLD.' WHERE match_id=?';
 		$errs = array();
 		$ids = array_keys($params['mat_status']); //match id's
 		$funcs = new tmtComm($this);
@@ -89,7 +89,7 @@ elseif(isset($params['getscore']))
 	if(!empty($params['rsel']))
 	{
 		$ok = TRUE;
-		$sql = 'UPDATE '.cms_db_prefix().'module_tmt_matches SET status='.ASKED.' WHERE match_id=?';
+		$sql = 'UPDATE '.cms_db_prefix().'module_tmt_matches SET status='.Tourney::ASKED.' WHERE match_id=?';
 		$errs = array();
 		$ids = array_keys($params['res_status']); //match id's
 		$funcs = new tmtComm($this);

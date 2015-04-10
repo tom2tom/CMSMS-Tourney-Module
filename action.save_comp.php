@@ -205,14 +205,14 @@ if(isset($params['apply']) || isset($params['submit']))
 							if($on)
 							{
 								if($stat < 0) //notyet
-									$stat = ($tA && $tB) ? SOFT:ASOFT;
+									$stat = ($tA && $tB) ? Tourney::SOFT:Tourney::ASOFT;
 							}
 							else
 							{
-								if($stat < ANON)
+								if($stat < Tourney::ANON)
 									$stat = 0;
-								elseif($stat == AFIRM)
-									$stat = ASOFT;
+								elseif($stat == Tourney::AFIRM)
+									$stat = Tourney::ASOFT;
 							}
 							$matches[$mid]['status'] = $stat; //for use during results processing
 							if ($mid > 0)
@@ -260,7 +260,7 @@ if(isset($params['apply']) || isset($params['submit']))
 							if(!$how)
 								$how = NULL;
 							$stat = (int)$row['status'];
-							if($stat < MRES)
+							if($stat < Tourney::MRES)
 								$stat = $matches[$mid]['status'];
 							$db->Execute($sql2,array($on,$stat,$how,$mid));
 						}
@@ -417,14 +417,14 @@ elseif(isset($params['update']))
 				if($on)
 				{
 					if($stat < 0) //notyet
-						$stat = ($tA && $tB) ? SOFT:ASOFT;
+						$stat = ($tA && $tB) ? Tourney::SOFT:Tourney::ASOFT;
 				}
 				else
 				{
-					if($stat < ANON)
+					if($stat < Tourney::ANON)
 						$stat = 0;
-					elseif($stat == AFIRM)
-						$stat = ASOFT;
+					elseif($stat == Tourney::AFIRM)
+						$stat = Tourney::ASOFT;
 				}
 				if($mid > 0)
 					$db->Execute($sql,array($on,$at,$stat,$mid));
@@ -463,7 +463,7 @@ elseif(isset($params['update']))
 				$stat = (int)$params['res_status'][$mid];
 				if(!$past) //future-view
 				{
-				 	if($stat != NOTYET) //non-default status applies
+				 	if($stat != Tourney::NOTYET) //non-default status applies
 					{
 						$when = $params['res_playwhen'][$indx];
 						$on = $funcs->GetFormattedDate($when,FALSE,TRUE);
@@ -487,9 +487,9 @@ elseif(isset($params['update']))
 							$on = NULL;
 					}
 					//else don't change the 'played-when' field
-					if($stat == NOTYET)
+					if($stat == Tourney::NOTYET)
 						$stat = 0;
-					if($stat < MRES)
+					if($stat < Tourney::MRES)
 						$how = NULL;
 					else
 					{

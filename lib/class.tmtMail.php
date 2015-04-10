@@ -274,7 +274,7 @@ class tmtMail
 				{
 /*				switch($bdata['type'])
 					{
-					 case KOTYPE:
+					 case Tourney::KOTYPE:
 						$op = $mod->Lang('anonwinner');
 						break;
 					 default:
@@ -313,7 +313,7 @@ class tmtMail
 				{
 /*				switch($bdata['type'])
 					{
-					 case KOTYPE:
+					 case Tourney::KOTYPE:
 						$op = $mod->Lang('anonwinner');
 						break;
 					 default:
