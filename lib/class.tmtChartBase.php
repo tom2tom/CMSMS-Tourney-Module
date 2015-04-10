@@ -6,7 +6,7 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 This class is not suited for static method-calling
 */
-class tmtChartBase
+abstract class tmtChartBase
 {
 	protected $mod;
 	public $layout; /* box, level and chart data from ::Layout(), array with
@@ -247,9 +247,9 @@ class tmtChartBase
 	}
 
 	//methods to be sub-classed for specific chart-type
-	public function Layout(&$params){}
-	public function Boxes(&$bdata,&$db,$titles=1){return FALSE;}
-	public function Draw(&$params){}
+	abstract public function Layout(&$params){}
+	abstract public function Boxes(&$bdata,&$db,$titles=1){return FALSE;}
+	abstract public function Draw(&$params){}
 }
 
 ?>
