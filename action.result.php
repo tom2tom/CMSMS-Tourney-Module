@@ -17,7 +17,7 @@ if (!empty($params['send']))
 	$valid = TRUE;
 	if (isset($params['captcha']))
 	{
-		$ob = $this->getModuleInstance('Captcha');
+		$ob = cms_utils::get_module('Captcha');
 		if ($ob)
 		{
 			$valid = $ob->checkCaptcha($params['captcha']);
@@ -63,7 +63,7 @@ if (!empty($params['send']))
 			if ($valid)
 			{
 				$save = FALSE;
-				$ob = $this->GetModuleInstance('FrontEndUsers');
+				$ob = cms_utils::get_module('FrontEndUsers');
 				if ($ob)
 				{
 					$uid = $ob->LoggedInID();
@@ -251,7 +251,7 @@ if ($mdata)
 	$smarty->assign('inputsender',$this->CreateInputText($id,'sender','',15,30));
 	$smarty->assign('titlecomment',$this->Lang('titlecomment'));
 	$smarty->assign('inputcomment',$this->CreateTextArea(FALSE,$id,'','comment','','','','',50,5,'','','style="height:5em;"'));
-	$ob =& $this->getModuleInstance('Captcha');
+	$ob = cms_utils::get_module('Captcha');
 	if ($ob)
 	{
 		$smarty->assign('captcha',$ob->getCaptcha());

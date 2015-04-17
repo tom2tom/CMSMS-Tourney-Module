@@ -15,7 +15,7 @@ class tmtMail
 
 	function __construct(&$mod)
 	{
-			$this->mlr = $mod->GetModuleInstance('CMSMailer'); //never FALSE, cuz class created after check
+			$this->mlr = cms_utils::get_module('CMSMailer'); //never FALSE, cuz class created after check
 			$this->loaded = FALSE;
 	}
 
