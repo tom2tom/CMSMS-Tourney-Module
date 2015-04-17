@@ -275,6 +275,4 @@ $this->SetTemplate('tweetin_default_template',$s);
 //events to trigger cleanup of chart files
 $this->AddEventHandler('Core','LoginPost');
 
-$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('installed',$this->GetVersion()));
-
 ?>

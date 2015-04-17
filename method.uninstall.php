@@ -106,7 +106,5 @@ $this->DeleteTemplate();
 //$this->RemoveEventHandler('Tourney','?');
 $this->RemoveEventHandler('Core','LoginPost');
 
-$this->Audit(0, $this->Lang('friendlyname'), $this->Lang('uninstalled'));
-
 ?>
 
