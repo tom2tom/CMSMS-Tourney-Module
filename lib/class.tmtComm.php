@@ -19,7 +19,7 @@ class tmtComm
 	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		if(class_exists('CGSMS',FALSE))
+		if(class_exists('SMSG',FALSE))
 			$this->text = new tmtSMS();
 		else
 			$this->text = FALSE;

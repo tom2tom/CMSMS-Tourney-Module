@@ -454,7 +454,7 @@ EOS;
 			$data->twtfrom,
 			$help
 		);
-		$sms = class_exists('CGSMS',FALSE);
+		$sms = class_exists('SMSG',FALSE);
 		if($sms)
 		{
 			$main[] = array(
@@ -472,7 +472,7 @@ EOS;
 				$mod->Lang('help_smsprefix')
 			);
 		}
-		$ob =& $mod->GetModuleInstance('FrontEndUsers');
+		$ob = cms_utils::get_module('FrontEndUsers');
 		if($ob)
 		{
 			//TODO if possible for feu, filter on permitted groups only c.f. MBVFaq
@@ -701,10 +701,8 @@ EOS;
 
 EOS;
 		}
-		$ob =& $mod->GetModuleInstance('Booker');
-		if($ob)
+		if(class_exists('Booker',FALSE))
 		{
-			unset($ob);
 			$sched[] = array(
 				$mod->Lang('title_calendar').' (NOT YET WORKING)',
 				($pmod) ?

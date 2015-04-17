@@ -48,7 +48,7 @@ class tmtSMS
 	@from: validated phone-no to be used (if possible) as sender, or FALSE
 	@tpl: smarty template to use for message body
 	Returns: 2-member array -
-	 [0] FALSE if no addressee or no CGSMS-module gateway, otherwise boolean cumulative result of gateway->send()
+	 [0] FALSE if no addressee or no SMSG-module gateway, otherwise boolean cumulative result of gateway->send()
 	 [1] '' or error message e.g. from gateway->send() to $to ($cc errors ignored)
 	*/
 	private function DoSend(&$mod,$to,$cc,$from,$tpl)

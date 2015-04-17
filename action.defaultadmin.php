@@ -572,7 +572,7 @@ if ($padm)
 	$misc[] = array($this->Lang('title_time_format'),
 		$this->CreateInputText($id, 'tmt_time_format', $this->GetPreference('time_format'), 20),
 		$this->Lang('help_time_format'));
-	if(class_exists('CGSMS',FALSE))
+	if(class_exists('SMSG',FALSE))
 	{
 		$misc[] = array($this->Lang('title_phone_regex'),
 			$this->CreateInputText($id, 'tmt_phoneid', $this->GetPreference('phone_regex'), 30),
