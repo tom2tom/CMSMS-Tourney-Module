@@ -86,7 +86,7 @@ class Tourney extends CMSModule
 
 	function GetVersion()
 	{
-		return '0.2.0';
+		return '0.2.1';
 	}
 
 	function GetHelp()
@@ -210,7 +210,7 @@ class Tourney extends CMSModule
 
 	function MaximumCMSVersion()
 	{
-		return '1.11.99';
+		return '1.19.99';
 	}
 
 	function InstallPostMessage()
