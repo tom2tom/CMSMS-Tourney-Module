@@ -2,8 +2,7 @@
 #-------------------------------------------------------------------------
 # CMS Made Simple module: Tourney.
 # Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
-# Version: 0.2.0
-# This module allows ...
+# Version: 0.2.2
 # More info at http://dev.cmsmadesimple.org/projects/tourney
 #-------------------------------------------------------------------------
 # This module is free software; you can redistribute it and/or modify it
@@ -86,7 +85,7 @@ class Tourney extends CMSModule
 
 	function GetVersion()
 	{
-		return '0.2.1';
+		return '0.2.2';
 	}
 
 	function GetHelp()
@@ -235,7 +234,7 @@ class Tourney extends CMSModule
 		$this->InitializeFrontend();
 	}
 
-	//partial setup for pre-1.10, backend setup for 1.10
+	//partial setup for pre-1.10, backend setup for 1.10+
 	function InitializeFrontend()
 	{
 		$this->RestrictUnknownParams();
@@ -269,7 +268,7 @@ class Tourney extends CMSModule
 //		$this->SetParameterType(CLEAN_REGEXP.'/tmt_.*/',CLEAN_STRING);
 	}
 
-	//partial setup for pre-1.10, backend setup for 1.10
+	//partial setup for pre-1.10, backend setup for 1.10+
 	function InitializeAdmin()
 	{
 		//document only the parameters relevant for external (page-tag) usage
