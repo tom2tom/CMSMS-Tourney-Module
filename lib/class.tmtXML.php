@@ -87,16 +87,20 @@ class tmtXML
 
 			if($header)
 			{
+				$s = '<?xml version="1.0" standalone="yes"';
 				if($charset)
-					$xml[] = '<?xml version="1.0" encoding="'.strtoupper($charset).'"?>';
+					$s .= ' encoding="'.strtoupper($charset).'"?>';
 				else
-					$xml[] = '<?xml version="1.0"?>';
-				$xml[] = '<!DOCTYPE tourney [';
-				$xml[] = '<!ELEMENT tourney (version,date,count,bracket)>';
-				$xml[] = '<!ELEMENT version (#PCDATA)>';
-				$xml[] = '<!ELEMENT date (#PCDATA)>';
-				$xml[] = '<!ELEMENT count (#PCDATA)>';
-				$xml[] = '<!ELEMENT bracket (properties,teams,people,matches)>';
+					$s .= '?>';
+				$xml[] = $s;
+				$xml[] =<<<EOS
+<!DOCTYPE tourney [
+<!ELEMENT tourney (version,date,count,bracket)>
+<!ELEMENT version (#PCDATA)>
+<!ELEMENT date (#PCDATA)>
+<!ELEMENT count (#PCDATA)>
+<!ELEMENT bracket (properties,teams,people,matches)>
+EOS;
 				$fields1 = array_keys($properties);
 				$xml[] = '<!ELEMENT properties ('.implode(',',$fields1).')>';
 				foreach($fields1 as $thisfield)
@@ -125,23 +129,30 @@ class tmtXML
 							$xml[] = "<!ELEMENT $thisfield (#PCDATA)>";
 					}
 				}
-				$xml[] = ']>';
-				$xml[] = '<tourney>';
-				$xml[] = "\t<version>".$mod->GetVersion().'</version>';
-				$xml[] = "\t<date>".$date.'</date>';
-				$xml[] = "\t<count>".count($bracket_id).'</count>';
+				$count = count($bracket_id);
+				$xml[] =<<<EOS
+]>
+<tourney>
+\t<version>{$mod->GetVersion()}</version>
+\t<date>{$date}</date>
+\t<count>{$count}</count>
+EOS;
 				$header = FALSE;
 			}
 
-			$xml[] = "\t<bracket>";
 			//main-table fieldnames are not namespaced
-			$xml[] = "\t\t<properties>";
+			$xml[] =<<<EOS
+\t<bracket>
+\t\t<properties>
+EOS;
 			foreach($fields1 as $thisfield)
 				$xml[] = "\t\t\t<$thisfield>".$properties[$thisfield]."</$thisfield>";
 			$xml[] = "\t\t</properties>";
 
 			//to avoid conflicts, other-table fieldnames are namespaced
-			$xml[] = "\t\t<t:teams xmlns:t=\"file:///teams\">";
+			$xml[] =<<<EOS
+\t\t<t:teams xmlns:t="file:///teams">
+EOS;
 			if($teams)
 			{
 				foreach($teams as $thisteam)
@@ -152,8 +163,10 @@ class tmtXML
 					$xml[] = "\t\t\t</team>";
 				}
 			}
-			$xml[] = "\t\t</t:teams>";
-			$xml[] = "\t\t<h:people xmlns:h=\"file:///humans\">";
+			$xml[] =<<<EOS
+\t\t</t:teams>
+\t\t<h:people xmlns:h="file:///humans">
+EOS;
 			if($people)
 			{
 				foreach($people as $thisone)
@@ -164,8 +177,10 @@ class tmtXML
 					$xml[] = "\t\t\t</person>";
 				}
 			}
-			$xml[] = "\t\t</h:people>";
-			$xml[] = "\t\t<m:matches xmlns:m=\"file:///matches\">";
+			$xml[] =<<<EOS
+\t\t</h:people>
+\t\t<m:matches xmlns:m="file:///matches">
+EOS;
 			if($matches)
 			{
 				foreach($matches as $thismatch)
@@ -176,11 +191,12 @@ class tmtXML
 					$xml[] = "\t\t\t</match>";
 				}
 			}
-			$xml[] = "\t\t</m:matches>";
-			$xml[] = "\t</bracket>";
+			$xml[] =<<<EOS
+\t\t</m:matches>
+\t</bracket>
+EOS;
 		}
 		$xml[] = '</tourney>';
-
 		return implode("\n",$xml);
 	}
 
