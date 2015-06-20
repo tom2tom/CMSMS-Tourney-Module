@@ -247,9 +247,9 @@ abstract class tmtChartBase
 	}
 
 	//methods to be sub-classed for specific chart-type
-	abstract public function Layout(&$params){}
-	abstract public function Boxes(&$bdata,&$db,$titles=1){return FALSE;}
-	abstract public function Draw(&$params){}
+	abstract public function Layout(&$params);
+	abstract public function Boxes(&$bdata,&$db,$titles=1);
+	abstract public function Draw(&$params);
 }
 
 ?>
