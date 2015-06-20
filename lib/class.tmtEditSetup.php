@@ -1034,15 +1034,13 @@ EOS;
 			if($tcount > 1)
 			{
 				$jsfuncs[] = <<< EOS
-function select_all_teams() {
- var st = $('#teamsel').attr('checked');
- if(!st) st = false;
- $('#tmt_players > tbody').find('input[type="checkbox"]').attr('checked',st);
+function select_all_teams(cb) {
+ $('#tmt_players > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
 }
 
 EOS;
 				$smarty->assign('selteams',$mod->CreateInputCheckbox($id,'t',FALSE,-1,
-					'id="teamsel" onclick="select_all_teams();"'));
+					'id="teamsel" onclick="select_all_teams(this);"'));
 			}
 			else
 				$smarty->assign('selteams','');
@@ -1366,15 +1364,13 @@ EOS;
 			if($pmod && count($matches) > 1)
 			{
 				$jsfuncs[] = <<< EOS
-function select_all_matches() {
- var st = $('#matchsel').attr('checked');
- if(!st) st = false;
- $('#tmt_matches > tbody').find('input[type="checkbox"]').attr('checked',st);
+function select_all_matches(cb) {
+ $('#tmt_matches > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
 }
 
 EOS;
 				$smarty->assign('selmatches',$mod->CreateInputCheckbox($id,'m',FALSE,-1,
-					'id="matchsel" onclick="select_all_matches();"'));
+					'id="matchsel" onclick="select_all_matches(this);"'));
 			}
 			else
 				$smarty->assign('selmatches','');
@@ -1648,15 +1644,13 @@ EOS;
 				if(count($results) > 1)
 				{
 					$jsfuncs[] = <<< EOS
-function select_all_results() {
- var st = $('#resultsel').attr('checked');
- if(!st) st = false;
- $('#tmt_results > tbody').find('input[type="checkbox"]').attr('checked',st);
+function select_all_results(cb) {
+ $('#tmt_results > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
 }
 
 EOS;
 					$smarty->assign('selresults',$mod->CreateInputCheckbox($id,'r',FALSE,-1,
-						'id="resultsel" onclick="select_all_results();"'));
+						'id="resultsel" onclick="select_all_results(this);"'));
 				}
 				else
 					$smarty->assign('selresults','');

@@ -690,15 +690,13 @@ EOS;
 
 EOS;
 	$jsfuncs[] = <<< EOS
-function select_all_players() {
- var st = $('#playsel').attr('checked');
- if(!st) st = false;
- $('#team > tbody').find('input[type="checkbox"]').attr('checked',st);
+function select_all_players(cb) {
+ $('#team > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
 }
 
 EOS;
 	$smarty->assign('selectall',$this->CreateInputCheckbox($id,'p',FALSE,-1,
-		'id="playsel" onclick="select_all_players();"'));
+		'id="playsel" onclick="select_all_players(this);"'));
 } //end $pc > 1
 else
 	$smarty->assign('selectall','');

@@ -188,15 +188,13 @@ if ($comps)
 	$smarty->assign('candev',$pdev);
 	if ($ic > 1)
 	{
-		$t = $this->CreateInputCheckbox($id,'item',TRUE,FALSE,'onclick="select_all_items(this)"');
 		$jsfuncs[] = <<< EOS
-function select_all_items(b)
+function select_all_items(cb)
 {
- var st = $(b).attr('checked');
- if(!st) st = false;
- $('input[name="{$id}selitems[]"][type="checkbox"]').attr('checked',st);
+ $('input[name="{$id}selitems[]"][type="checkbox"]').attr('checked',cb.checked);
 }
 EOS;
+		$t = $this->CreateInputCheckbox($id,'item',TRUE,FALSE,'onclick="select_all_items(this)"');
 	}
 	else
 		$t = '';
@@ -401,11 +399,9 @@ EOS;
 			$offs = strpos($url,'?mact=');
 			$ajfirst = str_replace('amp;','',substr($url,$offs+1));
 			$jsfuncs[] = <<< EOS
-function select_all_groups(b)
+function select_all_groups(cb)
 {
- var st = $(b).attr('checked');
- if(!st) st = false;
- $('input[name="{$id}selgroups[]"][type="checkbox"]').attr('checked',st);
+ $('input[name="{$id}selgroups[]"][type="checkbox"]').attr('checked',cb.checked);
 }
 function ajaxData(droprow,dropcount)
 {
