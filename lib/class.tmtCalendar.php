@@ -8,7 +8,7 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
 Class: tmtCalendar
 */
 
-class tmtCalendar extends Calendar
+class tmtCalendar extends IntervalParser
 {
 	function __construct(&$mod)
 	{

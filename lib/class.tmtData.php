@@ -125,7 +125,7 @@ class tmtData
 			$data->available = NULL;
 		else
 		{
-			$cal = new Calendar($mod);
+			$cal = new tmtCalendar($mod);
 			$clean = $cal->CheckCondition($tmp,$data->locale);
 			unset($cal);
 			if($clean)
