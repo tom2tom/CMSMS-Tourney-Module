@@ -14,7 +14,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details. If you don't have a copy
 of that license, read it online at: www.gnu.org/licenses/licenses.html#AGPL
 
-Class: Calendar
+Class: IntervalParser
 */
 /**
 Calendar Availability Language
@@ -93,7 +93,7 @@ Time descriptors
  9 or 2:30 or (9,12,15:15) or 12..23 or 6..15:30 or sunrise..16 or 9..sunset-3:30
 */
 
-class Calendar
+class IntervalParser
 {
 	protected $mod; //reference to current module-object
 	/*
