@@ -19,7 +19,7 @@ class tmtSMS
 
 	function __construct()
 	{
-		$this->utils = new cgsms_utils(); //never FALSE, cuz class created after check
+		$this->utils = new smsg_utils(); //never FALSE, cuz class created after check
 		$this->gateway = $this->utils->get_gateway(); //maybe FALSE
 		$this->ccmsg = FALSE;
 		$this->fromnum = FALSE;
