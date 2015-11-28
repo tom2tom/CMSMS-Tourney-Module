@@ -14,22 +14,18 @@ class tmtCalendar extends IntervalParser
 	{
 		parent::__construct($mod);
 	}
-	
+
 	//No checks here for valid parameters - assumed done before
 	//$start is bracket-local timestamp
 	private function _GetSunData(&$bdata,$start)
 	{
-		if($bdata['timezone'])
-			$zone = $bdata['timezone'];
-		else
-		{
-			$zone = $this->mod->GetPreference('time_zone','');
-			if(!zone)
-				$zone = 'Europe/London'; //TODO BETTER e.g. func($bdata['locale'])
-		}
+		$daystamp = floor($start/84600)*84600; //midnight
 		$lat = $bdata['latitude']; //maybe 0.0
 		$long = $bdata['longitude']; //ditto
-		$daystamp = floor($start/84600)*84600; //midnight
+		$zone = $bdata['timezone'];
+		if(!$zone)
+			$zone = $this->mod->GetPreference('time_zone','Europe/London'); //TODO valid pref?
+
 		return array (
 		 'day'=>$daystamp,
 		 'lat'=>$lat,
@@ -114,25 +110,26 @@ class tmtCalendar extends IntervalParser
 
 	Get one, or array of, translated day-name(s)
 
-	@which: 1 (for Sunday) .. 7 (for Saturday), or array of such indices
+	@which: 0 (for Sunday) .. 6 (for Saturday), or array of such indices
 	@short: optional, whether to get short-form name, default FALSE
 	*/
 	function DayNames($which,$short=FALSE)
 	{
 		$k = ($short) ? 'shortdays' : 'longdays';
 		$all = explode(',',$this->mod->Lang($k));
+		$c = count($all);
 
 		if (!is_array($which))
 		{
-			if ($which > 0 && $which < 8)
-				return $all[$which-1];
+			if ($which >= 0 && $which < $c)
+				return $all[$which];
 			return '';
 		}
 		$ret = array();
 		foreach ($which as $day)
 		{
-			if ($day > 0 && $day < 8)
-				$ret[$day] = $all[$day-1];
+			if ($day >= 0 && $day < $c)
+				$ret[$day] = $all[$day];
 		}
 		return $ret;
 	}
@@ -142,7 +139,8 @@ class tmtCalendar extends IntervalParser
 
 	Get one, or array of, translated time-interval-name(s)
 
-	@which: index 0 (for 'none'), 1 (for 'minute') .. 6 (for 'year'), or array of such indices
+	@which: index 0 (for 'none'), 1 (for 'minute') .. 6 (for 'year'), or array
+		of such indices consistent with _TimeIntervals()
 	@plural: optional, whether to get plural form of the interval name(s), default FALSE
 	@cap: optional, whether to capitalise the first character of the name(s), default FALSE
 	*/
@@ -151,17 +149,23 @@ class tmtCalendar extends IntervalParser
 		$k = ($plural) ? 'multiperiods' : 'periods';
 		$all = explode(',',$this->mod->Lang($k));
 		array_unshift($all,$this->mod->Lang('none'));
+		$c = count($all);
 
-		if (!is_array($which))
+		if(!is_array($which))
 		{
-			if ($which >= 0 && $which < 7)
-				return $all[$which];
+			if($which >= 0 && $which < $c)
+			{
+				if($cap)
+					return ucfirst($all[$which]);
+				else
+					return $all[$which];
+			}
 			return '';
 		}
 		$ret = array();
 		foreach($which as $period)
 		{
-			if ($period >= 0 && $period < 7)
+			if($period >= 0 && $period < $c)
 			{
 				$ret[$period] = ($cap) ? ucfirst($all[$period]): //for current locale
 					$all[$period];
@@ -175,7 +179,7 @@ class tmtCalendar extends IntervalParser
 
 	Determine whether the interval @start to @start + @length satisfies constraints
 	specified in relevant fields in @bdata. Also returns FALSE if the
-	availability-descriptor string is malformed.
+	interval-descriptor string is malformed.
 	parent::CheckCondition() or ::ParseCondition() must be called before this func.
 
 	@bdata: reference to array of data for current bracket 	
@@ -204,7 +208,7 @@ class tmtCalendar extends IntervalParser
 
 	/**
 	SlotStart:
-	
+
 	Get start-time (timestamp) matching constraints specified in relevant fields in
 	@bdata, and	starting no sooner than @start, or ASAP within @later days after
 	the one including @start, and where the available time is at least @length.
