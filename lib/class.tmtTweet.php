@@ -112,17 +112,16 @@ class tmtTweet
 SELECT DISTINCT ?,?,?,? FROM '.$pref.'module_tmt_tweet WHERE NOT EXISTS
 (SELECT 1 FROM '.$pref.'module_tmt_tweet WHERE bracket_id=? AND handle=?)';
 		//minimal race-chance here
-		$db->Execute('BEGIN TRANSACTION');
+		$db->StartTrans();
 		$db->Execute($sql,array($pub,$priv,$bracket_id,$handle));
 		$db->Execute($sql2,array($bracket_id,$handle,$pub,$priv,$bracket_id,$handle));
-		$db->Execute('COMMIT');
 		if($bracket_id)
 		{
 			//ensure sender is current
 			$sql = 'UPDATE '.$pref.'module_tmt_brackets SET twtfrom=? WHERE bracket_id=?';
 			$db->Execute($sql,array($handle,$bracket_id));
 		}
-		return TRUE;
+		return $db->CompleteTrans();
 	}
 
 	/**

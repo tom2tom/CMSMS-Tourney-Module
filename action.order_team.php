@@ -36,20 +36,20 @@ foreach ($news as &$o)
 	$o = -(int)$o;	//<0 to prevent overwrites
 unset ($o);
 $news[] = $id;
-$db->Execute('BEGIN TRANSACTION');
+$db->StartTrans();
 if ($db->Execute ($sql,$news))
 {
 	//revert neg's
 	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=-displayorder WHERE id=? AND displayorder<0';
 	$db->Execute($sql,array($id));
-	$db->Execute('COMMIT');
-	echo $nc; //send back the count of updates
 }
 else
-{
-	$db->Execute('ROLLBACK');
+	$db->FailTrans();
+if ($db->CompleteTrans())
+	echo $nc;//send back the count of updates
+else
 	echo 0;
-}
+
 exit;
 
 ?>
