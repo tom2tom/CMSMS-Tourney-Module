@@ -17,12 +17,12 @@ of that license, read it online at: www.gnu.org/licenses/licenses.html#AGPL
 Class: IntervalParser
 */
 /**
-Calendar Availability Language
+Interval Language
 
-Availability constraints are specified in a string of the form
+Intervals are specified in a string of the form
  condition[,condition2...]
 Whitespace and newlines in the string are ignored. If more than one condition is
-specified, their order is irrelevant. 
+specified, their order is irrelevant.
 
 Each condition in the string is of the form
  [PERIOD][@][TIME]
@@ -52,6 +52,10 @@ A value which is a month- or day-name is expected to be in accord with the defau
 or a specified, locale. Month- and/or day-names may be abbreviated. The term
 'week' isn't system-pollable, and must be translated manually. Weeks always start
 on Sunday (and so 'week' can be considered equivalent to 'Sunday..Saturday').
+
+Any period-descriptor may be prefaced by (translated, any case) 'not' or 'except'
+to specify a period to be excluded from the days otherwise covered by other
+period-descriptors.
 
 A value which is a time is expected to be formatted as [h]h[:[m]m] i.e. 24-hour
 format, leading '0' optional, minutes optional but if present, the separator is
@@ -98,26 +102,27 @@ class IntervalParser
 	protected $mod; //reference to current module-object
 	/*
 	Each member of $conds is an array (
-	0 => 'focus'-level (as below) to assist interpeting PERIOD value
-		1 no period (time-only)
+	'F' => 'focus'-level (as below) to assist interpeting PERIOD value
+		1 no period i.e. any (time-only)
 		2 unqualified year
-		3 unqualified month
-		4 unqualified week
-		5 unqualified day
-		6 qualified month
-		7 qualified week
-		8 qualified month
-		9 qualified month
-		10 specfic day
-	1 => FALSE or PERIOD = structure of arrays and strings representing period-values and/or
-		period-value-ranges
-	2 => FALSE or TIME = array of strings representing time-values and/or time-value-ranges,
-		with sun-related ones first, all ordered by increasing value/range-start
+		3 unqualified month (of any year)
+		4 unqualified week (of any month? year?)
+		5 unqualified day (of any month (if numeric) or week (if day-named)
+		6 qualified month (of specific year(s)
+		7 qualified week (of specific month(s)? or year(s)?)
+		8 qualified month (of ?)
+		9 qualified month (of ?)
+		10 specfic day/date
+	'P' => FALSE or PERIOD = structure of arrays and strings representing period-values
+		and/or period-value-ranges
+	'T' => FALSE or TIME = array of strings representing time-values and/or
+		time-value-ranges, with sun-related ones first, all ordered by increasing
+		value/range-start
 	);
-	$conds will be sorted, first on [0] ascending, then on [1] TODO, then on
-	[2][?][0] ascending. Negative values in [1] are sorted after positives, but not
-	interpreted to corresponding actual values.
-	Times in [2] are not interpreted. Other than sun-related values, they can be
+	$conds will be sorted, first on ['F] ascending, then on ['P'] TODO, then on
+	['T'][?][0] ascending. Negative values in ['P'] are sorted after positives,
+	but not interpreted to corresponding actual values.
+	Times in ['T'] are not interpreted. Other than sun-related values, they can be
 	converted to midnight-relative seconds, and any overlaps 'coalesced'. Sun-related
 	values must of course be interpreted for each specific day evaluated.
 	*/
@@ -258,8 +263,8 @@ class IntervalParser
 					$loparts[3] = '12';
 				if(!isset($loparts[5]) && isset($hiparts[5]))
 				{
-					$stamp = mktime(0,0,0,(int)$loparts[3],15,(int)$loparts[1]);				
-					$loparts[5] = date('t',$stamp); //last day of specified month
+					$stamp = mktime(0,0,0,(int)$loparts[3],15,(int)$loparts[1]);
+					$loparts[5] = gmdate('t',$stamp); //last day of specified month
 				}
 			}
 			else
@@ -276,8 +281,8 @@ class IntervalParser
 						$loparts[3] = '12';
 					if(!isset($loparts[5]) && isset($hiparts[5]))
 					{
-						$stamp = mktime(0,0,0,(int)$loparts[3],15,(int)$loparts[1]);				
-						$loparts[5] = date('t',$stamp); //last
+						$stamp = mktime(0,0,0,(int)$loparts[3],15,(int)$loparts[1]);
+						$loparts[5] = gmdate('t',$stamp); //last
 					}
 				}
 				else
@@ -288,14 +293,14 @@ class IntervalParser
 							$loparts[5] = '1';
 						else
 						{
-							$stamp = mktime(0,0,0,(int)$hiparts[3],15,(int)$hiparts[1]);				
-							$loparts[5] = date('t',$stamp); //last
+							$stamp = mktime(0,0,0,(int)$hiparts[3],15,(int)$hiparts[1]);
+							$loparts[5] = gmdate('t',$stamp); //last
 						}
 					}
 					if(!isset($hiparts[5]) && isset($loparts[5]))
 					{
 						$stamp = mktime(0,0,0,(int)$hiparts[3],15,(int)$hiparts[1]);
-						$tmp = date('t',$stamp); //last
+						$tmp = gmdate('t',$stamp); //last
 						if($loparts[5] != tmp)
 							$hiparts[5] = $tmp;
 						else
@@ -352,7 +357,7 @@ class IntervalParser
 	//Compare numbers such that -ve's last
 	private static function _cmp_numbers($a,$b)
 	{
-		if(($a >= 0 && $b < 0) || ($a < 0 && $b >= 0)) 
+		if(($a >= 0 && $b < 0) || ($a < 0 && $b >= 0))
 			return ($b-$a);
 		return ($a-$b);
 	}
@@ -379,7 +384,7 @@ class IntervalParser
 		$stB = strtotime($s);
 		return ($stA-$stB);
 	}
-	
+
 	/**
 	_ParseSequence:
 
@@ -501,7 +506,7 @@ class IntervalParser
 		unset($val);
 		if($parts == FALSE)
 			return '';
-		//remove dup's without sorting 
+		//remove dup's without sorting
 		$parts = array_flip($parts);
 		if(count($parts) > 1)
 		{
@@ -518,8 +523,8 @@ class IntervalParser
 
 	private static function _cmp_periods($a,$b)
 	{
-		$sa = $a['focus'];
-		$sb = $b['focus'];
+		$sa = $a['F'];
+		$sb = $b['F'];
 //		if($sa != $sb)
 			return ($sa-$sb);
 		//TODO
@@ -531,7 +536,7 @@ class IntervalParser
 	Depending on @report, returns sanitised variant of @str or array, or in either
 	case FALSE upon error;
 	*/
-//	private 
+//	private
 	function _PeriodClean($str,$report)
 	{
 		$parts = array();
@@ -551,11 +556,11 @@ class IntervalParser
 						if(0)
 						{
 							//TODO handle 'of' brackets
-							//TODO $one['of'] = 
+							//TODO $one['of'] =
 						}
 						else
 						{
-							//TODO $one['of'] = 
+							//TODO $one['of'] =
 							$s = $p+1;
 							$t = self::_ParseSequence(substr($str,$s,$e-$s),FALSE); //no nesting supported
 							if(is_array($t))
@@ -582,7 +587,7 @@ class IntervalParser
 				$e = self::_EndRange($str,$p);
 				if($s != -1 && $e != -1)
 				{
-					//can't safely create range sub-array before $parts[] sort and de-dup 
+					//can't safely create range sub-array before $parts[] sort and de-dup
 					$t = self::_ParseRange(substr($str,$s,$e-$s+1),TRUE);
 					if($t !== FALSE)
 					{
@@ -635,7 +640,7 @@ class IntervalParser
 	{
 		$sa = strpos($a,'..');
 		if($sa !== FALSE)
-			$a = substr($a,0,$sa);		
+			$a = substr($a,0,$sa);
 		$sb = strpos($b,'..');
 		if($sb !== FALSE)
 			$b = substr($b,0,$sb);
@@ -812,7 +817,7 @@ plaintimes:
 				$e = self::_EndRange($str,$p);
 				if($s != -1 && $e != -1)
 				{
-					//cannot safely create range-array before $parts[] sort and de-dup 
+					//cannot safely create range-array before $parts[] sort and de-dup
 					$t = self::_ParseRange(substr($str,$s,$e-$s+1),TRUE);
 					if($t !== FALSE)
 					{
@@ -877,41 +882,48 @@ plaintimes:
 	/**
 	_CreateConditions:
 
-	Process condition(s) from @avail into $this->conds, and if @report is TRUE,
-	construct a 'sanitised' variant of @avail.
+	Process condition(s) from @descriptor into $this->conds, and if @report is TRUE,
+	construct a 'sanitised' variant of @descriptor.
 	Depending on @report, returns TRUE or the cleaned variant, or in either case
 	FALSE upon error.
-	Un-necessary brackets are excised. @avail split on outside-bracket commas.
-	All day-names aliased to D1..D7, all month-names aliased to M1..M12,
-	'sunrise' to R, 'sunset' to S, 'week' to W, whitespace & newlines gone.
-
-	@available: availability-condition string
-	@locale: locale identifier string, for localising day/month names
-	  possibly present in @available
-	@report: optional, whether to construct a cleaned variant of @avail after parsing,
+	@descriptor is split on outside-bracket commas. In resultant PERIOD and/or TIME
+	descriptors:
+	 un-necessary brackets are excised
+	 whitespace & newlines excised
+	 all day-names (translated) tokenised to D1..D7
+	 all month-names (translated) to M1..M12
+	'sunrise' (translated) to R
+	'sunset' (translated) to S
+	'week' (translated) to W
+	@descriptor: availability-condition string
+	@locale: UNUSED locale identifier string, for correct capitalising of interval-names
+	  possibly present in @descriptor
+	@report: optional, whether to construct a cleaned variant of @descriptor after parsing,
 		default FALSE
 	*/
-//	private 
-	function _CreateConditions($avail,$locale,$report=FALSE)
+//	private
+	function _CreateConditions($descriptor,/*$locale,*/$report=FALSE)
 	{
 		$this->conds = FALSE;
-	
-		$gets = range(1,7);
-		$oldloc = FALSE;
+
+		$gets = range(0,6);
+/*		$oldloc = FALSE;
 		if($locale)
 		{
 			$oldloc = setlocale(LC_TIME,"0");
 			if(!setlocale(LC_TIME,$locale))
 				$oldloc = FALSE;
 		}
+*/
 		//NB some of these may be wrong, due to race on threaded web-server
 		$longdays = self::AdminDayNames($gets);
 		$shortdays = self::AdminDayNames($gets,FALSE);
 		$gets = range(1,12);
 		$longmonths = self::AdminMonthNames($gets);
 		$shortmonths = self::AdminMonthNames($gets,FALSE);
-		if($oldloc)
+/*		if($oldloc)
 			setlocale(LC_TIME,$oldloc);
+*/
 		unset($gets);
 
 		$daycodes = array();
@@ -928,7 +940,7 @@ plaintimes:
 			array($rise,$set,$week,' ',"\n"));
 		$repls = array_merge($daycodes,$daycodes,$monthcodes,$monthcodes,
 			array('R','S','W','',''));
-		$clean = str_replace($finds,$repls,$avail);
+		$clean = str_replace($finds,$repls,$descriptor);
 		if(preg_match('/[^\dDMRSW@:+-.,()]/',$clean))
 			return FALSE;
 		$l = strlen($clean);
@@ -1021,24 +1033,24 @@ plaintimes:
 				$e = (strlen($one) == ($p+1)); //trailing '@'
 				if($p == 0 && !$e)
 				{
-					$parsed[0] = 1; //enum for only-time-specified
-					$parsed[1] = FALSE;
-					$parsed[2] = self::_TimeClean($one,$report);
+					$parsed['F'] = 1; //enum for only-time-specified
+					$parsed['P'] = FALSE;
+					$parsed['T'] = self::_TimeClean($one,$report);
 				}
 				else //$p > 0 || $e
 					if($p > 0 && $e)
 				{
-					$parsed[1] = self::_PeriodClean($one,$report);
+					$parsed['P'] = self::_PeriodClean($one,$report);
 					if(!$report)
-						$parsed[0] = $parsed[1]['focus'];
-					$parsed[2] = FALSE;
+						$parsed['F'] = $parsed['P'][0]; //CHECKME key ['focus'];
+					$parsed['T'] = FALSE;
 				}
 				elseif($p > 0)
 				{
-					$parsed[1] = self::_PeriodClean(substr($one,0,$p),$report);
+					$parsed['P'] = self::_PeriodClean(substr($one,0,$p),$report);
 					if(!$report)
-						$parsed[0] = $parsed[1]['focus'];
-					$parsed[2] = self::_TimeClean(substr($one,$p+1),$report);
+						$parsed['F'] = $parsed['P'][0]; //CHECKME key ['focus'];
+					$parsed['T'] = self::_TimeClean(substr($one,$p+1),$report);
 				}
 			}
 			else //PERIOD OR TIME
@@ -1073,23 +1085,23 @@ plaintimes:
 				//end of analysis, for now
 				if ($condtype == 1) //time
 				{
-					$parsed[0] = 1;
-					$parsed[1] = FALSE;
-					$parsed[2] = self::_TimeClean($one,$report);
+					$parsed['F'] = 1;
+					$parsed['P'] = FALSE;
+					$parsed['T'] = self::_TimeClean($one,$report);
 				}
 				elseif($condtype == 2) //period
 				{
-					$parsed[1] = self::_PeriodClean($one,$report);
+					$parsed['P'] = self::_PeriodClean($one,$report);
 					if(!$report)
-						$parsed[0] = $parsed[1]['focus'];
-					$parsed[2] = FALSE;
+						$parsed['F'] = $parsed['P'][0]; //CHECKME key['focus'];
+					$parsed['T'] = FALSE;
 				}
 				else //could be either - re-consider, after all are known
 				{
 					$repeat = TRUE;
 					//park as a time-value, unset parsed[0] signals reconsideration needed
-					$parsed[1] = FALSE;
-					$parsed[2] = $one;
+					$parsed['P'] = FALSE;
+					$parsed['T'] = $one;
 				}
 			}
 			$this->conds[] = $parsed;
@@ -1103,7 +1115,7 @@ plaintimes:
 			//if any PERIOD recorded, assume all 'bare' numbers are days-of-month
 			foreach($this->conds as &$one)
 			{
-				if($one[1])
+				if($one['P'])
 				{
 					$useday = TRUE;
 					break;
@@ -1152,18 +1164,18 @@ plaintimes:
 			//now cleanup the logged values
 			foreach($this->conds as &$one)
 			{
-				if (!isset($one[0]))
+				if (!isset($one['F']))
 				{
 					if($useday)
 					{
 						//treat this as a day-value
-						$one[0] = 5;
-						$one[1] = $one[2];
-						$one[2] = FALSE;
+						$one['F'] = 5;
+						$one['P'] = $one['T'];
+						$one['T'] = FALSE;
 					}
 					else //time-only
 					{
-						$one[0] = 1;
+						$one['F'] = 1;
 					}
 				}
 			}
@@ -1181,14 +1193,14 @@ plaintimes:
 					$p = 1;
 				else
 					$s .= ',';
-				if($one[1])
+				if($one['P'])
 				{
-					$s .= $one[1];
-					if($one[2])
-						$s .= '@'.$one[2];
+					$s .= $one['P'];
+					if($one['T'])
+						$s .= '@'.$one['T'];
 				}
-				elseif($one[2])
-					$s .= $one[2];
+				elseif($one['T'])
+					$s .= $one['T'];
 			}
 			unset($one);
 			$finds = array_merge($daycodes,$monthcodes,array('R','S','W'));
@@ -1200,7 +1212,7 @@ plaintimes:
 	}
 
 	//========== PUBLIC FUNCS ===========
- 
+
 	/**
 	AdminMonthNames:
 
@@ -1215,7 +1227,7 @@ plaintimes:
 	{
 		$ret = array();
 		$stamp = time();
-		$thism = date('n',$stamp); //1 to 12 representing January .. December
+		$thism = gmdate('n',$stamp); //1 to 12 representing January .. December
 		if (!is_array($which))
 			$which = array($which);
 		$f = ($full) ? 'F' : 'M';
@@ -1223,11 +1235,11 @@ plaintimes:
 		{
 			$offs = $month-$thism;
 			if ($offs < 0)
-				$ret[] = date($f,strtotime($offs.' months',$stamp));
+				$ret[] = gmdate($f,strtotime($offs.' months',$stamp));
 			elseif ($offs > 0)
-				$ret[] = date($f,strtotime('+'.$offs.' months',$stamp));
+				$ret[] = gmdate($f,strtotime('+'.$offs.' months',$stamp));
 			else
-				$ret[] = date($f,$stamp);
+				$ret[] = gmdate($f,$stamp);
 		}
 		if (count($which) > 1)
 			return $ret;
@@ -1248,7 +1260,7 @@ plaintimes:
 	{
 		$ret = array();
 		$stamp = time();
-		$today = date('w',$stamp); //0 to 6 representing the day of the week Sunday = 0 .. Saturday = 6
+		$today = gmdate('w',$stamp); //0 to 6 representing the day of the week Sunday = 0 .. Saturday = 6
 		if (!is_array($which))
 			$which = array($which);
 		$f = ($full) ? 'l' : 'D';
@@ -1256,11 +1268,11 @@ plaintimes:
 		{
 			$offs = $day-$today-1;
 			if ($offs < 0)
-				$ret[] = date($f,strtotime($offs.' days',$stamp));
+				$ret[] = gmdate($f,strtotime($offs.' days',$stamp));
 			elseif ($offs > 0)
-				$ret[] = date($f,strtotime('+'.$offs.' days',$stamp));
+				$ret[] = gmdate($f,strtotime('+'.$offs.' days',$stamp));
 			else
-				$ret[] = date($f,$stamp);
+				$ret[] = gmdate($f,$stamp);
 		}
 		if (count($which) > 1)
 			return $ret;
@@ -1270,49 +1282,43 @@ plaintimes:
 	/**
 	ParseCondition:
 
-	Parse calendar-constraint @available and store result in $this->conds.
+	Parse @descriptor and store result in $this->conds.
 	Returns TRUE upon success, or if no constraint applies, otherwise FALSE.
 	This (or CheckCondition()) must be called before any poll for a suitable period,
 	or check for a matching period.
 
-	@available: availability-condition string
-	@locale: optional, locale identifier string for localising day/month names
-	  possibly present in @available, default ''
+	@descriptor: interval-descriptor string
+	@locale: UNUSED optional, locale identifier string for correct capitalising of day/month names
+	  possibly present in @descriptor, default ''
 	*/
-	function ParseCondition($available,$locale='')
+	function ParseCondition($descriptor/*,$locale=''*/)
 	{
-		if(!$available)
-		{
-			$this->conds = FALSE;
-			return TRUE;
-		}
-//	return self::_CreateConditions($available,$locale);
+		if($descriptor)
+			return self::_CreateConditions($descriptor/*,$locale*/);
+		$this->conds = FALSE;
 		return TRUE;
 	}
 
 	/**
 	CheckCondition:
 
-	Determine whether calendar-constraint @available has correct syntax.
-	Returns '' if @available is FALSE (no constraint applies), or a cleaned-up
-	variant of @available, or FALSE if @available is bad.
-	Also stores the parsed @available in $this->conds. This (or ParseCondition())
+	Determine whether interval @descriptor has correct syntax.
+	Returns '' if @descriptor is FALSE (no constraint applies), or a cleaned-up
+	variant of @descriptor, or FALSE if @descriptor is bad.
+	Also stores parsed form of @descriptor in array $this->conds. This (or ParseCondition())
 	must be called before any poll for a suitable period, or check for a matching
 	period.
 
-	@available: availability-condition string
-	@locale: optional, locale identifier string for localising day/month names
-	  possibly present in @available, default ''
+	@descriptor: availability-condition string
+	@locale: UNUSED optional, locale identifier string for correct capitalising of day/month names
+	  possibly present in @descriptor, default ''
 	*/
-	function CheckCondition($available,$locale='')
+	function CheckCondition($descriptor/*,$locale=''*/)
 	{
-		if(!$available)
-		{
-			$this->conds = FALSE;
-			return '';
-		}
-//		return self::_CreateConditions($available,$locale,TRUE);
-		return trim($available);
+		if($descriptor)
+			return self::_CreateConditions($descriptor,/*$locale,*/TRUE);
+		$this->conds = FALSE;
+		return '';
 	}
 
 }
