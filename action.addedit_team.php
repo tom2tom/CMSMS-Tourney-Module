@@ -299,7 +299,8 @@ elseif($pmod)
 	$hidden .= $this->CreateInputHidden($id,'tem_tellall',0);
 
 $smarty->assign('opts',$opts);
-$theme = cmsms()->get_variable('admintheme');
+$theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
+	cms_utils::get_theme_object();
 $iconinfo = $theme->DisplayImage('icons/system/info.gif',$this->Lang('showhelp'),'','','systemicon tipper');
 $smarty->assign('showtip',$iconinfo);
 
@@ -487,7 +488,6 @@ if($rows)
 	$pc = count($rows);
 	$newo = $pc + 1;
 	$players = array();
-	$theme = cmsms()->get_variable('admintheme'); //CMSMS 1.9+
 	$rowclass = 'row1';
 	$indx = 1;
 	$finds = array('/class="(.*)"/','/id=.*\[\]" /'); //for xhtml string cleanup

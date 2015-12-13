@@ -337,7 +337,8 @@ EOS;
 		$this->MatchExists($data->bracket_id);
 		$funcs = new tmtData();
 
-		$theme = cmsms()->get_variable('admintheme');
+		$theme = ($mod->before20) ? cmsms()->get_variable('admintheme'):
+			cms_utils::get_theme_object();
 		$iconinfo = $theme->DisplayImage('icons/system/info.gif',$mod->Lang('showhelp'),'','','systemicon tipper');
 		$smarty->assign('showtip',$iconinfo);
 
@@ -890,7 +891,6 @@ EOS;
 			$teams = array();
 			$indx = 1;
 			$rowclass = 'row1'; //used to alternate row colors
-			$theme = $gCms->variables['admintheme'];
 			if($pmod)
 			{
 				$downtext = $mod->Lang('down');

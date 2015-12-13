@@ -69,7 +69,8 @@ $smarty->assign('title_group',$this->Lang('title_group'));
 $smarty->assign('title_status',$this->Lang('title_status'));
 
 $gCms = cmsms();
-$theme = $gCms->variables['admintheme'];
+$theme = ($this->before20) ? $gCms->get_variable('admintheme'):
+	cms_utils::get_theme_object();
 
 $comps = array();
 $jsfuncs = array();

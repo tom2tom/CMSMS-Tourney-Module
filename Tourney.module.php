@@ -52,6 +52,8 @@ class Tourney extends CMSModule
 	const MTIED = 15;
 	const NOWIN = 16;
 
+	public $before20;
+
 	protected $PermAdminName = 'Modify TourneyModule Settings';
 	protected $PermModName = 'Modify Brackets';
 	protected $PermScoreName = 'Modify BracketData';
@@ -60,7 +62,9 @@ class Tourney extends CMSModule
 	function __construct()
 	{
 		parent::__construct();
-		$this->RegisterModulePlugin();
+		$this->RegisterModulePlugin(TRUE);
+		global $CMS_VERSION;
+		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
 	}
 
 	function AllowAutoInstall()
@@ -737,7 +741,8 @@ Europe/Vilnius'
 			$p = strpos($iconfile,'/'); 
 			if ($p === FALSE)
 			{
-				$theme = cmsms()->get_variable('admintheme');
+				$theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
+					cms_utils::get_theme_object();
 				$imgstr = $theme->DisplayImage('icons/system/'.$iconfile,$text,'','','fakeicon systemicon');
 				//trim string like <img src="..." class="fakeicon systemicon" alt="$text" title="$text" />
 				$imgstr = str_replace(array('<img','/>'),array('',''),$imgstr);
@@ -958,5 +963,4 @@ Europe/Vilnius'
 		parent::DoAction($name, $id, $params, $returnid);
 	}
 }
-
 ?>
