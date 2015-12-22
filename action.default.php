@@ -120,9 +120,10 @@ if(empty($params['view']) || $params['view'] == 'chart')
 		$smarty->assign('description',$bdata['description']);
 		$smarty->assign('owner',$bdata['owner']);
 		$smarty->assign('contact',$bdata['contact']);
+		$rooturl = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
 		$basename = basename($chartfile);
 		list($height,$width) = $lyt->GetChartSize();
-		$smarty->assign('image',$this->CreateImageObject($config['root_url'].'/tmp/'.$basename,(int)$height+30));
+		$smarty->assign('image',$this->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30));
 		$smarty->assign('list',$this->CreateInputSubmit($id,'list',$this->Lang('list')));
 		$dt = new DateTime('@'.filemtime($chartfile),new DateTimeZone($bdata['timezone']));
 		$fmt = $this->GetPreference('date_format').' '.$this->GetPreference('time_format');

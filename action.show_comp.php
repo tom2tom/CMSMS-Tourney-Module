@@ -61,7 +61,8 @@ if (!$list)
 	{
 		$basename = basename($chartfile);
 		list($height,$width) = $lyt->GetChartSize();
-		$smarty->assign('image',$this->CreateImageObject($config['root_url'].'/tmp/'.$basename,(int)$height+30));
+		$rooturl = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
+		$smarty->assign('image',$this->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30));
 		$tpl = 'admin_chart.tpl';
 		if($titles == 0)
 			//force refresh next time

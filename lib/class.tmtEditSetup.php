@@ -1470,9 +1470,10 @@ EOS;
 					$db = cmsms()->GetDb();
 		 			$sql = 'UPDATE '.cms_db_prefix().'module_tmt_brackets SET chartbuild=1 WHERE bracket_id=?';
 					$db->Execute($sql,array($data->bracket_id));
+					$rooturl = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
 					$basename = basename($chartfile);
 					list($height,$width) = $lyt->GetChartSize();
-					$smarty->assign('image',$mod->CreateImageObject($config['root_url'].'/tmp/'.$basename,(int)$height+30));
+					$smarty->assign('image',$mod->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30));
 				}
 				else
 				{
