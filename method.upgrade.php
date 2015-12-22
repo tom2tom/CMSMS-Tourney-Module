@@ -131,7 +131,6 @@ switch ($oldversion)
 	$sql = 'INSERT INTO '.$pref.'module_tmt_groups (group_id,name,displayorder) VALUES (0,?,1)';
 	$db->Execute($sql,array($this->Lang('groupdefault')));
 
-	break;
 }
 
 ?>
