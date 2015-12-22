@@ -133,6 +133,7 @@ elseif(isset($params['print']))
 			$zip = FALSE;
 		else
 		{
+			//charts in nominal tmp directory (ignore where runtime-root actually is)
 			$fn = 'brackets-charts-'.implode('-',$vals).'.zip';
 			$fp = cms_join_path($config['root_path'],'tmp',$fn);
 			$zip = new ZipArchive();
