@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------
 # CMS Made Simple module: Tourney.
 # Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
-# Version: 0.2.2
+# Version: 0.3
 # More info at http://dev.cmsmadesimple.org/projects/tourney
 #-------------------------------------------------------------------------
 # This module is free software; you can redistribute it and/or modify it
@@ -89,7 +89,7 @@ class Tourney extends CMSModule
 
 	function GetVersion()
 	{
-		return '0.2.2';
+		return '0.3';
 	}
 
 	function GetHelp()
@@ -134,7 +134,7 @@ class Tourney extends CMSModule
 
 	function LazyLoadAdmin()
 	{
-		return FALSE; //need immediate load for menu creation
+		return TRUE;
 	}
 
 	function GetAdminSection()
@@ -152,15 +152,18 @@ class Tourney extends CMSModule
 		return $this->CheckAccess();
 	}
 
-	function AdminStyle()
+/*	function AdminStyle()
 	{
 	}
-
+*/
 	function GetHeaderHTML()
 	{
 		$url = $this->GetModuleURLPath();
-		return '<link rel="stylesheet" type="text/css" href="'.$url.'/css/pikaday.css" />
-<link rel="stylesheet" type="text/css" href="'.$url."/css/module.css\" />\n";
+		return <<<EOS
+<link rel="stylesheet" type="text/css" href="{$url}/css/pikaday.css" />
+<link rel="stylesheet" type="text/css" href="{$url}/css/module.css" />
+
+EOS;
 	}
 
 	function SuppressAdminOutput(&$request)
@@ -194,13 +197,14 @@ class Tourney extends CMSModule
 
 	function GetDependencies()
 	{
-		return array();
+		return array('Notifier'=>'0.1');
 	}
 	//for 1.11+
 	function AllowSmartyCaching()
 	{
 		return FALSE;
 	}
+
 	function LazyLoadFrontend()
 	{
 		return TRUE;
@@ -211,11 +215,10 @@ class Tourney extends CMSModule
 		return '1.9';
 	}
 
-	function MaximumCMSVersion()
+/*	function MaximumCMSVersion()
 	{
-		return '1.19.99';
 	}
-
+*/
 	function InstallPostMessage()
 	{
 		return $this->Lang('postinstall');
@@ -231,11 +234,11 @@ class Tourney extends CMSModule
 		return $this->Lang('postuninstall');
 	}
 
-	//setup for pre-1.10
+	//for pre-1.10
 	function SetParameters()
 	{
-		$this->InitializeAdmin();
-		$this->InitializeFrontend();
+		self::InitializeAdmin();
+		self::InitializeFrontend();
 	}
 
 	//partial setup for pre-1.10, backend setup for 1.10+
@@ -322,7 +325,7 @@ class Tourney extends CMSModule
 		$val = (isset($params['resultview']))?$params['resultview']:'future';
 		$hidden .= $this->CreateInputHidden($id,'resultview',$val);
 		if(!$tabname)
-			$tabname = $this->GetActiveTab($params);
+			$tabname = self::GetActiveTab($params);
 		$hidden .= $this->CreateInputHidden($id,'active_tab',$tabname);
 		return $hidden;
 	}
@@ -379,7 +382,7 @@ class Tourney extends CMSModule
 			if ($name)
 				return $name;
 		}
-		return ($missing) ? $this->MissingName() : '';
+		return ($missing) ? self::MissingName() : '';
 	}
 
 	function MissingName()
@@ -580,7 +583,7 @@ Europe/Vilnius'
 
 		if($zone)
 		{
-			switch($this->GetZoneDateType($zone))
+			switch(self::GetZoneDateType($zone))
 			{
 			 case 'us':
 				$repl = array('2','1','3'); //indices for MDY
@@ -692,6 +695,7 @@ Europe/Vilnius'
 */
 	function ChartImageFile($bracket_id, $exists=TRUE)
 	{
+		//charts in nominal tmp directory (ignore where runtime-root actually is)
 		$config = cmsms()->GetConfig();
 		$chartfile = cms_join_path($config['root_path'],'tmp','bracket-'.$bracket_id.'-chart.pdf');
 		if (!$exists || file_exists($chartfile))
@@ -866,11 +870,10 @@ Europe/Vilnius'
 	    {
 			switch ($eventname)
 			{
-			case 'LoginPost':
+			 case 'LoginPost':
 				//clear chart files older than 24 hrs
 				$stamp = time()-86400; //24*60*60
 				$limit = gmdate("Y-m-d H:i:s",$stamp);
-				$db = cmsms()->GetDb();
 				if(empty($config))
 					$config = cmsms()->GetConfig();
 				$charts = cms_join_path($config['root_path'],'tmp','bracket-*-chart.pdf');
