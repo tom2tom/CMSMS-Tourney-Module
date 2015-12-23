@@ -35,6 +35,8 @@ $lang['err_template']='Display-template error';
 $lang['err_text']='Invalid SMS content';
 $lang['err_value']='Invalid parameter value'; 
 $lang['noname']='name missing';
+$lang['nochannel'] = 'No message can be sent, no communication channel is available. Please advise the system administrator.';
+$lang['nonotifier'] = 'No message can be sent, the relevant system is not installed. Please advise the system administrator.';
 
 $lang['tab_config']='Settings';
 $lang['tab_groups']='Groups';
