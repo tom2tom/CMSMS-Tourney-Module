@@ -10,83 +10,44 @@ This class is not suitable for static method-calling
 */
 class tmtMail
 {
-	private $mlr;
-	private $loaded;
+	private $mod; //reference to Tourney module object
+	private $mlr; //reference to EmailSender object
+	private $smarty; //reference to current smarty object
 
-	function __construct(&$mod)
+	function __construct(&$mod,&$mlr,&$smarty)
 	{
-			$this->mlr = cms_utils::get_module('CMSMailer'); //never FALSE, cuz class created after check
-			$this->loaded = FALSE;
+		$this->mod = $mod;
+		$this->mlr = $mlr;
+		$this->smarty = $smarty;
 	}
 
 	/**
 	DoSend:
 	Sends email notice(s) about a match
-	@mod: reference to current module object
 	@bdata: reference to array of bracket-table data
 	@to: array of 'To' destinations. Key = recipient name, value = validated email address
 	@cc: array of 'CC' destinations, or FALSE. Array key = recipient name, value = validated email address
-	@tpl: smarty template to use for message body 
+	@tpl: smarty template to use for message body
 	Returns: 2-member array -
 	 [0] FALSE if no addressee or no mlr module, otherwise boolean result of mlr->Send()
 	 [1] '' or error message e.g. from mlr->Send()
 	*/
-	private function DoSend(&$mod,&$bdata,$to,$cc,$tpl)
+	private function DoSend(&$bdata,$to,$cc,$tpl)
 	{
 		if(!($to || $cc))
-			return array(FALSE,'');
+			return array(FALSE,''); //nothing to do
 		if(!$this->mlr)
-			return array(FALSE,$mod->Lang('err_system'));
-		if(!$this->loaded)
-		{
-			$this->mlr->_load();
-			$this->loaded = TRUE;
-		}
+			return array(FALSE,$this->mod->Lang('err_system'));
 
-		$subject = $mod->Lang('tournament').' - '.$bdata['name'];
+		$subject = $this->mod->Lang('tournament').' - '.$bdata['name'];
+		if(!array_key_exists($bdata['owner'],$to))
+			$from = $bdata['owner'];
+		else
+			$from = FALSE;
+		$body = $this->mod->ProcessDataTemplate($tpl);
 		$html = ($bdata['html'] == '1');
 
-		$body = $mod->ProcessDataTemplate($tpl);
-		if($html)
-		{
-			//PHP is bad at setting suitable line-breaks;
-			$body2 = str_replace(array('<br /><br />','<br />','<br><br>','<br>'),
-				array('','','',''),$body);
-			$body2 = strip_tags(html_entity_decode($body2));
-		}
-//TODO	conform message encoding to $mlr->CharSet
-
-		$m = $this->mlr;
-		$m->reset();
-		if($to)
-		{
-			foreach($to as $name=>$address)
-				$m->AddAddress($address,$name);
-			if($cc)
-				foreach($cc as $name=>$address)
-					$m->AddCC($address,$name);
-			if(!array_key_exists($bdata['owner'],$to))
-				$m->SetFromName($bdata['owner']);
-		}
-		elseif($cc)
-			foreach($cc as $name=>$address)
-				$m->AddAddress($address,$name);
-//if default sender isn't wanted $m->SetFrom();
-		$m->SetSubject($subject);
-		$m->IsHTML($html);
-		if($html)
-		{
-			$m->SetBody($body);
-			$m->SetAltBody($body2);
-		}
-		else
-		{
-			$m->SetBody(html_entity_decode($body));
-		}
-		$res = $m->Send();
-		$err = ($res) ? '' : $m->GetErrorInfo();
-		$m->reset();
-		return array($res,$err);
+		return $this->mlr->Send($subject,$to,$cc,FALSE,$from,$body,$html);
 	}
 
 	/**
@@ -113,7 +74,7 @@ class tmtMail
 			$sends = array();
 			foreach($members as $one)
 			{
-				$clean = self::ValidateAddress($one['contact']);
+				$clean = $this->mlr->ValidateAddress($one['contact']);
 				if($clean)
 				{
 					$sends[$one['name']] = $clean;
@@ -127,56 +88,8 @@ class tmtMail
 	}
 
 	/**
-	ValidateAddress:
-	Check that @address looks roughly like a valid email address
-	Tries to use PHP(5.2+) built-in validator, reverts to a reasonably competent
-	regex validator. Conforms approximately to RFC2822.
-	Sourced from CMSMailer module.
-	@address: one, or a comma-separated series of, address(es) to check
-	Returns: a trimmed valid email address, or array of them, or FALSE
-	*/
-	public function ValidateAddress($address)
-	{
-		$internal = function_exists('filter_var'); //PHP 5.2+
-		if(!$internal)
-			$pattern = '/^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9_](?:[a-zA-Z0-9_\-](?!\.)){0,61}[a-zA-Z0-9_-]?\.)+[a-zA-Z0-9_](?:[a-zA-Z0-9_\-](?!$)){0,61}[a-zA-Z0-9_]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/';
-		if(strpos($address,',') === FALSE)
-		{
-			$address = trim($address);
-			if($internal)
-			{
-				if(filter_var($address,FILTER_VALIDATE_EMAIL) !== FALSE)
-					return $address;
-			}
-			elseif(preg_match($pattern,$address))
-				return $address;
-		}
-		else
-		{
-			$parts = explode(',',$address);
-			$address = array();
-			foreach($parts as $one)
-			{
-				$one = trim($one);
-				if($internal)
-				{
-					if(filter_var($one,FILTER_VALIDATE_EMAIL) !== FALSE)
-						$address[] = $one;
-				}
-				elseif(preg_match($pattern,$one))
-					$address[] = $one;
-			}
-			if($address)
-				return $address;
-		}
-		return FALSE;
-	}
-
-	/**
 	TellOwner:
 	Sends email to tournament owner if possible, and then with cc to one member of both teams in the match
-	@mod: reference to current module object
-	@smarty: reference to CMSMS smarty object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@lines: array of lines for message body
@@ -184,10 +97,10 @@ class tmtMail
 	 [0] TRUE|FALSE representing success
 	 [1] '' or specific failure message
 	*/
-	public function TellOwner(&$mod,&$smarty,&$bdata,&$mdata,$lines)
+	public function TellOwner(&$bdata,&$mdata,$lines)
 	{
 		//owner
-		$clean = self::ValidateAddress($bdata['contact']);
+		$clean = $this->mlr->ValidateAddress($bdata['contact']);
 		if($clean)
 			$to[$bdata['owner']] = $clean;
 		else
@@ -210,19 +123,17 @@ class tmtMail
 		}
 		//submitted data
 		$sep = ($bdata['html']) ? '<br>' : "\n";
-		$smarty->assign('report',implode($sep,$lines));
+		$this->smarty->assign('report',implode($sep,$lines));
 
-		$tpl = $mod->GetTemplate('mailin_'.$bdata['bracket_id'].'_template');
+		$tpl = $this->mod->GetTemplate('mailin_'.$bdata['bracket_id'].'_template');
 		if($tpl == FALSE)
-			$tpl = $mod->GetTemplate('mailin_default_template');
-		return self::DoSend($mod,$bdata,$to,$cc,$tpl);
+			$tpl = $this->mod->GetTemplate('mailin_default_template');
+		return self::DoSend($bdata,$to,$cc,$tpl);
 	}
 
 	/**
 	TellTeams:
 	Sends email to one or all members of both teams in the match, with cc to the owner
-	@mod: reference to current module object
-	@smarty: reference to CMSMS smarty object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@tpl: enum for type of message: 1 = announcement, 2 = cancellation, 3 = score-request
@@ -232,28 +143,28 @@ class tmtMail
 	 [0] TRUE|FALSE representing success, or TRUE if nobody to send to
 	 [1] '' or specific failure message
 	*/
-	public function TellTeams(&$mod,&$smarty,&$bdata,&$mdata,$tpl,$first=FALSE)
+	public function TellTeams(&$bdata,&$mdata,$tpl,$first=FALSE)
 	{
 		switch($tpl)
 		{
 		 case 1:
-			$tpl = $mod->GetTemplate('mailout_'.$bdata['bracket_id'].'_template');
+			$tpl = $this->mod->GetTemplate('mailout_'.$bdata['bracket_id'].'_template');
 			if($tpl == FALSE)
-				$tpl = $mod->GetTemplate('mailout_default_template');
+				$tpl = $this->mod->GetTemplate('mailout_default_template');
 			break;
 		 case 2:
-			$tpl = $mod->GetTemplate('mailcancel_'.$bdata['bracket_id'].'_template');
+			$tpl = $this->mod->GetTemplate('mailcancel_'.$bdata['bracket_id'].'_template');
 			if($tpl == FALSE)
-				$tpl = $mod->GetTemplate('mailcancel_default_template');
+				$tpl = $this->mod->GetTemplate('mailcancel_default_template');
 			break;
 		 case 3:
-			$tpl = $mod->GetTemplate('mailrequest_'.$bdata['bracket_id'].'_template');
+			$tpl = $this->mod->GetTemplate('mailrequest_'.$bdata['bracket_id'].'_template');
 			if($tpl == FALSE)
-				$tpl = $mod->GetTemplate('mailrequest_default_template');
+				$tpl = $this->mod->GetTemplate('mailrequest_default_template');
 			break;
 		}
 
-		$clean = self::ValidateAddress($bdata['contact']);
+		$clean = $this->mlr->ValidateAddress($bdata['contact']);
 		$cc = ($clean) ? array($bdata['owner']=>$clean) : FALSE;
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
@@ -264,37 +175,37 @@ class tmtMail
 			if($to)
 			{
 				reset($to);
-				$smarty->assign('recipient',key($to));
+				$this->smarty->assign('recipient',key($to));
 				$tc = count($to);
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
-				$smarty->assign('toall',$toall);
+				$this->smarty->assign('toall',$toall);
 				if ((int)$mdata['teamB'] > 0)
-					$op = $mod->TeamName($mdata['teamB']);
+					$op = $this->mod->TeamName($mdata['teamB']);
 				else
 				{
 /*				switch($bdata['type'])
 					{
 					 case Tourney::KOTYPE:
-						$op = $mod->Lang('anonwinner');
+						$op = $this->mod->Lang('anonwinner');
 						break;
 					 default:
-						$op = $mod->Lang('anonother');
+						$op = $this->mod->Lang('anonother');
 					  break;
 					}
 */
 					$op = '';
 				}
-				$smarty->assign('opponent',$op);
-				list($resA,$msg) = self::DoSend($mod,$bdata,$to,$cc,$tpl);
+				$this->smarty->assign('opponent',$op);
+				list($resA,$msg) = self::DoSend($bdata,$to,$cc,$tpl);
 				if(!$resA)
 				{
 					if(!$msg)
-						$msg = $mod->Lang('err_notice');
-					$err .= $mod->TeamName($tid).': '.$msg;
+						$msg = $this->mod->Lang('err_notice');
+					$err .= $this->mod->TeamName($tid).': '.$msg;
 				}
 			}
 		}
-		
+
 		$resB = TRUE;
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
@@ -303,34 +214,34 @@ class tmtMail
 			if($to)
 			{
 				reset($to);
-				$smarty->assign('recipient',key($to));
+				$this->smarty->assign('recipient',key($to));
 				$tc = count($to);
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
-				$smarty->assign('toall',$toall);
+				$this->smarty->assign('toall',$toall);
 				if ((int)$mdata['teamA'] > 0)
-					$op = $mod->TeamName($mdata['teamA']);
+					$op = $this->mod->TeamName($mdata['teamA']);
 				else
 				{
 /*				switch($bdata['type'])
 					{
 					 case Tourney::KOTYPE:
-						$op = $mod->Lang('anonwinner');
+						$op = $this->mod->Lang('anonwinner');
 						break;
 					 default:
-						$op = $mod->Lang('anonother');
+						$op = $this->mod->Lang('anonother');
 					  break;
 					}
 */
 					$op = '';
 				}
-				$smarty->assign('opponent',$op);
-				list($resB,$msg) = self::DoSend($mod,$bdata,$to,$cc,$tpl);
+				$this->smarty->assign('opponent',$op);
+				list($resB,$msg) = self::DoSend($this->mod,$bdata,$to,$cc,$tpl);
 				if(!$resB)
 				{
 					if($err) $err .= '<br />';
 					if(!$msg)
-						$msg = $mod->Lang('err_notice');
-					$err .= $mod->TeamName($tid).': '.$msg;
+						$msg = $this->mod->Lang('err_notice');
+					$err .= $this->mod->TeamName($tid).': '.$msg;
 				}
 			}
 		}

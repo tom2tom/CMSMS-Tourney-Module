@@ -9,44 +9,14 @@ Functions involved with communications
 */
 class tmtComm
 {
-	//reference to current module object
-	protected $mod;
-	//channel-objects for polling
-	protected $text;
-	protected $mail;
-	protected $tweet;
+	private $mod;	//reference to current module object
+	private $sender = NULL; //Notifier::MessageSender object
 
 	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		if(class_exists('SMSG',FALSE))
-			$this->text = new tmtSMS();
-		else
-			$this->text = FALSE;
-		if(class_exists('CMSMailer',FALSE))
-			$this->mail = new tmtMail($mod);
-		else
-			$this->mail = FALSE;
-		$this->tweet = new tmtTweet();
-	}
-
-	/**
-	ValidateAddress:
-	Check that @address is suitable for sending message via a supported channel
-	@address: The phone/address/handle to check
-	@prefix: default country-code for phone-numbers to receive text
-	@pattern: regex for matching acceptable phone nos, defaults to module preference
-	Returns: TRUE if valid
-	*/
-	public function ValidateAddress($address,$prefix,$pattern)
-	{
-		if($this->text && $this->text->ValidateAddress($address,$prefix,$pattern))
-			return TRUE;
-		if($this->mail && $this->mail->ValidateAddress($address))
-			return TRUE;
-		if($this->tweet->ValidateAddress($address))
-			return TRUE;
-		return FALSE;
+		if(class_exists('Notifier',FALSE))
+			$this->sender = new MessageSender();
 	}
 
 	/**
@@ -104,6 +74,9 @@ class tmtComm
 	*/
 	public function TellOwner($bracket_id,$match_id,$body)
 	{
+		if($this->sender == NULL)
+			return array(FALSE,$this->mod->Lang('nonotifier'));
+
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
 		$sql = 'SELECT teamA,teamB,place,playwhen FROM '.$pref.'module_tmt_matches WHERE match_id=? AND flags=0';
@@ -116,26 +89,41 @@ class tmtComm
 			//general vars for template
 			$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
 			//channel-specific var report set downstream
+			$ok = FALSE;
 			$msgs = array();
-			if($this->text)
+			if($this->sender->text)
 			{
-				list($ok,$msg1) = $this->text->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
+				$funcs = new tmtSMS($this->mod,$this->sender->text,$smarty);
+				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$body);
 				if(!$ok && $msg1)
 					$msgs[] = $msg1;
+				else
+					$ok = TRUE;
 			}
-			if($this->mail)
+			if($this->sender->mail)
 			{
-				list($ok,$msg1) = $this->mail->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
+				$funcs = new tmtMail($this->mod,$this->sender->mail,$smarty);
+				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$body);
 				if(!$ok && $msg1)
 					$msgs[] = $msg1;
+				else
+					$ok = TRUE;
 			}
-			list($ok,$msg1) = $this->tweet->TellOwner($this->mod,$smarty,$bdata,$mdata,$body);
-			if(!$ok && $msg1)
-				$msgs[] = $msg1;
-
+			if($this->sender->tweet)
+			{
+				$funcs = new tmtTweet($this->mod,$this->sender->tweet,$smarty);
+				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$body);
+				if(!$ok && $msg1)
+					$msgs[] = $msg1;
+				else
+					$ok = TRUE;
+			}
 			if($msgs)
 				return array(FALSE,implode('<br />',$msgs));
-			return array(TRUE,'');
+			elseif(!$ok)
+				return array(FALSE,$mod->Lang('nochannel'));
+ 			else
+				return array(TRUE,'');
 		}
 		return array(FALSE,$mod->Lang('err_match'));
 	}
@@ -153,6 +141,9 @@ class tmtComm
 	*/
 	public function TellTeams($bracket_id,$match_id,$tpl,$first=FALSE)
 	{
+		if($this->sender == NULL)
+			return array(FALSE,$this->mod->Lang('nonotifier'));
+
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
 		$sql = 'SELECT teamA,teamB,place,playwhen FROM '.$pref.'module_tmt_matches WHERE match_id=? AND flags=0';
@@ -170,25 +161,33 @@ class tmtComm
 				//general vars for template
 				$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
 				//team-specific vars recipient(for email),toall,opponent set downstream
+				$ok = FALSE;
 				$msgs = array();
-				if($this->text)
+				if($this->sender->text)
 				{
-					list($ok,$msg1) = $this->text->TellTeams($this->mod,$smarty,$bdata,$mdata,$tpl,$first);
+					$funcs = new tmtSMS($this->mod,$this->sender->text,$smarty);
+					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tpl,$first);
 					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
-				if($this->mail)
+				if($this->sender->mail)
 				{
-					list($ok,$msg1) = $this->mail->TellTeams($this->mod,$smarty,$bdata,$mdata,$tpl,$first);
+					$funcs = new tmtMail($this->mod,$this->sender->mail,$smarty);
+					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tpl,$first);
 					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
-				list($ok,$msg1) = $this->tweet->TellTeams($this->mod,$smarty,$bdata,$mdata,$tpl,$first);
-				if(!$ok && $msg1)
-					$msgs[] = $msg1;
-
+				if($this->sender->tweet)
+				{
+					$funcs = new tmtTweet($this->mod,$this->sender->tweet,$smarty);
+					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tpl,$first);
+					if(!$ok && $msg1)
+						$msgs[] = $msg1;
+				}
 				if($msgs)
 					return array(FALSE,implode('<br />',$msgs));
+				elseif(!$ok)
+					return array(FALSE,$mod->Lang('nochannel'));
 			}
 			return array(TRUE,'');
 		}
