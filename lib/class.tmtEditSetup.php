@@ -155,7 +155,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$smarty->assign('resultstab_start',$mod->StartTab('resultstab'));
 //		$smarty->assign('historytab_start',$mod->StartTab('historytab'));
 
-		$smarty->assign('tab_end',$mod->EndTab());
+		$smarty->assign('tab_end',$mod->EndTab()); //for CMSMS 2+ must be after EndTabContent()
 
 		//accumulator for hidden items,to be parked on page
 		$hidden = $mod->CreateInputHidden($id,'bracket_id',$data->bracket_id);
