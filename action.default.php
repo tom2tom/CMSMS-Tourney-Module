@@ -50,20 +50,6 @@ if(isset($params['nosend'])) //frontend user cancelled result sumbission
 	//other data from frontend not to interfere
 	$params = array('view'=>$view);
 }
-elseif(isset($params['tweetauth']))
-{
-	if(empty($returnid)) //no $returnid upon return from Twitter
-	{
-		$returnid = $params['returnid']; //frontend-page-display needs this var
-		if(isset($_REQUEST['oauth_token'])) //authorisation was completed
-		{
-			//preserve values across redirection
-			$params['oauth_token'] = $_REQUEST['oauth_token'];
-			$params['oauth_verifier'] = $_REQUEST['oauth_verifier'];
-		}
-	}
-	$this->Redirect($id,'twtauth',$returnid,$params,TRUE);
-}
 elseif(isset($params['chart']) || isset($params['list']))
 {
 	$params['view'] =(isset($params['chart'])) ? 'chart':'list';
