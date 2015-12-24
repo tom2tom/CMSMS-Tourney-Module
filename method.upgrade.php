@@ -90,29 +90,29 @@ switch ($oldversion)
 	$db->Execute($sql);
 
  case '0.1.2':
-	$fn = cms_join_path(dirname(__FILE__),'templates','email_cancelled.tpl');
-	$s = @file_get_contents($fn);
+	$fp = cms_join_path(dirname(__FILE__),'templates','email_cancelled.tpl');
+	$s = @file_get_contents($fp);
 	if ($s == FALSE)
 		$s = '{$title}'."\n\n".$this->Lang('cancelled_email','{$when}');
 	$this->SetTemplate('mailcancel_default_template',$s);
 
-	$fn = cms_join_path(dirname(__FILE__),'templates','email_request.tpl');
-	$s = @file_get_contents($fn);
+	$fp = cms_join_path(dirname(__FILE__),'templates','email_request.tpl');
+	$s = @file_get_contents($fp);
 	if ($s == FALSE)
 		$s = '{$title}'."\n\n".
 		$this->Lang('title_mid').'{if $where} {$where}{/if}{if $when} {$when}{/if} {$teams}'."\n\n".
 		$this->Lang('tpl_mailresult','{if $contact}{$contact}{elseif $smsfrom}{$smsfrom}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
 	$this->SetTemplate('mailrequest_default_template',$s);
 
-	$fn = cms_join_path(dirname(__FILE__),'templates','tweet_cancelled.tpl');
-	$s = @file_get_contents($fn);
+	$fp = cms_join_path(dirname(__FILE__),'templates','tweet_cancelled.tpl');
+	$s = @file_get_contents($fp);
 	if ($s == FALSE)
 		$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' '.
 		 mb_strtoupper($this->Lang('cancelled')).'{if $when}, '.mb_strtoupper($this->Lang('not')).' {$when}{elseif $opponent},'.$this->Lang('name_against').' {$opponent}{/if}';
 	$this->SetTemplate('tweetcancel_default_template',$s);
 
-	$fn = cms_join_path(dirname(__FILE__),'templates','tweet_request.tpl');
-	$s = @file_get_contents($fn);
+	$fp = cms_join_path(dirname(__FILE__),'templates','tweet_request.tpl');
+	$s = @file_get_contents($fp);
 	if ($s == FALSE)
 		$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' {$where} {$when} {$teams} '.
 		 $this->Lang('tpl_tweetresult','{if $smsfrom}{$smsfrom}{elseif $contact}{$contact}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
@@ -130,6 +130,28 @@ switch ($oldversion)
 	// add default group 0
 	$sql = 'INSERT INTO '.$pref.'module_tmt_groups (group_id,name,displayorder) VALUES (0,?,1)';
 	$db->Execute($sql,array($this->Lang('groupdefault')));
+ case '0.2':
+ case '0.2.1':
+ case '0.2.2':
+ 	$fp = cms_join_path(dirname(__FILE__),'action.twtauth.php');
+ 	if(is_file($fp))
+		unlink($fp);
+ 	$fp = cms_join_path(dirname(__FILE__),'lib','OAuth.php');
+ 	if(is_file($fp))
+		unlink($fp);
+ 	$fp = cms_join_path(dirname(__FILE__),'lib','class.TTwitter.php');
+ 	if(is_file($fp))
+		unlink($fp);
+ 	$fp = cms_join_path(dirname(__FILE__),'lib','class.TwitterCredential.php');
+ 	if(is_file($fp))
+		unlink($fp);
+ 	$fp = cms_join_path(dirname(__FILE__),'templates','tweet_auth.tpl');
+ 	if(is_file($fp))
+		unlink($fp);
+
+	$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
+	$this->SetPreference('privaccess','xCX2ecz275nuFjMb966o9Z/Jc4XiXWnDDEo0RI3gN69nGnpM2a0ZDKU1L5ZKsXBgwbw1/Si0IbD7T5M6z2B5fOBmCNCDXXbDCYcjHzuz49P4UtBlYIQxc0PRO5nU0E0eFMNl4A4Jl2khiEWJ+tQF4HSI2p2lhSCRP4FElptLrYP0QsxKfbWroib1GQmyzUI0q/4SoI82hTc0TAybAretL/dnNsnRVcB7pgjVeAosNeihHE1S6IcdVrLxGOlDz+qLbQ0c2caY95562a+gOBYNHbAp316Q3bbeSGF3wHyTY0IBLJhWmjYyDgdw2htJHJvf');
+	$this->SetPreference('privapi','70yCqX4fBPRJH/4HZAIrZGE2j9UCrzjwRwKux/Pd2SEq9uPpzKYZKXgOdvVOhgSoL0b6R0NOBkjovfSLatQCw7uvGyaG612elW4OetyTI4l3ZnTy9k1F7t1NZy/lkuhc2z0VOoZ/1lzWYMnryVnvWZtuJtD/xIpotehtN84x9bnnov/sTfw9piARiX7WRaC/YImVW2+enZn4FvXRqz1jBaKe7P172iymNA8tEUuEP66M8px4i5I5YNj3IwEhkK2c27IKbdFn0NTyp80eUQEbxq39qMIABZE1/96COTa8toBieZNbmuJbX3OuY/1ytoFwSU9F07wAb1E=');
 
 }
 
