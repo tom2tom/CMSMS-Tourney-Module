@@ -9,6 +9,7 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
 class tmtUtils
 {
 	const ENC_ROUNDS = 10000;
+
 	/**
 	encrypt_value:
 	@mod: reference to current module object
