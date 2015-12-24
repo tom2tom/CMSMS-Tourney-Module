@@ -281,6 +281,7 @@ $lang['help_strip_on_export']='Remove all HTML tags from records when exported t
 $lang['title_export_file']='Export to host';
 $lang['help_export_file']='This option progressively creates a .csv file in the site\'s <i>uploads</i> directory rather than processing the export in memory. This is good if there is a lot of data to export. The downside is that someone needs to get that file and (usually) then delete it.';
 $lang['title_export_file_encoding']='Character-encoding of exported content';
+$lang['title_password']='Password for securing sensitive data';
 
 $lang['title_final']='Title of final match in the tournament';
 $lang['title_semi']='Title of match in second-last round';
@@ -646,7 +647,7 @@ Click on that. On the displayed page, there are (to the extent that you're suita
 links and inputs by which you can add or change a tournament, or change module settings.</p>
 <h3>Adding a Tournament to a Page</h3>
 <p>Suitably authorised users will see, on the module's admin page, the tag used to display each tournament.
-Each tag looks something like <pre>{cms_module module='Tourney' alias='sample_comp'}</pre></p>
+Each tag looks something like <pre>{Tourney alias='sample_comp'}</pre></p>
 <p>Put such a tag into the content of a page or into a template, optionally with extra parameters as described below.
 <h3>Tournament Charts</h3>
 <p>These are PDF files, created using a UTF-8-capable <a href="http://www.fpdf.org/en/script/script92.php">variant</a> of the <a href="http://www.fpdf.org">FPDF</a> library.
