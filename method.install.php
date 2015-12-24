@@ -189,6 +189,8 @@ if ($format)
 else
 	$format = 'd F y';
 $this->SetPreference('date_format',$format);
+$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
+
 $name = $this->GetName();
 $this->SetPreference('uploads_dir',$name); //path relative to host uploads dir
 $config = cmsms()->GetConfig();
@@ -215,6 +217,8 @@ $this->SetPreference('noop_name',$this->Lang('name_no_opponent'));
 $this->SetPreference('forfeit_name',$this->Lang('name_forfeit'));
 $this->SetPreference('abandon_name',$this->Lang('name_abandoned'));
 $this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$'); //for SMS messages to cell/mobile numbers
+$this->SetPreference('privaccess','xCX2ecz275nuFjMb966o9Z/Jc4XiXWnDDEo0RI3gN69nGnpM2a0ZDKU1L5ZKsXBgwbw1/Si0IbD7T5M6z2B5fOBmCNCDXXbDCYcjHzuz49P4UtBlYIQxc0PRO5nU0E0eFMNl4A4Jl2khiEWJ+tQF4HSI2p2lhSCRP4FElptLrYP0QsxKfbWroib1GQmyzUI0q/4SoI82hTc0TAybAretL/dnNsnRVcB7pgjVeAosNeihHE1S6IcdVrLxGOlDz+qLbQ0c2caY95562a+gOBYNHbAp316Q3bbeSGF3wHyTY0IBLJhWmjYyDgdw2htJHJvf');
+$this->SetPreference('privapi','70yCqX4fBPRJH/4HZAIrZGE2j9UCrzjwRwKux/Pd2SEq9uPpzKYZKXgOdvVOhgSoL0b6R0NOBkjovfSLatQCw7uvGyaG612elW4OetyTI4l3ZnTy9k1F7t1NZy/lkuhc2z0VOoZ/1lzWYMnryVnvWZtuJtD/xIpotehtN84x9bnnov/sTfw9piARiX7WRaC/YImVW2+enZn4FvXRqz1jBaKe7P172iymNA8tEUuEP66M8px4i5I5YNj3IwEhkK2c27IKbdFn0NTyp80eUQEbxq39qMIABZE1/96COTa8toBieZNbmuJbX3OuY/1ytoFwSU9F07wAb1E=');
 
 $fn = cms_join_path(dirname(__FILE__),'templates','chart_custom.tpl');
 $s = @file_get_contents($fn);
