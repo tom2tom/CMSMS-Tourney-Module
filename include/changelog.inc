@@ -16,4 +16,11 @@
   <li>Support CMSMS 1.12+</li>
  </ul>
 </li>
+<li>Version 0.3 - 2 January 2016
+ <ul>
+  <li>Support CMSMS 2+</li>
+  <li>Encrypt private data</li>
+  <li>Use Notifier module for messages</li>
+ </ul>
+</li>
 </ul>
