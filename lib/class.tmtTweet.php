@@ -6,7 +6,6 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 
 Functions involved with twitter communications
-This class is not suitable for static method-calling
 */
 class tmtTweet
 {
@@ -15,15 +14,17 @@ class tmtTweet
 	private $smarty; //reference to current smarty object, with some template-vars already set
 	//details for default twitter application: CMSMS TourneyModule, owned by @CMSMSTourney
 	private $api_key = 'JnUL9AU1RxOW8xIjrBXeZfTnr';
-	private $api_secret = 'MUVQMUJ6ZGZWMGc1TGhYaU9Xbkk0a2tXakJiOThFU2hzOFFRMW5Ca3JYVFJrWUVERVU=';
+	private $api_secret;
 	private $access_token = '2426259434-64ADfkcEKgyUr1BL63HIPLOdCbgmkM6Zjdt55tp';
-	private $access_secret = 'bEF5R3BqQzBOQ2lUanV3QVBtQUJTOWNTSjNNWnYxWDN2UkFSeDdHVDNuSFdS';
+	private $access_secret;
 
 	function __construct(&$mod,&$twt,&$smarty)
 	{
 		$this->mod = $mod;
 		$this->twt = $twt;
 		$this->smarty = $smarty;
+		$this->api_secret = $mod->GetPreference('privapi');
+		$this->access_secret = $mod->GetPreference('privaccess');
 	}
 
 	/**
@@ -42,11 +43,13 @@ class tmtTweet
 			return array(FALSE,'');
 		if(!$this->twt)
 			return array(FALSE,$this->mod->Lang('err_system'));
+
+		$funcs = new tmtUtils();
 		$creds = array(
 			'api_key'=>$this->api_key,
-			'api_secret'=>base64_decode($this->api_secret),
+			'api_secret'=>$funcs->decrypt_value($this->mod,$this->api_secret),
 			'access_token'=>$this->access_token,
-			'access_secret'=>base64_decode($this->access_secret)
+			'access_secret'=>$funcs->decrypt_value($this->mod,$this->access_secret)
 		);
 		$body = $this->mod->ProcessDataTemplate($tpl);
 
