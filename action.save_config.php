@@ -5,13 +5,15 @@ Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
 Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
+if(!$this->CheckAccess('modify')) exit;
 
-if (isset($params['tmt_cancel']) || !$this->CheckAccess('modify'))
+if(isset($params['cancel']))
 {
 	unset ($params);
-	$this->Redirect($id, 'defaultadmin');
+	$this->Redirect($id,'defaultadmin');
 }
 
+$errkey = FALSE;
 $this->SetPreference('last_match_name',$params['tmt_final']);
 $this->SetPreference('2ndlast_match_name',$params['tmt_semi']);
 $this->SetPreference('3rdlast_match_name',$params['tmt_quarter']);
@@ -35,9 +37,11 @@ if($updir)
 	$updir .= DIRECTORY_SEPARATOR.$subdir;
 	if(is_dir($updir) || mkdir($updir,0755))
 		$this->SetPreference('uploads_dir',$subdir);
-	//else error message TODO
+	else
+		$errkey = 'err_uploaddir'; //TODO can't create
 }
-//else error message TODO
+else
+	$errkey = 'err_uploaddir'; //can't find
 //$this->SetPreference('export_file',$params['tmt_export_file']);
 //$this->SetPreference('strip_on_export',$params['tmt_strip_on_export']);
 $this->SetPreference('export_encoding',$params['tmt_export_encoding']);
@@ -47,7 +51,7 @@ $utils = new tmtUtils();
 $oldpw = $this->GetPreference('masterpass');
 if($oldpw)
 	$oldpw = $utils->unfusc($oldpw);
-$newpw = trim($params['masterpass']);
+$newpw = trim($params['tmt_masterpass']);
 if($oldpw != $newpw)
 {
 	//update all data which uses password
@@ -71,7 +75,9 @@ if($oldpw != $newpw)
 }
 
 unset($params);
+$msg = ($errkey) ?
+	$this->PrettyMessage($errkey,FALSE) : $this->PrettyMessage('prefs_updated');
 $this->Redirect($id,'defaultadmin','',
-	array('showtab'=>2,'tmt_message'=>$this->PrettyMessage('prefs_updated')));
+	array('showtab'=>2,'tmt_message'=>$msg));
 
 ?>
