@@ -42,8 +42,36 @@ if($updir)
 //$this->SetPreference('strip_on_export',$params['tmt_strip_on_export']);
 $this->SetPreference('export_encoding',$params['tmt_export_encoding']);
 
+$utils = new tmtUtils();
+
+$oldpw = $this->GetPreference('masterpass');
+if($oldpw)
+	$oldpw = $utils->unfusc($oldpw);
+$newpw = trim($params['masterpass']);
+if($oldpw != $newpw)
+{
+	//update all data which uses password
+	$old = $this->GetPreference('privaccess');
+	$old = $utils->decrypt_value($this,$old,$oldpw);
+	if($newpw)
+		$this->SetPreference('privaccess',$utils->encrypt_value($this,$old,$newpw));
+	else
+		$this->SetPreference('privaccess',$old);
+
+	$old = $this->GetPreference('privapi');
+	$old = $utils->decrypt_value($this,$old,$oldpw);
+	if($newpw)
+		$this->SetPreference('privapi',$utils->encrypt_value($this,$old,$newpw));
+	else
+		$this->SetPreference('privapi',$old);
+	
+	if($newpw)
+		$newpw = $utils->fusc($newpw);
+	$this->SetPreference('masterpass',$newpw);
+}
+
 unset($params);
-$this->Redirect($id, 'defaultadmin', '',
-	array('showtab'=>2, 'tmt_message'=>$this->PrettyMessage('prefs_updated')));
+$this->Redirect($id,'defaultadmin','',
+	array('showtab'=>2,'tmt_message'=>$this->PrettyMessage('prefs_updated')));
 
 ?>
