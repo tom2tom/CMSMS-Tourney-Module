@@ -53,6 +53,7 @@ class Tourney extends CMSModule
 	const NOWIN = 16;
 
 	public $before20;
+	public $havemcrypt;
 
 	protected $PermAdminName = 'Modify TourneyModule Settings';
 	protected $PermModName = 'Modify Brackets';
@@ -65,6 +66,7 @@ class Tourney extends CMSModule
 		$this->RegisterModulePlugin(TRUE);
 		global $CMS_VERSION;
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
+		$this->havemcrypt = function_exists('mcrypt_encrypt');
 	}
 
 	function AllowAutoInstall()
@@ -168,7 +170,7 @@ EOS;
 
 	function SuppressAdminOutput(&$request)
 	{
-		//is this general enough? string 'mact' and 'm1_' are hardcoded into CMSMS for backend actions
+		//strings 'mact' and 'm1_' are hardcoded into CMSMS for backend actions
 		if (isset($request['mact']))
 		{
 			if (strpos($request['mact'],',check_data'))
@@ -184,7 +186,7 @@ EOS;
 			if (strpos($request['mact'],',addedit_comp,')
 				&& isset($request['m1_real_action'])
 				&& $request['m1_real_action'] == 'm1_export')
-				return TRUE; //export selected team(s)
+					return TRUE; //export selected team(s)
 			if (strpos($request['mact'],',addedit_team,')
 				&& isset($request['m1_export']))
 					return TRUE; //export selected team-member(s)
@@ -583,6 +585,7 @@ Europe/Vilnius'
 
 		if($zone)
 		{
+//	tmtUtils()?
 			switch(self::GetZoneDateType($zone))
 			{
 			 case 'us':
