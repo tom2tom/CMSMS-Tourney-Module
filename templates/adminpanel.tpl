@@ -152,13 +152,12 @@
 </div>
 {/if}
 
+{if isset($jsincs)}{foreach from=$jsincs item=file}{$file}{/foreach}
+{/if}
 {if isset($jsfuncs)}
-{foreach from=$jsincs item=file}{$file}
-{/foreach}
 <script type="text/javascript">
 //<![CDATA[
-{foreach from=$jsfuncs item=func}{$func}
-{/foreach}
+{foreach from=$jsfuncs item=func}{$func}{/foreach}
 //]]>
 </script>
 {/if}
