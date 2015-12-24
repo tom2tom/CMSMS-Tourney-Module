@@ -72,10 +72,12 @@ $gCms = cmsms();
 $theme = ($this->before20) ? $gCms->get_variable('admintheme'):
 	cms_utils::get_theme_object();
 
-$comps = array();
 $jsfuncs = array();
-$jsincudes = array();
+$jsincs = array();
+$jsloads = array();
+$baseurl = $this->GetModuleURLPath();
 
+$comps = array();
 $groups = $this->GetGroups();
 $selgrp = ($groups && count($groups) > 1);
 if($selgrp)
@@ -104,7 +106,7 @@ if ($rows)
 	{
 		$alt = $this->Lang('exportxml');
 		$iconexport =
-		'<img src="'.$this->GetModuleURLPath().'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />';
+		'<img src="'.$baseurl.'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />';
 	}
 	
 	foreach ($rows as $bdata)
@@ -233,9 +235,8 @@ EOS;
 		//for popup confirmation
 		$smarty->assign('no',$this->Lang('no'));
 		$smarty->assign('yes',$this->Lang('yes'));
-		$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.modalconfirm.min.js"></script>';
-		$jsfuncs[] = <<< EOS
-$(document).ready(function(){
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
+		$jsloads[] = <<<EOS
  $('.delitmlink').modalconfirm({
   overlayID: 'confirm',
   preShow: function(d){
@@ -261,12 +262,13 @@ $(document).ready(function(){
    return false;
   }
  });
-});
+
 EOS;
 	}
 }
 else //no tournament
 {
+	$smarty->assign('icount',0);
 	$smarty->assign('notourn',$this->Lang('no_tourney'));
 }
 
@@ -491,7 +493,7 @@ $(document).ready(function(){
  });
 });
 EOS;
-			$jsincudes[] = '<script type="text/javascript" src="'.$this->GetModuleURLPath().'/include/jquery.tablednd.min.js"></script>';
+			$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
 			$smarty->assign('dndhelp',$this->Lang('help_dnd'));
 			$smarty->assign('sortbtn2',$this->CreateInputSubmit($id,'sort',
 				$this->Lang('sort')));
@@ -514,6 +516,7 @@ EOS;
 else //no group
 {
 	$smarty->assign('nogroups',$this->Lang('no_groups'));
+	$smarty->assign('gcount',0);
 }
 
 if ($padm)
@@ -559,6 +562,7 @@ if ($padm)
 	$smarty->assign('names',$names);
 
 	$misc = array();
+//	tmtUtils()?
 	$allzones = $this->GetTimeZones();
 	$misc[] = array($this->Lang('title_zone'),
 		$this->CreateInputDropdown($id, 'tmt_timezone', $allzones, '', $this->GetPreference('time_zone')),
@@ -569,7 +573,7 @@ if ($padm)
 	$misc[] = array($this->Lang('title_time_format'),
 		$this->CreateInputText($id, 'tmt_time_format', $this->GetPreference('time_format'), 20),
 		$this->Lang('help_time_format'));
-	if(class_exists('SMSG',FALSE))
+	if(class_exists('Notifier',FALSE))
 	{
 		$misc[] = array($this->Lang('title_phone_regex'),
 			$this->CreateInputText($id, 'tmt_phoneid', $this->GetPreference('phone_regex'), 30),
@@ -597,6 +601,33 @@ if ($padm)
 	else
 		$smarty->assign('hidden', $this->CreateInputHidden($id,'tmt_export_encoding', $expchars));
 
+	$utils = new tmtUtils(); //TODO other uses
+
+	$pw = $this->GetPreference('masterpass');
+	if($pw)
+		$pw = $utils->unfusc($pw);
+	$misc[] = array($this->Lang('title_password'),
+		$this->CreateTextArea(false,$id,$pw,'tmt_masterpass',
+		'cloakpw',$id.'tmt_passwd','','',50,3,'','','style="height:3em;"'));
+	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.inputcloak.min.js"></script>';
+	$jsloads[] =<<<EOS
+ $('#{$id}tmt_passwd').inputCloak({
+  delay:500,
+  symbol:'\u2022',
+  customCloak:function(newval,\$element,\$cloaked) {
+   var l = newval.length;
+   if (l > 4) {
+    var cloakval = Array(l + 1).join('\u2022') + newval.substr(l-4,4);
+    \$cloaked.val(cloakval);
+   } else {
+    \$cloaked.val(newval);
+	 }
+   \$element.val(newval);
+  }
+ });
+
+EOS;
+
 	$smarty->assign('misc',$misc);
 
 	$smarty->assign('save',
@@ -609,11 +640,17 @@ else
 	$smarty->assign('canconfig',0);
 }
 
-if ($jsfuncs)
+if($jsloads)
 {
-	$smarty->assign('jsincs',$jsincudes);
-	$smarty->assign('jsfuncs',$jsfuncs);
+	$jsfuncs[] = '
+$(document).ready(function() {
+';
+	$jsfuncs = array_merge($jsfuncs,$jsloads);
+	$jsfuncs[] = '});
+';
 }
+$smarty->assign('jsincs',$jsincs);
+$smarty->assign('jsfuncs',$jsfuncs);
 
 echo $this->ProcessTemplate('adminpanel.tpl');
 
