@@ -6,7 +6,6 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 
 Class: tmtStyler. Data and functions involved with tournament chart construction and styling
-NOTE this class does not support static method-calling
 */
 class tmtStyler extends cssparser {
 	private $colors;
