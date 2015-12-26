@@ -612,18 +612,8 @@ if ($padm)
 	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.inputcloak.min.js"></script>';
 	$jsloads[] =<<<EOS
  $('#{$id}tmt_passwd').inputCloak({
-  delay:500,
-  symbol:'\u2022',
-  customCloak:function(newval,\$element,\$cloaked) {
-   var l = newval.length;
-   if (l > 4) {
-    var cloakval = Array(l + 1).join('\u2022') + newval.substr(l-4,4);
-    \$cloaked.val(cloakval);
-   } else {
-    \$cloaked.val(newval);
-	 }
-   \$element.val(newval);
-  }
+  type:'see4',
+  symbol:'\u2022'
  });
 
 EOS;
@@ -649,8 +639,8 @@ $(document).ready(function() {
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsincs',$jsincs);
 $smarty->assign('jsfuncs',$jsfuncs);
+$smarty->assign('jsincs',$jsincs);
 
 echo $this->ProcessTemplate('adminpanel.tpl');
 
