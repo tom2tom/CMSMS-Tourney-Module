@@ -607,8 +607,8 @@ if ($padm)
 	if($pw)
 		$pw = $utils->unfusc($pw);
 	$misc[] = array($this->Lang('title_password'),
-		$this->CreateTextArea(false,$id,$pw,'tmt_masterpass',
-		'cloakpw',$id.'tmt_passwd','','',50,3,'','','style="height:3em;"'));
+		$this->CreateTextArea(false,$id,$pw,'tmt_masterpass','cloaked',
+			$id.'tmt_passwd','','',40,2));
 	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.inputcloak.min.js"></script>';
 	$jsloads[] =<<<EOS
  $('#{$id}tmt_passwd').inputCloak({

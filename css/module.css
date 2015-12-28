@@ -55,15 +55,25 @@ table.table_sort tbody td.row2s {
 
 th
 {
- 	background: #AAA;
-	height: 2.5em;
-	text-align: center;
-    cursor: default;
+ 	background:#AAA;
+	height:2.5em;
+	text-align:center;
+    cursor:default;
 }
 
 th.divider, td.divider { padding-left: 5px; border-left: 3px dotted #E5B400; }
 
 texarea { width:650px; }
+textarea.cloaked
+{
+	font-family:auto;
+	font-family:inherit;
+	font-size:1.2em;
+//	font-size:inherit;
+	line-height:1.1;
+	width:40em;
+	height:2.4em;
+}
 
 /* for making inputs look like links */
 input.fakeicon
