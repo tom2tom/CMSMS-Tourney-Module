@@ -191,16 +191,17 @@ else
 $this->SetPreference('date_format',$format);
 $this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
 
-$name = $this->GetName();
-$this->SetPreference('uploads_dir',$name); //path relative to host uploads dir
-$config = cmsms()->GetConfig();
 $updir = $config['uploads_path'];
-if($updir)
+if($updir && is_dir($updir))
 {
+	$name = $this->GetName();
 	$updir = cms_join_path($updir,$name);
 	if(!is_dir($updir))
 		mkdir($updir,0755);
+	$this->SetPreference('uploads_dir',$name); //path relative to host uploads dir
 }
+else
+	$this->SetPreference('uploads_dir',FALSE);
 //$this->SetPreference('export_file',0);
 //$this->SetPreference('strip_on_export',0);
 $this->SetPreference('export_encoding','UTF-8');
