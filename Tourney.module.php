@@ -163,8 +163,7 @@ class Tourney extends CMSModule
 		$url = $this->GetModuleURLPath();
 		return <<<EOS
 <link rel="stylesheet" type="text/css" href="{$url}/css/pikaday.css" />
-<link rel="stylesheet" type="text/css" href="{$url}/css/module.css" />
-
+<link rel="stylesheet" type="text/css" id="adminstyler" href="{$url}/css/module.css" />
 EOS;
 	}
 
