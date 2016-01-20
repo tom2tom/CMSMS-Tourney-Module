@@ -14,8 +14,8 @@ function Message($txt, $severity='')
 	if(PHP_SAPI=='cli')
 	{
 		if($severity)
-			echo "$severity: ";
-		echo "$txt\n";
+			echo $severity.': ';
+		echo $txt.PHP_EOL;
 	}
 	else
 	{
@@ -283,29 +283,29 @@ function SaveToFile($file, $s, $mode)
 
 function MakeDefinitionFile($file, $type, $enc, $embed, $map, $info)
 {
-	$s = "<?php\n";
-	$s .= '$type = \''.$type."';\n";
-	$s .= '$name = \''.$info['FontName']."';\n";
-	$s .= '$desc = '.MakeFontDescriptor($info).";\n";
-	$s .= '$up = '.$info['UnderlinePosition'].";\n";
-	$s .= '$ut = '.$info['UnderlineThickness'].";\n";
-	$s .= '$cw = '.MakeWidthArray($info['Widths']).";\n";
-	$s .= '$enc = \''.$enc."';\n";
+	$s = '<?php'.PHP_EOL;
+	$s .= '$type = \''.$type.'\';'.PHP_EOL;
+	$s .= '$name = \''.$info['FontName'].'\';'.PHP_EOL;
+	$s .= '$desc = '.MakeFontDescriptor($info).';'.PHP_EOL;
+	$s .= '$up = '.$info['UnderlinePosition'].';'.PHP_EOL;
+	$s .= '$ut = '.$info['UnderlineThickness'].';'.PHP_EOL;
+	$s .= '$cw = '.MakeWidthArray($info['Widths']).';'.PHP_EOL;
+	$s .= '$enc = \''.$enc.'\';'.PHP_EOL;
 	$diff = MakeFontEncoding($map);
 	if($diff)
-		$s .= '$diff = \''.$diff."';\n";
+		$s .= '$diff = \''.$diff.'\';'.PHP_EOL;
 	if($embed)
 	{
-		$s .= '$file = \''.$info['File']."';\n";
+		$s .= '$file = \''.$info['File'].'\';'.PHP_EOL;
 		if($type=='Type1')
 		{
-			$s .= '$size1 = '.$info['Size1'].";\n";
-			$s .= '$size2 = '.$info['Size2'].";\n";
+			$s .= '$size1 = '.$info['Size1'].';'.PHP_EOL;
+			$s .= '$size2 = '.$info['Size2'].';'.PHP_EOL;
 		}
 		else
-			$s .= '$originalsize = '.$info['OriginalSize'].";\n";
+			$s .= '$originalsize = '.$info['OriginalSize'].';'.PHP_EOL;
 	}
-	$s .= "?>\n";
+	$s .= '?>'.PHP_EOL;
 	SaveToFile($file, $s, 't');
 }
 
@@ -358,7 +358,7 @@ if(PHP_SAPI=='cli')
 {
 	// Command-line interface
 	if($argc==1)
-		die("Usage: php makefont.php fontfile [enc] [embed]\n");
+		die('Usage: php makefont.php fontfile [enc] [embed]'.PHP_EOL);
 	$fontfile = $argv[1];
 	if($argc>=3)
 		$enc = $argv[2];

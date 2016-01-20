@@ -243,9 +243,9 @@ class TTFParser
 	function Error($msg)
 	{
 		if(PHP_SAPI=='cli')
-			die("Error: $msg\n");
+			die('Error: '.$msg.PHP_EOL);
 		else
-			die("<b>Error</b>: $msg");
+			die('<b>Error</b>: '.$msg);
 	}
 
 	function Seek($tag)
