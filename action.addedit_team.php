@@ -219,10 +219,12 @@ if($teamtitle == FALSE)
 	$teamtitle = $this->Lang('title_team');
 
 $pmod = $this->CheckAccess('admod');
-$smarty->assign('canmod',($pmod)?1:0);
 
-$smarty->assign('form_start',$this->CreateFormStart($id,'addedit_team',$returnid));
-$smarty->assign('form_end',$this->CreateFormEnd());
+$tplvars = array();
+$tplvars['canmod'] = ($pmod)?1:0;
+
+$tplvars['form_start'] = $this->CreateFormStart($id,'addedit_team',$returnid);
+$tplvars['form_end'] = $this->CreateFormEnd();
 //accumulator for hidden stuff
 $hidden = $this->GetHiddenParms($id,$params,'playerstab');
 
@@ -230,13 +232,13 @@ if(!empty($params['newteam_id']))
 {
 	$thistid = $params['newteam_id'];
 	$hidden .= $this->CreateInputHidden($id,'newteam_id',$thistid);
-	$smarty->assign('pagetitle',strtoupper($this->Lang('title_add_long',$teamtitle,$name)));
+	$tplvars['pagetitle'] = strtoupper($this->Lang('title_add_long',$teamtitle,$name));
 }
 else
 {
 	$thistid = $params['team_id'];
 	$hidden .= $this->CreateInputHidden($id,'team_id',$thistid);
-	$smarty->assign('pagetitle',strtoupper($this->Lang('title_edit_long',$teamtitle,$name)));
+	$tplvars['pagetitle'] = strtoupper($this->Lang('title_edit_long',$teamtitle,$name));
 }
 
 if($op == 1) //new team
@@ -298,17 +300,17 @@ if($isteam)
 elseif($pmod)
 	$hidden .= $this->CreateInputHidden($id,'tem_tellall',0);
 
-$smarty->assign('opts',$opts);
+$tplvars['opts'] = $opts;
 $theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
 	cms_utils::get_theme_object();
 $iconinfo = $theme->DisplayImage('icons/system/info.gif',$this->Lang('showhelp'),'','','systemicon tipper');
-$smarty->assign('showtip',$iconinfo);
+$tplvars['showtip'] = $iconinfo;
 
 //table column-headings
-$smarty->assign('nametext',$this->Lang('title_player'));
-$smarty->assign('contacttext',$this->Lang('title_contact'));
+$tplvars['nametext'] = $this->Lang('title_player');
+$tplvars['contacttext'] = $this->Lang('title_contact');
 if($pmod)
-	$smarty->assign('movetext',$this->Lang('title_move'));
+	$tplvars['movetext'] = $this->Lang('title_move');
 
 switch($op)
 {
@@ -480,8 +482,11 @@ switch($op)
 	break;
 }
 
-$jsfuncs = array();	//context-specific-code accumulators
+//context-specific-code accumulators
+$jsfuncs = array();
 $jsloads = array();
+$jsincs = array();
+$baseurl = $this->GetModuleURLPath();
 
 if($rows)
 {
@@ -535,10 +540,13 @@ if($rows)
 		($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
 		$indx++;
 	}
-	$smarty->assign('items',$players);
+	$tplvars['items'] = $players;
 
 	if($pmod)
 	{
+		$jsincs[] = <<<EOS
+<script type="text/javascript" src="{$baseurl}/include/jquery.modalconfirm.min.js"></script>
+EOS;
 		$jsloads[] = <<< EOS
  teamtable.find('.plr_delete').children().modalconfirm({
   overlayID: 'confirm',
@@ -555,12 +563,15 @@ EOS;
 else
 	$pc = 0;
 
-$smarty->assign('pc',$pc);
+$tplvars['pc'] = $pc;
 
 if($pc > 1)
 {
 	if($pmod)
 	{
+		$jsincs[] = <<<EOS
+<script type="text/javascript" src="{$baseurl}/include/jquery.tablednd.min.js"></script>
+EOS;
 		//setup some ajax-parameters - partial data for tableDnD::onDrop
 		$url = $this->CreateLink($id,'order_team',NULL,NULL,array('team_id'=>$thistid,'neworders'=>''),NULL,TRUE);
 		$offs = strpos($url,'?mact=');
@@ -636,6 +647,11 @@ EOS;
 
 EOS;
 
+	$jsincs[] = <<<EOS
+<script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
+EOS;
+
 	$onsort = <<< EOS
 function () {
  var orders = [];
@@ -662,7 +678,6 @@ EOS;
 	}
 	else //!$pmod
 		$onsort = 'null'; //no mods >> do nothing after sorting
-
 
 	$jsloads[] = <<< EOS
  $.SSsort.addParser({
@@ -695,11 +710,11 @@ function select_all_players(cb) {
 }
 
 EOS;
-	$smarty->assign('selectall',$this->CreateInputCheckbox($id,'p',FALSE,-1,
+	$tplvars['selectall'] = $this->CreateInputCheckbox($id,'p',FALSE,-1,
 		'id="playsel" onclick="select_all_players(this);"'));
 } //end $pc > 1
 else
-	$smarty->assign('selectall','');
+	$tplvars['selectall'] = NULL;
 
 $jsfuncs[] = <<< EOS
 function player_selected() {
@@ -712,13 +727,13 @@ EOS;
 if($pmod)
 {
 	//for popup confirmation
-	$smarty->assign('no',$this->Lang('no'));
-	$smarty->assign('yes',$this->Lang('yes'));
+	$tplvars['no'] = $this->Lang('no');
+	$tplvars['yes'] = $this->Lang('yes');
 
 	if($pc > 1)
 	{
-		$smarty->assign('dndhelp',$this->Lang('help_dnd'));
-		$smarty->assign('delete',$this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
+		$tplvars['dndhelp'] = $this->Lang('help_dnd');
+		$tplvars['delete'] = $this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
 			'title="'.$this->Lang('delete_tip').'"'));
 		$t = ($isteam) ? $this->Lang('sel_teams') : $this->Lang('sel_players');
 		$t = $this->Lang('confirm_delete',$t);
@@ -737,11 +752,11 @@ EOS;
 	if($isteam || $pc == 0)
 	{
 		//need input-object that looks like page-link, to get all form parameters upon activation
-		$smarty->assign('add',$this->CreateInputLinks($id,'addplayer','newobject.gif',TRUE,
+		$tplvars['add'] = $this->CreateInputLinks($id,'addplayer','newobject.gif',TRUE,
 			$this->Lang('title_add',strtolower($this->Lang('title_player')))));
 	}
-	$smarty->assign('submit',$this->CreateInputSubmitDefault($id,'submit',$this->Lang('save')));
-	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('cancel')));
+	$tplvars['submit'] = $this->CreateInputSubmitDefault($id,'submit',$this->Lang('save'));
+	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('cancel'));
 
 	$jsloads[] = <<< EOS
  $('form input[type=text]').keypress(function(e){
@@ -777,28 +792,30 @@ EOS;
 EOS;
 }
 else
-	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('close')));
+	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('close'));
 
 if($pc > 0)
-	$smarty->assign('export',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
+	$tplvars['export'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
 		'title="'.$this->Lang('export_tip').'" onclick="return player_selected();"'));
 
-$smarty->assign('hidden',$hidden);
+$tplvars['hidden'] = $hidden;
 
-$smarty->assign('incpath',$this->GetModuleURLPath().'/include/');
+$jsincs[] = <<<EOS
+<script type="text/javascript" src="{$baseurl}/include/jquery.tmtfuncs.js"></script>
+EOS;
 
 if($jsloads)
 {
-	$jsfuncs[] = '
-$(document).ready(function() {
+	$jsfuncs[] = '$(document).ready(function() {
  var teamtable = $(\'#team\');
 ';
 	$jsfuncs = array_merge($jsfuncs,$jsloads);
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsfuncs',$jsfuncs);
+$tplvars['jsfuncs'] = $jsfuncs;
+$tplvars['jsincs'] = $jsincs;
 
-echo $this->ProcessTemplate('addedit_team.tpl');
+tmtTemplate::Process($this,'addedit_team.tpl',$tplvars);
 
 ?>

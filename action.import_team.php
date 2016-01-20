@@ -46,6 +46,7 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 	$file_data = $_FILES[$fn];
 	$parts = explode('.',$file_data['name']);
 	$ext = end($parts);
+//tmtUtils()?
 //TODO $type=;	list($min,$max) = $this->GetLimits($type);
 	if ($file_data['type'] != 'text/csv'
 	 || !($ext == 'csv' || $ext == 'CSV')
@@ -175,14 +176,16 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 	$this->Redirect($id, 'addedit_comp', $returnid, $newparms);
 }
 
-$smarty->assign('start_form',$this->CreateFormStart($id, 'import_team', $returnid, 'post','multipart/form-data'));
-$smarty->assign('end_form',$this->CreateFormEnd());
-$smarty->assign('hidden',$this->GetHiddenParms($id,$params,'playerstab'));
-$smarty->assign('title',$this->Lang('title_teamimport',$params['tmt_name']));
-$smarty->assign('chooser',$this->CreateInputFile($id, 'csvfile', 'text/csv', 25));
-$smarty->assign('apply', $this->CreateInputSubmitDefault($id, 'import', $this->Lang('upload')));
-$smarty->assign('cancel', $this->CreateInputSubmit($id, 'cancel', $this->Lang('cancel')));
-$smarty->assign('help',$this->Lang('help_teamimport'));
+$tplvars = array(
+	'start_form' => $this->CreateFormStart($id, 'import_team', $returnid, 'post','multipart/form-data'),
+	'end_form' => $this->CreateFormEnd(),
+	'hidden' => $this->GetHiddenParms($id,$params,'playerstab'),
+	'title' => $this->Lang('title_teamimport',$params['tmt_name']),
+	'chooser' => $this->CreateInputFile($id, 'csvfile', 'text/csv', 25),
+	'apply' => $this->CreateInputSubmitDefault($id, 'import', $this->Lang('upload')),
+	'cancel' => $this->CreateInputSubmit($id, 'cancel', $this->Lang('cancel')),
+	'help' => $this->Lang('help_teamimport')
+);
 
-echo $this->ProcessTemplate('onepage.tpl');
+tmtTemplate::Process($this,'onepage.tpl',$tplvars);
 ?>

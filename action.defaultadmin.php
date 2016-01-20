@@ -5,6 +5,7 @@ Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
 Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
+$tplvars = array();
 //permissions hierarchy
 $pdev = $this->CheckPermission('Modify Any Page');
 $padm = $this->CheckAccess('admin');
@@ -13,29 +14,29 @@ if ($padm)
 	$pmod = TRUE;
 	$pscore = TRUE;
 	$pview = TRUE;
-	$smarty->assign('config',1);
-	$smarty->assign('canmod',1);
+	$tplvars['config'] = 1;
+	$tplvars['canmod'] = 1;
 }
 else
 {
-	$smarty->assign('config',0);
+	$tplvars['config'] = 0;
 	$pmod = $this->CheckAccess('modify');
 	if ($pmod)
 	{
 		$pscore = TRUE;
 		$pview = TRUE;
-		$smarty->assign('canmod',1);
+		$tplvars['canmod'] = 1;
 	}
 	else
 	{
 		$pscore = $this->CheckAccess('score');
 		$pview = $this->CheckAccess('adview');
-		$smarty->assign('canmod',0);
+		$tplvars['canmod'] = 0;
 	}
 }
 
 if (!empty($params['tmt_message']))
-	$smarty->assign('message',$params['tmt_message']);
+	$tplvars['message'] = $params['tmt_message'];
 
 if(isset($params['showtab']))
 	$showtab = (int)$params['showtab'];
@@ -45,28 +46,25 @@ $seetab1 = ($showtab==1);
 $seetab2 = ($showtab==2);
 
 $t = ($padm) ? $this->SetTabHeader('configuration',$this->lang('tab_config'),$seetab2) : '';
-$smarty->assign('tab_headers',$this->StartTabHeaders().
+$tplvars['tab_headers'] = $this->StartTabHeaders().
 	$this->SetTabHeader('itmdata',$this->lang('tab_items')).
 	$this->SetTabHeader('grpdata',$this->lang('tab_groups'),$seetab1).
 	$t.
 	$this->EndTabHeaders().$this->StartTabContent());
+$tplvars['tab_footers'] = $this->EndTabContent();
 
 //need diversion for 'import_comp' action
-$smarty->assign('start_itemsform',$this->CreateFormStart($id, 'process_items', $returnid, 'post','multipart/form-data'));
-//$smarty->assign('start_itemsform',$this->CreateFormStart($id, 'process_items',$returnid));
-$smarty->assign('end_form',$this->CreateFormEnd());
+$tplvars['start_itemsform'] = $this->CreateFormStart($id, 'process_items', $returnid, 'post','multipart/form-data');
+//$tplvars['start_itemsform'] = $this->CreateFormStart($id, 'process_items',$returnid);
+$tplvars['end_form'] = $this->CreateFormEnd();
 
-$smarty->assign('start_items_tab',$this->StartTab('itmdata'));
-$smarty->assign('end_tab',$this->EndTab());
-$smarty->assign('tab_footers',$this->EndTabContent());
+$tplvars['start_items_tab'] = $this->StartTab('itmdata');
+$tplvars['end_tab'] = $this->EndTab();
 
-$smarty->assign('title_name',$this->Lang('title_name'));
-
-$t = ($pdev) ? $this->Lang('title_tag'):null;
-$smarty->assign('title_tag',$t);
-
-$smarty->assign('title_group',$this->Lang('title_group'));
-$smarty->assign('title_status',$this->Lang('title_status'));
+$tplvars['title_name'] = $this->Lang('title_name');
+$tplvars['title_tag'] = ($pdev) ? $this->Lang('title_tag'):null;
+$tplvars['title_group'] = $this->Lang('title_group');
+$tplvars['title_status'] = $this->Lang('title_status');
 
 $gCms = cmsms();
 $theme = ($this->before20) ? $gCms->get_variable('admintheme'):
@@ -185,10 +183,12 @@ if ($rows)
 if ($comps)
 {
 	$ic = count($comps);
-	$smarty->assign('icount',$ic);
-	$smarty->assign('comps',$comps);
-	$smarty->assign('modname',$this->GetName());
-	$smarty->assign('candev',$pdev);
+	$tplvars += array(
+		'icount' => $ic,
+		'comps' => $comps,
+		'modname' => $this->GetName(),
+		'candev' => $pdev
+	);
 	if ($ic > 1)
 	{
 		$jsfuncs[] = <<< EOS
@@ -201,11 +201,11 @@ EOS;
 	}
 	else
 		$t = '';
-	$smarty->assign('selectall_items',$t);
+	$tplvars['selectall_items'] = $t;
 
-	$smarty->assign('printbtn',$this->CreateInputSubmit($id,'print',$this->Lang('print'),
+	$tplvars['printbtn'] = $this->CreateInputSubmit($id,'print',$this->Lang('print'),
 		'title="'.$this->Lang('printsel_tip').'" onclick="return confirm_selitm_count();"'));
-	$smarty->assign('exportbtn',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
+	$tplvars['exportbtn'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
 		'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"'));
 	$jsfuncs[] = <<< EOS
 function selitm_count()
@@ -220,21 +220,21 @@ function confirm_selitm_count()
 EOS;
 	if ($pmod)
 	{
-		$smarty->assign('notifybtn',$this->CreateInputSubmit($id,'notify',$this->Lang('notify'),
+		$tplvars['notifybtn'] = $this->CreateInputSubmit($id,'notify',$this->Lang('notify'),
 			'title="'.$this->Lang('notifysel_tip').'" onclick="return confirm_selitm_count();"'));
 		if ($selgrp)
 			$t = $this->CreateInputSubmit($id,'group',$this->Lang('title_group'),
 			'title="'.$this->Lang('groupsel_tip').'" onclick="return confirm_selitm_count();"');
 		else
 			$t = '';
-		$smarty->assign('groupbtn',$t);
-		$smarty->assign('clonebtn',$this->CreateInputSubmit($id,'clone',$this->Lang('clone'),
+		$tplvars['groupbtn'] = $t;
+		$tplvars['clonebtn'] = $this->CreateInputSubmit($id,'clone',$this->Lang('clone'),
 			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"'));
-		$smarty->assign('deletebtn',$this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
+		$tplvars['deletebtn'] = $this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
 			'title="'.$this->Lang('deletesel_tip').'"')); //$(#$id.delete_item) modalconfirm
 		//for popup confirmation
-		$smarty->assign('no',$this->Lang('no'));
-		$smarty->assign('yes',$this->Lang('yes'));
+		$tplvars['no'] = $this->Lang('no');
+		$tplvars['yes'] = $this->Lang('yes');
 		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
 		$jsloads[] = <<<EOS
  $('.delitmlink').modalconfirm({
@@ -268,24 +268,24 @@ EOS;
 }
 else //no tournament
 {
-	$smarty->assign('icount',0);
-	$smarty->assign('notourn',$this->Lang('no_tourney'));
+	$tplvars['icount'] = 0;
+	$tplvars['notourn'] = $this->Lang('no_tourney');
 }
 
 if ($pmod)
 {
-	$smarty->assign('addlink',$this->CreateLink($id,'addedit_comp', '',
+	$tplvars['addlink'] = $this->CreateLink($id,'addedit_comp', '',
 		$theme->DisplayImage('icons/system/newobject.gif', $this->Lang('title_add_tourn'),'','','systemicon')));
-	$smarty->assign('addlink2',$this->CreateLink($id,'addedit_comp', '',
+	$tplvars['addlink2'] = $this->CreateLink($id,'addedit_comp', '',
 		$this->Lang('title_add_tourn')));
 
-	$smarty->assign('title_import',$this->Lang('title_import'));
-	$smarty->assign('input_import',$this->CreateInputFile($id, 'xmlfile', 'text/xml', 25));
-	$smarty->assign('submitxml', $this->CreateInputSubmit($id, 'import', $this->Lang('upload')));
+	$tplvars['title_import'] = $this->Lang('title_import');
+	$tplvars['input_import'] = $this->CreateInputFile($id, 'xmlfile', 'text/xml', 25);
+	$tplvars['submitxml'] =  $this->CreateInputSubmit($id, 'import', $this->Lang('upload'));
 }
 
-$smarty->assign('start_grps_tab',$this->StartTab('grpdata'));
-$smarty->assign('start_groupsform',$this->CreateFormStart($id, 'process_groups', $returnid));
+$tplvars['start_grps_tab'] = $this->StartTab('grpdata');
+$tplvars['start_groupsform'] = $this->CreateFormStart($id, 'process_groups', $returnid);
 
 if(!empty($params['addgroup']))
 {
@@ -353,8 +353,8 @@ if($groups)
 	}
 	unset($gdata);
 	$gc = count($showgrps);
-	$smarty->assign('gcount',$gc);
-	$smarty->assign('groups',$showgrps);
+	$tplvars['gcount'] = $gc;
+	$tplvars['groups'] = $showgrps;
 	if ($gc > 0)
 	{
 		//buttons
@@ -366,17 +366,17 @@ if($groups)
 					'title="'.$this->Lang('deleteselgrp').'"'); //$(#$id.delete_group) modalconfirm
 			else
 				$t = '';
-			$smarty->assign('deletebtn2',$t);
+			$tplvars['deletebtn2'] = $t;
 			if($selgrp)
 				$t = $this->CreateInputSubmit($id,'activate',
 					$this->Lang('activate'),
 					'title="'.$this->Lang('activeselgrp').'" onclick="return confirm_selgrp_count();"');
 			else
 				$t = '';
-			$smarty->assign('activebtn2',$t);
-			$smarty->assign('cancelbtn2',$this->CreateInputSubmit($id,'cancel',
+			$tplvars['activebtn2'] = $t;
+			$tplvars['cancelbtn2'] = $this->CreateInputSubmit($id,'cancel',
 				$this->Lang('cancel')));
-			$smarty->assign('submitbtn2',$this->CreateInputSubmit($id,'update',
+			$tplvars['submitbtn2'] = $this->CreateInputSubmit($id,'update',
 				$this->Lang('update'),
 				'title="'.$this->Lang('updateselgrp').'" onclick="return confirm_selgrp_count();"'));
 			$jsfuncs[] = <<< EOS
@@ -494,8 +494,8 @@ $(document).ready(function(){
 });
 EOS;
 			$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
-			$smarty->assign('dndhelp',$this->Lang('help_dnd'));
-			$smarty->assign('sortbtn2',$this->CreateInputSubmit($id,'sort',
+			$tplvars['dndhelp'] = $this->Lang('help_dnd');
+			$tplvars['sortbtn2'] = $this->CreateInputSubmit($id,'sort',
 				$this->Lang('sort')));
 		}
 		$t = $this->Lang('title_move');
@@ -504,24 +504,24 @@ EOS;
 	else
 	{
 		if ($pmod)
-			$smarty->assign('sortbtn2','');
+			$tplvars['sortbtn2'] = '';
 		$t = '';
 		$cb = '';
 	}
-	$smarty->assign('title_gname',$this->Lang('title_name'));
-	$smarty->assign('title_active',$this->Lang('title_active'));
-	$smarty->assign('title_move',$t);
-	$smarty->assign('selectall_groups',$cb);
+	$tplvars['title_gname'] = $this->Lang('title_name');
+	$tplvars['title_active'] = $this->Lang('title_active');
+	$tplvars['title_move'] = $t;
+	$tplvars['selectall_groups'] = $cb;
 }
 else //no group
 {
-	$smarty->assign('nogroups',$this->Lang('no_groups'));
-	$smarty->assign('gcount',0);
+	$tplvars['nogroups'] = $this->Lang('no_groups');
+	$tplvars['gcount'] = 0;
 }
 
 if ($padm)
 {
-	$smarty->assign('addgrplink',$this->CreateLink($id,'addgroup',$returnid,
+	$tplvars['addgrplink'] = $this->CreateLink($id,'addgroup',$returnid,
 		$theme->DisplayImage('icons/system/newobject.gif',$this->Lang('addgroup'),'','','systemicon'),
 			array(),'',false,false,'')
 		.' '.
@@ -532,11 +532,11 @@ if ($padm)
 
 if ($padm)
 {
-	$smarty->assign('start_config_tab',$this->StartTab('configuration'));
-	$smarty->assign('start_configform',$this->CreateFormStart($id, 'save_config', $returnid));
+	$tplvars['start_config_tab'] = $this->StartTab('configuration');
+	$tplvars['start_configform'] = $this->CreateFormStart($id, 'save_config', $returnid);
 
-	$smarty->assign('title_names_fieldset', $this->Lang('title_names_fieldset'));
-	$smarty->assign('title_misc_fieldset', $this->Lang('title_misc_fieldset'));
+	$tplvars['title_names_fieldset'] =  $this->Lang('title_names_fieldset');
+	$tplvars['title_misc_fieldset'] =  $this->Lang('title_misc_fieldset');
 
 	$names = array();
 	$names[] = array($this->Lang('title_final'),
@@ -559,7 +559,7 @@ if ($padm)
 	$names[] = array($this->Lang('title_abandoned'),
 		$this->CreateInputText($id, 'tmt_nomatch', $this->GetPreference('abandon_name'), 20));
 
-	$smarty->assign('names',$names);
+	$tplvars['names'] = $names;
 
 	$misc = array();
 //	tmtUtils()?
@@ -599,7 +599,7 @@ if ($padm)
 			$this->CreateInputRadioGroup($id, 'tmt_export_encoding', $encodings, $expchars, '', ' '));
 	}
 	else
-		$smarty->assign('hidden', $this->CreateInputHidden($id,'tmt_export_encoding', $expchars));
+		$tplvars['hidden'] =  $this->CreateInputHidden($id,'tmt_export_encoding', $expchars);
 
 	$utils = new tmtUtils(); //TODO other uses
 
@@ -609,7 +609,7 @@ if ($padm)
 	$misc[] = array($this->Lang('title_password'),
 		$this->CreateTextArea(false,$id,$pw,'tmt_masterpass','cloaked',
 			$id.'tmt_passwd','','',40,2));
-	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.inputcloak.min.js"></script>';
+	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery-inputCloak.min.js"></script>';
 	$jsloads[] =<<<EOS
  $('#{$id}tmt_passwd').inputCloak({
   type:'see4',
@@ -618,16 +618,16 @@ if ($padm)
 
 EOS;
 
-	$smarty->assign('misc',$misc);
+	$tplvars['misc'] = $misc;
 
-	$smarty->assign('save',
+	$tplvars['save'] = 
 		$this->CreateInputSubmitDefault($id, 'submit', $this->Lang('save')));
-	$smarty->assign('cancel',
+	$tplvars['cancel'] = 
 		$this->CreateInputSubmit($id, 'cancel', $this->Lang('cancel')));
 }
 else
 {
-	$smarty->assign('canconfig',0);
+	$tplvars['canconfig'] = 0;
 }
 
 if($jsloads)
@@ -639,9 +639,9 @@ $(document).ready(function() {
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsfuncs',$jsfuncs);
-$smarty->assign('jsincs',$jsincs);
+$tplvars['jsfuncs'] = $jsfuncs;
+$tplvars['jsincs'] = $jsincs;
 
-echo $this->ProcessTemplate('adminpanel.tpl');
+tmtTemplate::Process($this,'adminpanel.tpl',$tplvars);
 
 ?>

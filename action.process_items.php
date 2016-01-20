@@ -29,10 +29,12 @@ elseif(isset($params['clone']))
 }
 elseif(isset($params['group'])) //begin grouping process
 {
-	$smarty->assign('start_form',$this->CreateFormStart($id,'process_items',$returnid));
-	$smarty->assign('end_form',$this->CreateFormEnd());
-	$smarty->assign('hidden',$this->CreateInputHidden($id,'selitems',implode(';',$params['selitems'])));
-	$smarty->assign('title',$this->Lang('title_bracketsgroup'));
+	$tplvars = array(
+		'start_form' => $this->CreateFormStart($id,'process_items',$returnid),
+		'end_form' => $this->CreateFormEnd(),
+		'hidden' => $this->CreateInputHidden($id,'selitems',implode(';',$params['selitems'])),
+		'title' => $this->Lang('title_bracketsgroup')
+	);
 	$options = $this->GetGroups();
 	if($options)
 	{
@@ -44,11 +46,14 @@ elseif(isset($params['group'])) //begin grouping process
 	else
 		$options = array($this->Lang('groupdefault')=>0); //ensure something exists
 	$options = array($this->Lang('select_one')=>-1) + $options;
-	$smarty->assign('chooser',$this->CreateInputDropdown($id,'togroup',$options,-1,-1));
-	$smarty->assign('apply',$this->CreateInputSubmitDefault($id,'apply',$this->Lang('apply')));
-	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel', $this->Lang('cancel')));
-	$smarty->assign('help',''); //$this->Lang('help_bracketsgroup'));
-	echo $this->ProcessTemplate('onepage.tpl');
+	$tplvars += array(
+		'chooser' => $this->CreateInputDropdown($id,'togroup',$options,-1,-1),
+		'apply' => $this->CreateInputSubmitDefault($id,'apply',$this->Lang('apply')),
+		'cancel' => $this->CreateInputSubmit($id,'cancel', $this->Lang('cancel')),
+		'help' => NULL //$this->Lang('help_bracketsgroup'))
+	);
+
+	tmtTemplate::Process($this,'onepage.tpl',$tplvars);
 	return;
 }
 elseif(isset($params['apply'])) //selected group

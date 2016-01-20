@@ -12,6 +12,7 @@ if (isset($params['close']))
 	$this->Redirect($id,'addedit_comp',$returnid,$newparms);
 }
 
+$tplvars = array();
 $pref = cms_db_prefix();
 $sql = 'SELECT * FROM '.$pref.'module_tmt_history WHERE bracket_id=? ORDER BY changewhen DESC';
 $data = $db->GetAll($sql,array($params['bracket_id']));
@@ -30,22 +31,27 @@ if ($data)
 		$changes[] = $one;
 		($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
 	}
-	$smarty->assign('changes',$changes);
-	$smarty->assign('changer',$this->Lang('title_changer'));
-	$smarty->assign('changewhen',$this->Lang('title_changewhen'));
-	$smarty->assign('olddata',$this->Lang('title_olddata'));
-	$smarty->assign('newdata',$this->Lang('title_newdata'));
+	$tplvars += array(
+		'changes' => $changes,
+		'changer' => $this->Lang('title_changer'),
+		'changewhen' => $this->Lang('title_changewhen'),
+		'olddata' => $this->Lang('title_olddata'),
+		'newdata' => $this->Lang('title_newdata')
+	);
 }
 else
-	$smarty->assign('nochanges',$this->Lang('nochanges'));
+	$tplvars['nochanges'] = $this->Lang('nochanges');
 
-$smarty->assign('start_form',$this->CreateFormStart($id,'changelog',$returnid));
-$smarty->assign('end_form',$this->CreateFormEnd());
-$smarty->assign('hidden',$this->GetHiddenParms($id,$params,'resultstab'));
 $sql = 'SELECT name FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 $name = $db->GetOne($sql,array($params['bracket_id']));
-$smarty->assign('title',$this->Lang('title_changelog',$name));
-$smarty->assign('close', $this->CreateInputSubmit($id, 'close', $this->Lang('close')));
 
-echo $this->ProcessTemplate('changelog.tpl');
+$tplvars += array(
+	'start_form' => $this->CreateFormStart($id,'changelog',$returnid),
+	'end_form' => $this->CreateFormEnd(),
+	'hidden' => $this->GetHiddenParms($id,$params,'resultstab'),
+	'title' => $this->Lang('title_changelog',$name),
+	'close' => $this->CreateInputSubmit($id, 'close', $this->Lang('close'))
+);
+
+tmtTemplate::Process($this,'changelog.tpl',$tplvars);
 ?>

@@ -11,7 +11,7 @@ $bracket_id = $params['bracket_id'];
 $pref = cms_db_prefix();
 $sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 $bdata = $db->GetRow($sql,array($bracket_id));
-
+$tplvars = array();
 if (!empty($params['send']))
 {
 	$valid = TRUE;
@@ -32,6 +32,7 @@ if (!empty($params['send']))
 			$mdata = $db->GetRow($sql,array($params['match']));
 			$tA = $this->TeamName($mdata['teamA']);
 			$tB = $this->TeamName($mdata['teamB']);
+//	tmtUtils()?
 			$relations = $this->ResultTemplates($bracket_id,FALSE);
 
 			$indx = array_search($params['match'],$params['shown'],false);
@@ -190,17 +191,17 @@ if (!empty($params['send']))
 	else
 		$key = 'err_captcha';
 
-	$smarty->assign('message',$this->Lang($key));
+	$tplvars['message'] = $this->Lang($key);
 	//fall into repeat presentation
 }
 
-$smarty->assign('title',$bdata['name']);
+$tplvars['title'] = $bdata['name'];
 if ($bdata['description'])
 	$desc = $bdata['description'].'<br /><br />';
 else
 	$desc = '';
 $desc .= $this->Lang('titlescored');
-$smarty->assign('description',$desc);
+$tplvars['description'] = $desc;
 
 //script accumulators
 $jsfuncs = array();
@@ -212,6 +213,7 @@ $mdata = $db->GetAssoc($sql,array($bracket_id));
 if ($mdata)
 {
 	$def = $this->Lang('chooseone');
+//	tmtUtils()?
 	$relations = $this->ResultTemplates($bracket_id,FALSE);
 	$name = 'match'; //becomes a returned parameter
 	$indx = 0;
@@ -243,20 +245,24 @@ if ($mdata)
 		$one->when = $this->CreateInputText($id,'when[]','',10,20);
 		$matches[] = $one;
 	}
-	$smarty->assign('matches',$matches);
-	$smarty->assign('titleresult',$this->Lang('title_result'));
-	$smarty->assign('titlescore',$this->Lang('score'));
-	$smarty->assign('titlewhen',$this->Lang('titlewhen'));
-	$smarty->assign('titlesender',$this->Lang('titlesender'));
-	$smarty->assign('inputsender',$this->CreateInputText($id,'sender','',15,30));
-	$smarty->assign('titlecomment',$this->Lang('titlecomment'));
-	$smarty->assign('inputcomment',$this->CreateTextArea(FALSE,$id,'','comment','','','','',50,5,'','','style="height:5em;"'));
+	$tplvars += array(
+		'matches' = $matches,
+		'titleresult' => $this->Lang('title_result'),
+		'titlescore' => $this->Lang('score'),
+		'titlewhen' => $this->Lang('titlewhen'),
+		'titlesender' => $this->Lang('titlesender'),
+		'inputsender' => $this->CreateInputText($id,'sender','',15,30),
+		'titlecomment' => $this->Lang('titlecomment'),
+		'inputcomment' => $this->CreateTextArea(FALSE,$id,'','comment','','','','',50,5,'','','style="height:5em;"')
+	);
 	$ob = cms_utils::get_module('Captcha');
 	if ($ob)
 	{
-		$smarty->assign('captcha',$ob->getCaptcha());
-		$smarty->assign('titlecaptcha',$this->Lang('titlecaptcha'));
-		$smarty->assign('inputcaptcha',$this->CreateInputText($id,'captcha','',5,10));
+		$tplvars += array(
+			'captcha' => $ob->getCaptcha(),
+			'titlecaptcha' => $this->Lang('titlecaptcha'),
+			'inputcaptcha' => $this->CreateInputText($id,'captcha','',5,10)
+		);
 	}
 
 	$jsloads[] = <<< EOS
@@ -360,19 +366,19 @@ EOS;
 	$jsfuncs[] = sprintf($funcstr,Tourney::WONA,Tourney::WONB,Tourney::MTIED);
 }
 else //no mdata
-	$smarty->assign('nomatches',$this->Lang('info_nomatch')); //TODO better message for frontend
+	$tplvars['nomatches'] = $this->Lang('info_nomatch'); //TODO better message for frontend
 
-$smarty->assign('hidden',
+$tplvars['hidden'] = 
 	$this->CreateInputHidden($id,'bracket_id', $bracket_id).
 	$this->CreateInputHidden($id,'view', $params['view']).
 	$this->CreateInputHidden($id,'real_action','nosend'));
-$smarty->assign('start_form',$this->CreateFormStart($id,'result',$returnid));
-$smarty->assign('end_form',$this->CreateFormEnd());
+$tplvars['start_form'] = $this->CreateFormStart($id,'result',$returnid);
+$tplvars['end_form'] = $this->CreateFormEnd();
 
-$smarty->assign('send', $this->CreateInputSubmitDefault($id,'send',$this->Lang('submit'),
+$tplvars['send'] =  $this->CreateInputSubmitDefault($id,'send',$this->Lang('submit'),
 	'onclick="return validate(event,this)"'));
 //'cancel' action-name is used by other form(s)
-$smarty->assign('cancel', $this->CreateInputSubmit($id,'nosend',$this->Lang('cancel')));
+$tplvars['cancel'] =  $this->CreateInputSubmit($id,'nosend',$this->Lang('cancel'));
 
 if($jsloads)
 {
@@ -383,7 +389,7 @@ $(function() {
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsfuncs', $jsfuncs);
+$tplvars['jsfuncs'] =  $jsfuncs;
 
-echo $this->ProcessTemplate('result_report.tpl');
+tmtTemplate::Process($this,'result_report.tpl',$tplvars);
 ?>

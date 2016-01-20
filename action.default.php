@@ -10,10 +10,10 @@ Action to display chart or list of a tournament in front end
 
 if(!function_exists('DisplayErrorPage'))
 {
- function DisplayErrorPage(&$mod,&$smarty,&$db,&$params,$err=TRUE,$message='')
+ function DisplayErrorPage(&$mod,&$tplvars,&$db,&$params,$err=TRUE,$message='')
  {
  	if($err)
-		$smarty->assign('title', $mod->Lang('err_system'));
+		$tplvars['title'] =  $mod->Lang('err_system');
 	if(!empty($params['bracket_id']))
 	{
 		$sql = "SELECT name FROM ".cms_db_prefix()."module_tmt_brackets WHERE bracket_id=?";
@@ -27,7 +27,7 @@ if(!function_exists('DisplayErrorPage'))
 	else
 		$name = false;
 	if($name)
-		$smarty->assign('name', $mod->Lang('tournament').': '.$name);
+		$tplvars['name'] =  $mod->Lang('tournament').': '.$name;
 	if($message)
 	{
 		$detail = $message;
@@ -36,11 +36,12 @@ if(!function_exists('DisplayErrorPage'))
 	}
 	else
 		$detail = '';
-	$smarty->assign('message', $detail);
-	echo $mod->ProcessTemplate('error.tpl');
+	$tplvars['message'] =  $detail;
+	tmtTemplate::Process($this,'error.tpl',$tplvars);
  }
 }
 
+$tplvars = array();
 $pref = cms_db_prefix();
 if(isset($params['nosend'])) //frontend user cancelled result sumbission
 {
@@ -63,13 +64,13 @@ elseif(!empty($params['alias']))
 }
 else
 {
-	DisplayErrorPage($this,$smarty,$db,$params,TRUE,$this->Lang('err_tag'));
+	DisplayErrorPage($this,$tplvars,$db,$params,TRUE,$this->Lang('err_tag'));
 	return;
 }
 $bdata = $db->GetRow($sql,array($val));
 if(!$bdata)
 {
-	DisplayErrorPage($this,$smarty,$db,$params,TRUE,$this->Lang('err_missing'));
+	DisplayErrorPage($this,$tplvars,$db,$params,TRUE,$this->Lang('err_missing'));
 	return;
 }
 
@@ -102,27 +103,27 @@ if(empty($params['view']) || $params['view'] == 'chart')
 		$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=0 WHERE bracket_id=?';
 		$db->Execute($sql,array($bracket_id));
 		//variables available for use in template(conform these with tmtEditSetup::Setup())
-		$smarty->assign('title',$bdata['name']);
-		$smarty->assign('description',$bdata['description']);
-		$smarty->assign('owner',$bdata['owner']);
-		$smarty->assign('contact',$bdata['contact']);
+		$tplvars['title'] = $bdata['name'];
+		$tplvars['description'] = $bdata['description'];
+		$tplvars['owner'] = $bdata['owner'];
+		$tplvars['contact'] = $bdata['contact'];
 		$rooturl = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
 		$basename = basename($chartfile);
 		list($height,$width) = $lyt->GetChartSize();
-		$smarty->assign('image',$this->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30));
-		$smarty->assign('list',$this->CreateInputSubmit($id,'list',$this->Lang('list')));
+		$tplvars['image'] = $this->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30);
+		$tplvars['list'] = $this->CreateInputSubmit($id,'list',$this->Lang('list'));
 		$dt = new DateTime('@'.filemtime($chartfile),new DateTimeZone($bdata['timezone']));
 		$fmt = $this->GetPreference('date_format').' '.$this->GetPreference('time_format');
-		$smarty->assign('imgdate',$dt->format($fmt));
-		$smarty->assign('imgheight',$height);
-		$smarty->assign('imgwidth',$width);
-		$tpl = $this->GetTemplate('chart_'.$bracket_id.'_template');
-		if($tpl == FALSE)
-			$tpl = $this->GetTemplate('chart_default_template');
+		$tplvars['imgdate'] = $dt->format($fmt);
+		$tplvars['imgheight'] = $height;
+		$tplvars['imgwidth'] = $width;
+		$tpltxt = tmtTemplate::Get($this,'chart_'.$bracket_id.'_template');
+		if($tpltxt == FALSE)
+			$tpltxt = tmtTemplate::Get($this,'chart_default_template');
 		//merge user-defined template into 'real' one
 		$fn = cms_join_path(dirname(__FILE__),'templates','chart.tpl');
 		$def = @file_get_contents($fn);
-		$tpl = str_replace('|CUSTOM|',$tpl,$def);
+		$tpltxt = str_replace('|CUSTOM|',$tpltxt,$def);
 		$hidden = $this->CreateInputHidden($id,'view','chart');
 	}
 	else
@@ -142,7 +143,7 @@ if(empty($params['view']) || $params['view'] == 'chart')
 			$err = TRUE;
 			$message = $this->Lang('err_chart');
 		}
-		DisplayErrorPage($this,$smarty,$db,$params,$err,$message);
+		DisplayErrorPage($this,$tplvars,$db,$params,$err,$message);
 		return;
 	}
 }
@@ -151,10 +152,10 @@ else
 	$res = $lyt->GetList($this,$bdata);
 	if(is_array($res))
 	{
-		$smarty->assign('items',$res);
-		$smarty->assign('chart',$this->CreateInputSubmit($id,'chart',$this->Lang('chart')));
+		$tplvars['items'] = $res;
+		$tplvars['chart'] = $this->CreateInputSubmit($id,'chart',$this->Lang('chart'));
 		$fn = cms_join_path(dirname(__FILE__),'templates','list.tpl');
-		$tpl = @file_get_contents($fn);
+		$tpltxt = @file_get_contents($fn);
 		$hidden = $this->CreateInputHidden($id,'view','list');
 	}
 	else //$res (if any) is error-message key
@@ -172,16 +173,16 @@ else
 			$err = TRUE;
 			$message = $this->Lang('err_list');
 		}
-		DisplayErrorPage($this,$smarty,$db,$params,$err,$message);
+		DisplayErrorPage($this,$tplvars,$db,$params,$err,$message);
 		return;
 	}
 }
 
 if(!empty($params['message']))
-	$smarty->assign('message',urldecode($params['message']));
-$smarty->assign('hidden',$this->CreateInputHidden($id,'bracket_id',$bracket_id).$hidden);
-$smarty->assign('start_form',$this->CreateFormStart($id,'default',$returnid));
-$smarty->assign('end_form',$this->CreateFormEnd());
+	$tplvars['message'] = urldecode($params['message']);
+$tplvars['hidden'] = $this->CreateInputHidden($id,'bracket_id',$bracket_id).$hidden;
+$tplvars['start_form'] = $this->CreateFormStart($id,'default',$returnid);
+$tplvars['end_form'] = $this->CreateFormEnd();
 $submit = null;
 if($bdata['contact'])
 {
@@ -195,8 +196,8 @@ if($bdata['contact'])
 	}
 }
 unset($sch);
-$smarty->assign('submit',$submit);
+$tplvars['submit'] = $submit;
 
-$this->ProcessDataTemplate($tpl,TRUE);
+echo tmtTemplate::ProcessfromData($this,$tpltxt,$tplvars);
 
 ?>
