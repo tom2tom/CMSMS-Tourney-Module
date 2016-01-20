@@ -68,33 +68,33 @@ class tmtClone
 			$sql = 'INSERT INTO '.$pref."module_tmt_brackets VALUES ($fillers?)";
 			$db->Execute($sql,$values);
 
-			$tpl = $mod->GetTemplate('mailout_'.$sid.'_template');
+			$tpl = tmtTemplate::Get($mod,'mailout_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('mailout_'.$did.'_template',$tpl);
-			$tpl = $mod->GetTemplate('mailcancel_'.$sid.'_template');
+				tmtTemplate::Set($mod,'mailout_'.$did.'_template',$tpl);
+			$tpl = tmtTemplate::Get($mod,'mailcancel_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('mailcancel_'.$did.'_template',$tpl);
-			$tpl = $mod->GetTemplate('mailrequest_'.$sid.'_template');
+				tmtTemplate::Set($mod,'mailcancel_'.$did.'_template',$tpl);
+			$tpl = tmtTemplate::Get($mod,'mailrequest_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('mailrequest_'.$did.'_template',$tpl);
-			$tpl = $mod->GetTemplate('mailin_'.$sid.'_template');
+				tmtTemplate::Set($mod,'mailrequest_'.$did.'_template',$tpl);
+			$tpl = tmtTemplate::Get($mod,'mailin_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('mailin_'.$did.'_template',$tpl);
-			$tpl = $mod->GetTemplate('tweetout_'.$sid.'_template');
+				tmtTemplate::Set($mod,'mailin_'.$did.'_template',$tpl);
+			$tpl = tmtTemplate::Get($mod,'tweetout_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('tweetout_'.$did.'_template',$tpl);
-			$tpl = $mod->GetTemplate('tweetcancel_'.$sid.'_template');
+				tmtTemplate::Set($mod,'tweetout_'.$did.'_template',$tpl);
+			$tpl = tmtTemplate::Get($mod,'tweetcancel_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('tweetcancel_'.$did.'_template',$tpl);
-			$tpl = $mod->GetTemplate('tweetrequest_'.$sid.'_template');
+				tmtTemplate::Set($mod,'tweetcancel_'.$did.'_template',$tpl);
+			$tpl = tmtTemplate::Get($mod,'tweetrequest_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('tweetrequest__'.$did.'_template',$tpl);
-			$tpl = $mod->GetTemplate('tweetin_'.$sid.'_template');
+				tmtTemplate::Set($mod,'tweetrequest__'.$did.'_template',$tpl);
+			$tpl = tmtTemplate::Get($mod,'tweetin_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('tweetin_'.$did.'_template',$tpl);
-			$tpl = $mod->GetTemplate('chart_'.$sid.'_template');
+				tmtTemplate::Set($mod,'tweetin_'.$did.'_template',$tpl);
+			$tpl = tmtTemplate::Get($mod,'chart_'.$sid.'_template');
 			if ($tpl)
-				$mod->SetTemplate('chart_'.$did.'_template',$tpl);
+				tmtTemplate::Set($mod,'chart_'.$did.'_template',$tpl);
 
 			if($withteams)
 			{
