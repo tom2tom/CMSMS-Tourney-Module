@@ -113,7 +113,7 @@ class tmtCSV
 		//heading line
 		$names = self::TeamTitles($count);
 		if($names)
-			$outstr = implode($sep,$names)."\n";
+			$outstr = implode($sep,$names).PHP_EOL;
 		else
 			$outstr = '';
 
@@ -151,7 +151,7 @@ class tmtCSV
 			foreach($members as $pers)
 				$outstr .= $sep.str_replace($sep,$r,trim($pers['name']))
 				.$sep.str_replace($sep,$r,trim($pers['contact']));
-			$outstr .= "\n";
+			$outstr .= PHP_EOL;
 			if($fp)
 			{
 				if($convert)
