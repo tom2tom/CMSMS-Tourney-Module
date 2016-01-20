@@ -29,7 +29,7 @@ class tmtTweet
 	DoSend:
 	Sends tweet(s) about a match
 	@codes: associative array of 4 Twitter access-codes
-	@to: array of validated hashtag(s) for recipient(s)
+	@to: array of validated handle(s)
 	@tpltxt: smarty template to use for message body
 	@tplvars: reference to array of template variables
 	Returns: 2-member array -
@@ -52,7 +52,11 @@ class tmtTweet
 		);
 		$body = tmtTemplate::ProcessfromData($this->mod,$tpltxt,$tplvars);
 
-		return $this->twt->Send($creds,FALSE,$to,$body);
+		return $this->twt->Send(array(
+			'creds'=>$creds,
+			'handle'=>FALSE,
+			'to'=>$to,
+			'body'=>$body));
 	}
 
 	/**
@@ -82,7 +86,6 @@ class tmtTweet
 				$clean = $this->twt->ValidateAddress($one['contact']);
 				if($clean)
 				{
-					$clean[0] = '#';
 					$sends[] = $clean;
 					if($first)
 						break;
@@ -145,7 +148,6 @@ class tmtTweet
 		$clean = $this->twt->ValidateAddress($bdata['contact']);
 		if($clean)
 		{
-			$clean[0] = '#';
 			$to = array($clean);
 		}
 		else
@@ -212,8 +214,7 @@ class tmtTweet
 		}
 
 		$owner = $this->twt->ValidateAddress($bdata['contact']);
-		if($owner)
-			$owner[0] = '#';
+
 		$tokens = self::GetTokens($bdata['bracket_id']);
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent

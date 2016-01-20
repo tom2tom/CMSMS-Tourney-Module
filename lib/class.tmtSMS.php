@@ -51,7 +51,11 @@ class tmtSMS
 					$to[] = $num;
 			}
 		}
-		return $this->text->Send($prefix,$to,FALSE,$body);
+		return $this->text->Send(array(
+			'prefix'=>$prefix,
+			'to'=>$to,
+			'from'=>FALSE,
+			'body'=>$body));
 	}
 
 	/**

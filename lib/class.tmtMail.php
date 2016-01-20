@@ -45,8 +45,15 @@ class tmtMail
 		$body = tmtTemplate::ProcessfromData($this->mod,$tpltxt,$tplvars);
 		$html = ($bdata['html'] == '1');
 
-		return $this->mlr->Send($subject,$to,$cc,FALSE,$from,$body,$html);
-	}
+		return $this->mlr->Send(array(
+			'subject'=>$subject,
+			'to'=>$to,
+			'cc'=>$cc,
+			'bcc'=>FALSE,
+			'from'=>$from,
+			'body'=>$body,
+			'html'=>$html));
+	}   
 
 	/**
 	GetTeamContacts:
