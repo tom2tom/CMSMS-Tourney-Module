@@ -140,8 +140,7 @@ class cssparser {
           if($keys) {
             foreach($keys as $key) {
               if(strlen($key) > 0) {
-                $key = str_replace("\n",'',$key);
-                $key = str_replace('\\','',$key);
+                $key = str_replace(array(PHP_EOL,'\\'),array('',''),$key);
                 $this->Add($key, trim($codestr));
               }
             }
@@ -164,11 +163,11 @@ class cssparser {
   function GetCSS() {
     $result = '';
     foreach($this->css as $key => $values) {
-      $result .= $key." {\n";
+      $result .= $key.' {'.PHP_EOL;
       foreach($values as $key => $value) {
-        $result .= "  $key: $value;\n";
+        $result .= "  $key: $value;".PHP_EOL;
       }
-      $result .= "}\n\n";
+      $result .= '}'.PHP_EOL.PHP_EOL;
     }
     return $result;
   }
