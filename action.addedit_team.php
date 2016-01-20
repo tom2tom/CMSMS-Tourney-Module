@@ -621,7 +621,7 @@ EOS;
 			$(this).removeClass().addClass(name);
 			odd = !odd;
 		});
-		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {		
+		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {
 			var ajaxdata = ajaxData(droprow,droprows.length);
 			if (ajaxdata) {
 				$.ajax({
@@ -711,7 +711,7 @@ function select_all_players(cb) {
 
 EOS;
 	$tplvars['selectall'] = $this->CreateInputCheckbox($id,'p',FALSE,-1,
-		'id="playsel" onclick="select_all_players(this);"'));
+		'id="playsel" onclick="select_all_players(this);"');
 } //end $pc > 1
 else
 	$tplvars['selectall'] = NULL;
@@ -734,7 +734,7 @@ if($pmod)
 	{
 		$tplvars['dndhelp'] = $this->Lang('help_dnd');
 		$tplvars['delete'] = $this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
-			'title="'.$this->Lang('delete_tip').'"'));
+			'title="'.$this->Lang('delete_tip').'"');
 		$t = ($isteam) ? $this->Lang('sel_teams') : $this->Lang('sel_players');
 		$t = $this->Lang('confirm_delete',$t);
 		$jsloads[] = <<< EOS
@@ -753,7 +753,7 @@ EOS;
 	{
 		//need input-object that looks like page-link, to get all form parameters upon activation
 		$tplvars['add'] = $this->CreateInputLinks($id,'addplayer','newobject.gif',TRUE,
-			$this->Lang('title_add',strtolower($this->Lang('title_player')))));
+			$this->Lang('title_add',strtolower($this->Lang('title_player'))));
 	}
 	$tplvars['submit'] = $this->CreateInputSubmitDefault($id,'submit',$this->Lang('save'));
 	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('cancel'));
@@ -796,7 +796,7 @@ else
 
 if($pc > 0)
 	$tplvars['export'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
-		'title="'.$this->Lang('export_tip').'" onclick="return player_selected();"'));
+		'title="'.$this->Lang('export_tip').'" onclick="return player_selected();"');
 
 $tplvars['hidden'] = $hidden;
 

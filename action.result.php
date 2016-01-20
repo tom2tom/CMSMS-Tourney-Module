@@ -246,7 +246,7 @@ if ($mdata)
 		$matches[] = $one;
 	}
 	$tplvars += array(
-		'matches' = $matches,
+		'matches' => $matches,
 		'titleresult' => $this->Lang('title_result'),
 		'titlescore' => $this->Lang('score'),
 		'titlewhen' => $this->Lang('titlewhen'),
@@ -266,7 +266,7 @@ if ($mdata)
 	}
 
 	$jsloads[] = <<< EOS
- $('.seeblock').css('display','none');  
+ $('.seeblock').css('display','none');
  $('.mradio').click(function() {
   $('.seeblock').css('display','none');
   \$(this).parent().next().css('display','block');
@@ -345,7 +345,7 @@ function validate(ev,btn) {
   if (ok) {
    if ($('#{$id}sender').val() == '') {
    showerr('{$this->Lang('err_nosender')}');
-   ok = false; 
+   ok = false;
    }
    else if ($('{$id}captcha').val() == '') {
    showerr('{$this->Lang('err_nocaptcha')}');
@@ -368,15 +368,15 @@ EOS;
 else //no mdata
 	$tplvars['nomatches'] = $this->Lang('info_nomatch'); //TODO better message for frontend
 
-$tplvars['hidden'] = 
+$tplvars['hidden'] =
 	$this->CreateInputHidden($id,'bracket_id', $bracket_id).
 	$this->CreateInputHidden($id,'view', $params['view']).
-	$this->CreateInputHidden($id,'real_action','nosend'));
+	$this->CreateInputHidden($id,'real_action','nosend');
 $tplvars['start_form'] = $this->CreateFormStart($id,'result',$returnid);
 $tplvars['end_form'] = $this->CreateFormEnd();
 
 $tplvars['send'] =  $this->CreateInputSubmitDefault($id,'send',$this->Lang('submit'),
-	'onclick="return validate(event,this)"'));
+	'onclick="return validate(event,this)"');
 //'cancel' action-name is used by other form(s)
 $tplvars['cancel'] =  $this->CreateInputSubmit($id,'nosend',$this->Lang('cancel'));
 

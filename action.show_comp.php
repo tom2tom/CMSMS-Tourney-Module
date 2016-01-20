@@ -108,7 +108,7 @@ $tplvars += array(
 	'startform' => $this->CreateFormStart($id,'show_comp',$returnid),
 	'endform' => $this->CreateFormEnd(),
 	'hidden' => $this->GetHiddenParms($id,$params),
-	'close' => $this->CreateInputSubmit($id,'cancel',$this->Lang('close')
+	'close' => $this->CreateInputSubmit($id,'cancel',$this->Lang('close'))
 );
 
 tmtTemplate::Process($this,$tplname,$tplvars);

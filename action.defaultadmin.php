@@ -50,7 +50,7 @@ $tplvars['tab_headers'] = $this->StartTabHeaders().
 	$this->SetTabHeader('itmdata',$this->lang('tab_items')).
 	$this->SetTabHeader('grpdata',$this->lang('tab_groups'),$seetab1).
 	$t.
-	$this->EndTabHeaders().$this->StartTabContent());
+	$this->EndTabHeaders().$this->StartTabContent();
 $tplvars['tab_footers'] = $this->EndTabContent();
 
 //need diversion for 'import_comp' action
@@ -106,7 +106,7 @@ if ($rows)
 		$iconexport =
 		'<img src="'.$baseurl.'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />';
 	}
-	
+
 	foreach ($rows as $bdata)
 	{
 		$one = new stdClass();
@@ -119,7 +119,7 @@ if ($rows)
 			$done = $db->GetOne($sql2,array($thisid));
 			if ($done < $total)
 			{
-				$done = $db->GetOne($sql3,array($thisid)); 
+				$done = $db->GetOne($sql3,array($thisid));
 				$pending = $db->GetOne($sql4,array($thisid));
 				$mn = ($done == 1) ? $this->Lang('match'):$this->Lang('matches');
 				$one->status = $this->Lang('status_going',$done,$mn,$pending);
@@ -204,9 +204,9 @@ EOS;
 	$tplvars['selectall_items'] = $t;
 
 	$tplvars['printbtn'] = $this->CreateInputSubmit($id,'print',$this->Lang('print'),
-		'title="'.$this->Lang('printsel_tip').'" onclick="return confirm_selitm_count();"'));
+		'title="'.$this->Lang('printsel_tip').'" onclick="return confirm_selitm_count();"');
 	$tplvars['exportbtn'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
-		'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"'));
+		'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"');
 	$jsfuncs[] = <<< EOS
 function selitm_count()
 {
@@ -221,7 +221,7 @@ EOS;
 	if ($pmod)
 	{
 		$tplvars['notifybtn'] = $this->CreateInputSubmit($id,'notify',$this->Lang('notify'),
-			'title="'.$this->Lang('notifysel_tip').'" onclick="return confirm_selitm_count();"'));
+			'title="'.$this->Lang('notifysel_tip').'" onclick="return confirm_selitm_count();"');
 		if ($selgrp)
 			$t = $this->CreateInputSubmit($id,'group',$this->Lang('title_group'),
 			'title="'.$this->Lang('groupsel_tip').'" onclick="return confirm_selitm_count();"');
@@ -229,9 +229,9 @@ EOS;
 			$t = '';
 		$tplvars['groupbtn'] = $t;
 		$tplvars['clonebtn'] = $this->CreateInputSubmit($id,'clone',$this->Lang('clone'),
-			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"'));
+			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"');
 		$tplvars['deletebtn'] = $this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
-			'title="'.$this->Lang('deletesel_tip').'"')); //$(#$id.delete_item) modalconfirm
+			'title="'.$this->Lang('deletesel_tip').'"'); //$(#$id.delete_item) modalconfirm
 		//for popup confirmation
 		$tplvars['no'] = $this->Lang('no');
 		$tplvars['yes'] = $this->Lang('yes');
@@ -241,7 +241,7 @@ EOS;
   overlayID: 'confirm',
   preShow: function(d){
    var name = \$('td:first > a', $(this).closest('tr')).text();
-   if (name.search(' ') > -1){ 
+   if (name.search(' ') > -1){
     name = '"'+name+'"';
    }
    var para = d.children('p:first')[0];
@@ -275,9 +275,9 @@ else //no tournament
 if ($pmod)
 {
 	$tplvars['addlink'] = $this->CreateLink($id,'addedit_comp', '',
-		$theme->DisplayImage('icons/system/newobject.gif', $this->Lang('title_add_tourn'),'','','systemicon')));
+		$theme->DisplayImage('icons/system/newobject.gif', $this->Lang('title_add_tourn'),'','','systemicon'));
 	$tplvars['addlink2'] = $this->CreateLink($id,'addedit_comp', '',
-		$this->Lang('title_add_tourn')));
+		$this->Lang('title_add_tourn'));
 
 	$tplvars['title_import'] = $this->Lang('title_import');
 	$tplvars['input_import'] = $this->CreateInputFile($id, 'xmlfile', 'text/xml', 25);
@@ -375,10 +375,10 @@ if($groups)
 				$t = '';
 			$tplvars['activebtn2'] = $t;
 			$tplvars['cancelbtn2'] = $this->CreateInputSubmit($id,'cancel',
-				$this->Lang('cancel')));
+				$this->Lang('cancel'));
 			$tplvars['submitbtn2'] = $this->CreateInputSubmit($id,'update',
 				$this->Lang('update'),
-				'title="'.$this->Lang('updateselgrp').'" onclick="return confirm_selgrp_count();"'));
+				'title="'.$this->Lang('updateselgrp').'" onclick="return confirm_selgrp_count();"');
 			$jsfuncs[] = <<< EOS
 function selgrp_count()
 {
@@ -392,7 +392,7 @@ function confirm_selgrp_count()
 EOS;
 		}
 	}
-	
+
 	if ($gc > 1)
 	{
 		if ($pmod)
@@ -449,7 +449,7 @@ $(document).ready(function(){
 			$(this).removeClass().addClass(name);
 			odd = !odd;
 		});
-		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {		
+		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {
 			var ajaxdata = ajaxData(droprow,droprows.length);
 			if (ajaxdata) {
 				$.ajax({
@@ -476,7 +476,7 @@ $(document).ready(function(){
   overlayID: 'confirm',
   preShow: function(d){
    var name = \$('td > input:text', $(this).closest('tr')).val();
-   if (name.search(' ') > -1){ 
+   if (name.search(' ') > -1){
     name = '"'+name+'"';
    }
    var para = d.children('p:first')[0];
@@ -496,7 +496,7 @@ EOS;
 			$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
 			$tplvars['dndhelp'] = $this->Lang('help_dnd');
 			$tplvars['sortbtn2'] = $this->CreateInputSubmit($id,'sort',
-				$this->Lang('sort')));
+				$this->Lang('sort'));
 		}
 		$t = $this->Lang('title_move');
 		$cb = $this->CreateInputCheckbox($id,'group',TRUE,FALSE,'onclick="select_all_groups(this)"');
@@ -527,7 +527,7 @@ if ($padm)
 		.' '.
 		$this->CreateLink($id,'addgroup',$returnid,
 			$this->Lang('addgroup'),
-			array(),'',false,false,'class="pageoptions"'));
+			array(),'',false,false,'class="pageoptions"');
 }
 
 if ($padm)
@@ -620,10 +620,10 @@ EOS;
 
 	$tplvars['misc'] = $misc;
 
-	$tplvars['save'] = 
-		$this->CreateInputSubmitDefault($id, 'submit', $this->Lang('save')));
-	$tplvars['cancel'] = 
-		$this->CreateInputSubmit($id, 'cancel', $this->Lang('cancel')));
+	$tplvars['save'] =
+		$this->CreateInputSubmitDefault($id, 'submit', $this->Lang('save'));
+	$tplvars['cancel'] =
+		$this->CreateInputSubmit($id, 'cancel', $this->Lang('cancel'));
 }
 else
 {
