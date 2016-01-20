@@ -598,7 +598,7 @@ function AddFont($family, $style='', $file='', $deprec=false)
 				'$originalsize='.$originalsize.';',
 				'$fontkey=\''.$fontkey.'\';',
 				'?>');
-				$s = implode("\n",$lines);
+				$s = implode(PHP_EOL,$lines);
 				$fh = fopen($unifilename.'.mtx.php','w');
 				fwrite($fh,$s,strlen($s));
 				fclose($fh);
@@ -865,14 +865,12 @@ function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false)
 	if($w==0)
 		$w = $this->w-$this->rMargin-$this->x;
 	$wmax = ($w-2*$this->cMargin);
-	$s = str_replace("\r",'',$txt);
+	$nb = strlen($txt);
+	$l = strlen(PHP_EOL);
+	while ($nb>=$l && substr($txt,$nb-$l,$l)==PHP_EOL) $nb -= $l;
+	$s = substr($txt,0,$nb);
 	if ($this->isTtf) {
 		$nb = mb_strlen($s,'UTF-8');
-		while($nb>0 && mb_substr($s,$nb-1,1,'UTF-8')=="\n")	$nb--;
-	} else {
-		$nb = strlen($s);
-		if($nb>0 && $s[$nb-1]=="\n")
-			$nb--;
 	}
 	$b = 0;
 	if($border)
@@ -907,7 +905,7 @@ function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false)
 		} else {
 			$c=$s[$i];
 		}
-		if($c=="\n")
+		if($c==PHP_EOL)
 		{
 			// Explicit line break
 			if($this->ws>0)
@@ -1032,7 +1030,7 @@ function Write($h, $txt, $link='')
 		} else {
 			$c = $s[$i];
 		}
-		if($c=="\n")
+		if($c==PHP_EOL)
 		{
 			// Explicit line break
 			if ($this->isTtf) {
@@ -1677,9 +1675,9 @@ function _out($s)
 {
 	// Add a line to the document
 	if($this->state==2)
-		$this->pages[$this->page] .= $s."\n";
+		$this->pages[$this->page] .= $s.PHP_EOL;
 	else
-		$this->buffer .= $s."\n";
+		$this->buffer .= $s.PHP_EOL;
 }
 
 function _putpages()
@@ -1997,13 +1995,13 @@ function _putTTfontwidths(&$font, $maxUni)
 		if ($cid==128 && (!file_exists($font['unifilename'].'.cw127.php'))) {
 			if (is_writable($this->unifontpath)) {
 				$fh = fopen($font['unifilename'].'.cw127.php','wb');
-				$cw127='<?php'."\n";
-				$cw127.='$rangeid='.$rangeid.";\n";
-				$cw127.='$prevcid='.$prevcid.";\n";
-				$cw127.='$prevwidth='.$prevwidth.";\n";
-				if ($interval) { $cw127.='$interval=true'.";\n"; }
-				else { $cw127.='$interval=false'.";\n"; }
-				$cw127.='$range='.var_export($range,true).";\n";
+				$cw127='<?php'.PHP_EOL;
+				$cw127.='$rangeid='.$rangeid.';'.PHP_EOL;
+				$cw127.='$prevcid='.$prevcid.';'.PHP_EOL;
+				$cw127.='$prevwidth='.$prevwidth.';'.PHP_EOL;
+				if ($interval) { $cw127.='$interval=true;'.PHP_EOL; }
+				else { $cw127.='$interval=false;'.PHP_EOL; }
+				$cw127.='$range='.var_export($range,true).';'.PHP_EOL;
 				$cw127.="?>";
 				fwrite($fh,$cw127,strlen($cw127));
 				fclose($fh);
@@ -2073,7 +2071,7 @@ function _putTTfontwidths(&$font, $maxUni)
 	$w = '';
 	foreach ($range as $k => $ws) {
 		if (count(array_count_values($ws)) == 1) { $w .= ' '.$k.' '.($k + count($ws) - 1).' '.$ws[0]; }
-		else { $w .= ' '.$k.' [ '.implode(' ', $ws).' ]' . "\n"; }
+		else { $w .= ' '.$k.' [ '.implode(' ', $ws).' ]' . PHP_EOL; }
 	}
 	$this->_out('/W ['.$w.' ]');
 }
