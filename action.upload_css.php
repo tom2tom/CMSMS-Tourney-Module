@@ -41,7 +41,7 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 		fclose($h);
 		if ($content == FALSE)
 			$message = $this->PrettyMessage('lackpermission',FALSE);
-		if (!preg_match('/\.bracket.*\\n?{/',$content))
+		if (!preg_match('/\.bracket.*{/',$content))
 			$message = $this->PrettyMessage('err_file',FALSE);
 		unset($content);
 	}
@@ -67,14 +67,16 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 	$this->Redirect($id,'addedit_comp',$returnid,$newparms);
 }
 
-$smarty->assign('start_form',$this->CreateFormStart($id,'upload_css',$returnid,'post','multipart/form-data'));
-$smarty->assign('end_form',$this->CreateFormEnd());
-$smarty->assign('hidden',$this->GetHiddenParms($id,$params,'charttab'));
-$smarty->assign('title',$this->Lang('title_cssfile2',$params['tmt_name']));
-$smarty->assign('chooser',$this->CreateInputFile($id,'cssfile','text/css',30));
-$smarty->assign('apply',$this->CreateInputSubmitDefault($id,'upstart',$this->Lang('upload')));
-$smarty->assign('cancel',$this->CreateInputSubmit($id,'upcancel',$this->Lang('cancel')));
-$smarty->assign('help',$this->Lang('help_cssupload'));
+$tplvars = array(
+	'start_form' => $this->CreateFormStart($id,'upload_css',$returnid,'post','multipart/form-data'),
+	'end_form' => $this->CreateFormEnd(),
+	'hidden' => $this->GetHiddenParms($id,$params,'charttab'),
+	'title' => $this->Lang('title_cssfile2',$params['tmt_name']),
+	'chooser' => $this->CreateInputFile($id,'cssfile','text/css',30),
+	'apply' => $this->CreateInputSubmitDefault($id,'upstart',$this->Lang('upload')),
+	'cancel' => $this->CreateInputSubmit($id,'upcancel',$this->Lang('cancel')),
+	'help' => $this->Lang('help_cssupload')
+);
 
-echo $this->ProcessTemplate('onepage.tpl');
+tmtTemplate::Process($this,'onepage.tpl',$tplvars);
 ?>

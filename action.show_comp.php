@@ -52,6 +52,7 @@ switch ($bdata['type'])
 }
 unset($sch);
 
+$tplvars = array();
 $lyt = new tmtLayout();
 if (!$list)
 {
@@ -62,8 +63,8 @@ if (!$list)
 		$basename = basename($chartfile);
 		list($height,$width) = $lyt->GetChartSize();
 		$rooturl = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
-		$smarty->assign('image',$this->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30));
-		$tpl = 'admin_chart.tpl';
+		$tplvars['image'] = $this->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30);
+		$tplname = 'admin_chart.tpl';
 		if($titles == 0)
 			//force refresh next time
 			$db->Execute(
@@ -84,13 +85,13 @@ else
 	$res = $lyt->GetList($this,$bdata,FALSE);
 	if (is_array($res))
 	{
-		$smarty->assign('pagetitle',$bdata['name']);
+		$tplvars['pagetitle'] = $bdata['name'];
 		if (!empty($bdata['description']))
-			$smarty->assign('pagedesc',$bdata['description']);
+			$tplvars['pagedesc'] = $bdata['description'];
 		else
-			$smarty->assign('pagedesc',null);
-		$smarty->assign('items',$res);
-		$tpl = 'admin_list.tpl';
+			$tplvars['pagedesc'] = null;
+		$tplvars['items'] = $res;
+		$tplname = 'admin_list.tpl';
 	}
 	else //$res (if any) is error-message key
 	{
@@ -103,10 +104,12 @@ else
 }
 unset($lyt);
 
-$smarty->assign('startform',$this->CreateFormStart($id,'show_comp',$returnid));
-$smarty->assign('endform',$this->CreateFormEnd());
-$smarty->assign('hidden',$this->GetHiddenParms($id,$params));
-$smarty->assign('close',$this->CreateInputSubmit($id,'cancel',$this->Lang('close')));
+$tplvars += array(
+	'startform' => $this->CreateFormStart($id,'show_comp',$returnid),
+	'endform' => $this->CreateFormEnd(),
+	'hidden' => $this->GetHiddenParms($id,$params),
+	'close' => $this->CreateInputSubmit($id,'cancel',$this->Lang('close')
+);
 
-echo $this->ProcessTemplate($tpl);
+tmtTemplate::Process($this,$tplname,$tplvars);
 ?>
