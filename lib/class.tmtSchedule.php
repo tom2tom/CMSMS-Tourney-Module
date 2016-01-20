@@ -6,7 +6,6 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 
 Class: tmtSchedule. Functions involved with tournament match scheduling
-NOTE this class does not support static method-calling
 */
 class tmtSchedule
 {
@@ -513,6 +512,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		if($allteams == FALSE)
 			return 'info_nomatch'; //no teams means no matches
 		$numteams = count($allteams);
+//	tmtUtils()?
 		list($min,$max) = $mod->GetLimits(Tourney::KOTYPE);
 		if($numteams > $max || $numteams < $min)
 			return 'err_value';
@@ -779,6 +779,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		if($allteams == FALSE)
 			return 'info_nomatch';
 		$numteams = count($allteams);
+//	tmtUtils()?
 		list($min,$max) = $mod->GetLimits(Tourney::DETYPE);
 		if($numteams < $min || $numteams > $max)
 			return 'err_value';
@@ -1080,6 +1081,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::MRES.' AND (N.teamA IS NULL OR N.t
 		if($allteams == FALSE)
 			return 'info_nomatch';
 		$numteams = count($allteams);
+//	tmtUtils()?
 		list($min,$max) = $mod->GetLimits(Tourney::RRTYPE);
 		if($numteams > $max || $numteams < $min)
 			return 'err_value';
