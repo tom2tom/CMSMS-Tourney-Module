@@ -101,7 +101,7 @@ class Tourney extends CMSModule
 		if ($cont)
 		{
 			$example = preg_replace(array('~\s?/\*(.*)?\*/~Usm','~\s?//.*$~m'),array('',''),$cont);
-			$example = str_replace(array("\n\n","\n","\t"),array('<br />','<br />',' '),trim($example));
+			$example = str_replace(array(PHP_EOL.PHP_EOL,PHP_EOL,"\t"),array('<br />','<br />',' '),trim($example));
 		}
 		else
 			$example = $this->Lang('missing');
@@ -672,7 +672,7 @@ Europe/Vilnius'
 		{
 			//wrapping for chart in-box presentation
 			foreach($results as &$rel)
-				$rel = str_replace(array(' ',','),array("\n","\n"),$rel);
+				$rel = str_replace(array(' ',','),array(PHP_EOL,PHP_EOL),$rel);
 			unset($rel);
 		}
 		return $results;
@@ -721,7 +721,7 @@ Europe/Vilnius'
 		//arbitrary limit on visible height
 		if ($height > 800)
 			$height = 800;
-		$ret = '<object type="application/pdf" data="'.$imgurl.'" height="'.$height.'" width="100%">'."\n".$failtext."\n".'</object>'."\n";
+		$ret = '<object type="application/pdf" data="'.$imgurl.'" height="'.$height.'" width="100%">'.PHP_EOL.$failtext.PHP_EOL.'</object>'.PHP_EOL;
 		return $ret;
 	}
 
@@ -805,14 +805,6 @@ Europe/Vilnius'
 			}
 			return $msg;
 		}
-	}
-
-	function ProcessDataTemplate($data, $display=FALSE)
-	{
-		$result = $this->ProcessTemplatefromData($data);
-		if(!$display)
-			return $result;
-		echo ($result !== FALSE) ? $result:$this->Lang('err_template');
 	}
 
 	function CheckAccess($operation=FALSE)
