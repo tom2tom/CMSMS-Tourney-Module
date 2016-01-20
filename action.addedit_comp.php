@@ -83,23 +83,23 @@ if ($add)
 	$sql = 'INSERT INTO '.cms_db_prefix().'module_tmt_brackets ('.$fields.') VALUES ('.$fillers.');';
 	$db->Execute($sql,array_values($args));
 	if ($data->motemplate)
-		$this->SetTemplate('mailout_'.$data->bracket_id.'_template',$data->motemplate);
+		tmtTemplate::Set($this,'mailout_'.$data->bracket_id.'_template',$data->motemplate);
 	if($data->mcanctemplate)
-		$this->SetTemplate('mailcancel_'.$data->bracket_id.'_template',$data->mcanctemplate);
+		tmtTemplate::Set($this,'mailcancel_'.$data->bracket_id.'_template',$data->mcanctemplate);
 	if($data->mreqtemplate)
-		$this->SetTemplate('mailrequest_'.$data->bracket_id.'_template',$data->mreqtemplate);
+		tmtTemplate::Set($this,'mailrequest_'.$data->bracket_id.'_template',$data->mreqtemplate);
 	if ($data->mitemplate)
-		$this->SetTemplate('mailin_'.$data->bracket_id.'_template',$data->mitemplate);
+		tmtTemplate::Set($this,'mailin_'.$data->bracket_id.'_template',$data->mitemplate);
 	if ($data->totemplate)
-		$this->SetTemplate('tweetout_'.$data->bracket_id.'_template',$data->totemplate);
+		tmtTemplate::Set($this,'tweetout_'.$data->bracket_id.'_template',$data->totemplate);
 	if($data->tcanctemplate)
-		$this->SetTemplate('tweetcancel_'.$data->bracket_id.'_template',$data->tcanctemplate);
+		tmtTemplate::Set($this,'tweetcancel_'.$data->bracket_id.'_template',$data->tcanctemplate);
 	if($data->treqtemplate)
-		$this->SetTemplate('tweetrequest_'.$data->bracket_id.'_template',$data->treqtemplate);
+		tmtTemplate::Set($this,'tweetrequest_'.$data->bracket_id.'_template',$data->treqtemplate);
 	if ($data->titemplate)
-		$this->SetTemplate('tweetin_'.$data->bracket_id.'_template',$data->titemplate);
+		tmtTemplate::Set($this,'tweetin_'.$data->bracket_id.'_template',$data->titemplate);
 	if ($data->chttemplate)
-		$this->SetTemplate('chart_'.$data->bracket_id.'_template',$data->chttemplate);
+		tmtTemplate::Set($this,'chart_'.$data->bracket_id.'_template',$data->chttemplate);
 }
 else
 {
@@ -110,7 +110,7 @@ else
 	 case 'match_view':
 		break;
 	 case 'connect':
-	 	//see also: action.twtauth.php which does the same sorts of things
+/* TODO Notifier
 		$twt = new tmtTweet();
 		list($key,$secret) = $twt->ModuleAppTokens();
 		try
@@ -132,11 +132,13 @@ else
 		{
 			$message = $e->getMessage();
 		}
+*/
 		if(!empty($message))
 			$message = $this->PrettyMessage($message,FALSE,FALSE,FALSE);
 		$params['real_action'] = 'edit';
 	 	break;
 	 case 'fromtwt':
+/* TODO Notifier
 		if(isset($_REQUEST['oauth_verifier'])) //authorisation done
 		{
 			$twt = new tmtTweet();
@@ -162,6 +164,7 @@ else
 			if(!empty($message))
 				$message = $this->PrettyMessage($message,FALSE,FALSE,FALSE);
 		}
+*/
 /*		else
 		{
 			$pref = cms_db_prefix();
@@ -227,11 +230,12 @@ if ($data)
 {
 	if ($params['real_action'] == 'view')
 		$data->readonly = 1;
+	$tplvars = array();
 	$funcs = new tmtEditSetup();
-	$funcs->Setup($this,$smarty,$data,$id,$returnid,$tab,$message);
+	$funcs->Setup($this,$tplvars,$data,$id,$returnid,$tab,$message);
 	unset($funcs);
 	unset($data);
-	echo $this->ProcessTemplate('addedit_comp.tpl');
+	tmtTemplate::Process($this,'addedit_comp.tpl',$tplvars);
 }
 else
 {

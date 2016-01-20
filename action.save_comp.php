@@ -99,63 +99,63 @@ if(isset($params['apply']) || isset($params['submit']))
 			if($motpl != NULL)
 			{
 				if($motpl)
-					$this->SetTemplate('mailout_'.$bracket_id.'_template',$motpl);
+					tmtTemplate::Set($this,'mailout_'.$bracket_id.'_template',$motpl);
 				else
-					$this->DeleteTemplate('mailout_'.$bracket_id.'_template');
+					tmtTemplate::Delete($this,'mailout_'.$bracket_id.'_template');
 			}
 			if($mctpl != NULL)
 			{
 				if($mctpl)
-					$this->SetTemplate('mailcancel_'.$bracket_id.'_template',$mctpl);
+					tmtTemplate::Set($this,'mailcancel_'.$bracket_id.'_template',$mctpl);
 				else
-					$this->DeleteTemplate('mailcancel_'.$bracket_id.'_template');
+					tmtTemplate::Delete($this,'mailcancel_'.$bracket_id.'_template');
 			}
 			if($mrtpl != NULL)
 			{
 				if($mrtpl)
-					$this->SetTemplate('mailrequest_'.$bracket_id.'_template',$mrtpl);
+					tmtTemplate::Set($this,'mailrequest_'.$bracket_id.'_template',$mrtpl);
 				else
-					$this->DeleteTemplate('mailrequest_'.$bracket_id.'_template');
+					tmtTemplate::Delete($this,'mailrequest_'.$bracket_id.'_template');
 			}
 			if($mitpl != NULL)
 			{
 				if($mitpl)
-					$this->SetTemplate('mailin_'.$bracket_id.'_template',$mitpl);
+					tmtTemplate::Set($this,'mailin_'.$bracket_id.'_template',$mitpl);
 				else
-					$this->DeleteTemplate('mailin_'.$bracket_id.'_template');
+					tmtTemplate::Delete($this,'mailin_'.$bracket_id.'_template');
 			}
 			if($totpl != NULL)
 			{
 				if($totpl)
-					$this->SetTemplate('tweetout_'.$bracket_id.'_template',$totpl);
+					tmtTemplate::Set($this,'tweetout_'.$bracket_id.'_template',$totpl);
 				else
-					$this->DeleteTemplate('tweetout_'.$bracket_id.'_template');
+					tmtTemplate::Delete($this,'tweetout_'.$bracket_id.'_template');
 			}
 			if($tctpl != NULL)
 			{
 				if($tctpl)
-					$this->SetTemplate('tweetcancel_'.$bracket_id.'_template',$tctpl);
+					tmtTemplate::Set($this,'tweetcancel_'.$bracket_id.'_template',$tctpl);
 				else
-					$this->DeleteTemplate('tweetcancel_'.$bracket_id.'_template');
+					tmtTemplate::Delete($this,'tweetcancel_'.$bracket_id.'_template');
 			}
 			if($trtpl != NULL)
 			{
 				if($trtpl)
-					$this->SetTemplate('tweetrequest_'.$bracket_id.'_template',$trtpl);
+					tmtTemplate::Set($this,'tweetrequest_'.$bracket_id.'_template',$trtpl);
 				else
-					$this->DeleteTemplate('tweetrequest_'.$bracket_id.'_template');
+					tmtTemplate::Delete($this,'tweetrequest_'.$bracket_id.'_template');
 			}
 			if($titpl != NULL)
 			{
 				if($titpl)
-					$this->SetTemplate('tweetin_'.$bracket_id.'_template',$titpl);
+					tmtTemplate::Set($this,'tweetin_'.$bracket_id.'_template',$titpl);
 				else
-					$this->DeleteTemplate('tweetin_'.$bracket_id.'_template');
+					tmtTemplate::Delete($this,'tweetin_'.$bracket_id.'_template');
 			}
 			if($chttpl)
-				$this->SetTemplate('chart_'.$bracket_id.'_template',$chttpl);
+				tmtTemplate::Set($this,'chart_'.$bracket_id.'_template',$chttpl);
 			else
-				$this->DeleteTemplate('chart_'.$bracket_id.'_template');
+				tmtTemplate::Delete($this,'chart_'.$bracket_id.'_template');
 
 			$funcs = new tmtData();
 			$sch = FALSE;
@@ -531,15 +531,15 @@ elseif(isset($params['cancel']))
 		}
 		$sql = 'DELETE FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 		$db->Execute($sql,array($bracket_id));
-		$this->DeleteTemplate('mailout_'.$bracket_id.'_template');
-		$this->DeleteTemplate('mailcancel_'.$bracket_id.'_template');
-		$this->DeleteTemplate('mailrequest_'.$bracket_id.'_template');
-		$this->DeleteTemplate('mailin_'.$bracket_id.'_template');
-		$this->DeleteTemplate('tweetout_'.$bracket_id.'_template');
-		$this->DeleteTemplate('tweetcancel_'.$bracket_id.'_template');
-		$this->DeleteTemplate('tweetrequest_'.$bracket_id.'_template');
-		$this->DeleteTemplate('tweetin_'.$bracket_id.'_template');
-		$this->DeleteTemplate('chart_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'mailout_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'mailcancel_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'mailrequest_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'mailin_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'tweetout_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'tweetcancel_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'tweetrequest_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'tweetin_'.$bracket_id.'_template');
+		tmtTemplate::Delete($this,'chart_'.$bracket_id.'_template');
 	}
 	else //cancel edit of old bracket or after changes 'applied' to new one
 	{
