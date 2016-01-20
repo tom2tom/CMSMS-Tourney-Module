@@ -59,7 +59,7 @@
 </div>
 {if $canmod}
 <div class="pageinput pageoverflow">
- <p class="pagetext">{$title_import}:</p>
+ <p class="pagetext leftward">{$title_import}:</p>
  <div>{$input_import}&nbsp;&nbsp;{$submitxml}</div>
 </div>
 {/if}
@@ -118,23 +118,23 @@
 {$start_config_tab}
 {$start_configform}
  <div class="pageinput pageoverflow" style="display:inline-block;">
- <fieldset><legend>{$title_names_fieldset}</legend>
+ <fieldset class="settings"><legend>{$title_names_fieldset}</legend>
 {foreach from=$names item=entry}
-  <p class="pagetext">{$entry[0]}:</p>
+  <p class="pagetext leftward">{$entry[0]}:</p>
   <p>{$entry[1]}{if isset($entry[2])}<br />{$entry[2]}{/if}</p>
 {/foreach}
  </fieldset>
- <fieldset><legend>{$title_misc_fieldset}</legend>
+ <fieldset class="settings"><legend>{$title_misc_fieldset}</legend>
 {foreach from=$misc item=entry}
-  <p class="pagetext">{$entry[0]}:</p>
+  <p class="pagetext leftward">{$entry[0]}:</p>
   <p>{$entry[1]}{if isset($entry[2])}<br />{$entry[2]}{/if}</p>
 {/foreach}
  </fieldset>
 {if isset($hidden)}{$hidden}{/if}
-<div style="margin:10px 0 0 0;float:right;text-align:right">
+<br /><br />
+<div class="pageoptions">
 {$cancel} {$save}
 </div>
-<div class="clearb"></div>
 </div>
 {$end_form}
 {$end_tab}

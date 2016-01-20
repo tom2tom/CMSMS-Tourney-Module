@@ -2,8 +2,8 @@
 {$start_form}
 {$hidden}
 {if isset($changes)}
-<div class="pageoverflow">
- <table class="pagetable" style="border-collapse:collapse;">
+<div class="pageinput pageoverflow">
+ <table class="pagetable">
   <thead><tr>
   <th>{$changer}</th>
   <th>{$changewhen}</th>

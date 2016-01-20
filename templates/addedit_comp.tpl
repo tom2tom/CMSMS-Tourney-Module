@@ -4,50 +4,50 @@
 {$tabs_start}
 
 {$maintab_start}
- <div class="pageoverflow">
+ <div class="pageinput pageoverflow">
 {foreach from=$main item=entry}
-{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
-{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
-{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext leftward">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div>{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="help">{$entry[2]}</p>{/if}
 {/foreach}
 </div>
 {$tab_end}
 
 {$scheduletab_start}
- <div class="pageoverflow">
+ <div class="pageinput pageoverflow">
 {foreach from=$schedulers item=entry}
-{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
-{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
-{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext leftward">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div>{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="help">{$entry[2]}</p>{/if}
 {/foreach}
 </div>
 {$tab_end}
 
 {$advancedtab_start}
- <div class="pageoverflow">
+ <div class="pageinput pageoverflow">
 {foreach from=$advanced item=entry}
-{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
-{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
-{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext leftward">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div>{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="help">{$entry[2]}</p>{/if}
 {/foreach}
 </div>
 {$tab_end}
 
 {$charttab_start}
- <div class="pageoverflow">
+ <div class="pageinput pageoverflow">
 {foreach from=$names item=entry}
-{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
-{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
-{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext leftward">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div>{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="help">{$entry[2]}</p>{/if}
 {/foreach}
-{if isset($matches)}<br /><p class="pageinput">{$chart}&nbsp;{$list}&nbsp;{$print}</p>{/if}
+{if isset($matches)}<br /><div>{$chart}&nbsp;{$list}&nbsp;{$print}</div>{/if}
 </div>
 {$tab_end}
 
 {$playertab_start}
+<div class="pageinput pageoverflow" style="display:inline-block;">
 {if $teamcount > 0}
-	<div style="padding-right:10px; padding-bottom:10px; overflow:auto;">
-	<table id="tmt_players" style="margin:0 auto; border-collapse:collapse">
+	<table id="tmt_players">
 	 <thead><tr>
 	  <th class="{if $canmod}{ldelim}sss:false{rdelim}{else}ord{/if}">{$ordertitle}</th>
 	  <th class="{ldelim}sss:'textinput'{rdelim}">{$teamtitle}</th>
@@ -73,22 +73,20 @@
 	 {/foreach}
 	 </tbody>
 	</table>
-	{if $canmod > 0}<p class="dndhelp pageinput">{$dndhelp}</p>{/if}
-	</div>
+	{if $canmod > 0}<p class="dndhelp">{$dndhelp}</p>{/if}
 {else}
-	<p class="pageinput">{$noteams}</p>
+	<p>{$noteams}</p>
 {/if}
-<div class="pageinput" style="margin:1em 20% 0 20%;">
+	<div class="pageoptions">
 {if $canmod}{$addteam}&nbsp;&nbsp;{$import}&nbsp;{/if}
-{if $teamcount > 0}
- {$export}{if $canmod}&nbsp;{$delete}&nbsp;{$update1}{/if}
-{/if}
+{if $teamcount > 0} {$export}{if $canmod}&nbsp;{$delete}&nbsp;{$update1}{/if}{/if}
+	</div>
 </div>
 {$tab_end}
 
 {$matchtab_start}
+<div class="pageinput pageoverflow" style="display:inline-block;">
 {if isset($matches)}
-<div style="padding-right:10px; padding-bottom:10px; overflow:auto;">
 <div id="matchcalendar" style="margin:0 auto 10px 20%;"></div>
 <table id="tmt_matches" style="margin:0 auto; border-collapse:collapse">
  <thead><tr>
@@ -115,17 +113,17 @@
  </tbody>
 </table><br />
 <p class="pageinput">{if isset($reset)}{$reset}&nbsp;{/if}{$altmview}{if !$plan}&nbsp;{$chart}&nbsp;{$list}&nbsp;{$print}{/if}&nbsp;{$notify}{if $canmod}&nbsp;{$abandon}&nbsp;{$update2}{/if}</p>
-</div>
 {if $plan}<div style="overflow:auto;"><br />{$image}</div>{/if}
 {else}
-<p class="pageinput">{$nomatches}
+<p>{$nomatches}
 {if $malldone}<br /><br />{$chart}&nbsp;{$list}{elseif isset($schedule)}<br /><br />{$schedule}{/if}</p>
 {/if}
+</div>
 {$tab_end}
 
 {$resultstab_start}
+<div class="pageinput pageoverflow" style="display:inline-block;">
 {if isset($results)}
-<div style="padding-right:10px; padding-bottom:10px; overflow:auto;">
 <table id="tmt_results" style="margin:0 auto; border-collapse:collapse">
  <thead><tr>
   <th class="{ldelim}sss:false{rdelim}">{$scheduledtitle}</th>
@@ -150,19 +148,19 @@
  {/foreach}
  </tbody>
 </table><br />
-<p class="pageinput">{$chart}&nbsp;{$list}&nbsp;{$altrview}&nbsp;{$changes}&nbsp;{$getscore}{if $canmod}&nbsp;{$update3}{/if}</p>
-</div>
+<div>{$chart}&nbsp;{$list}&nbsp;{$altrview}&nbsp;{$changes}&nbsp;{$getscore}{if $canmod}&nbsp;{$update3}{/if}</div>
 {else}
-<p class="pageinput">{$noresults}
-{if $ralldone}<br /><br />{$chart}&nbsp;{$list}&nbsp;{$altrview}&nbsp;{$changes}{/if}</p>
+<p>{$noresults}{if $ralldone}<br /><br />{$chart}&nbsp;{$list}&nbsp;{$altrview}&nbsp;{$changes}{/if}</p>
 {/if}
+</div>
 {$tab_end}
 
 {$tabs_end}
 {if $canmod > 0}
 <br />
-<p class="pageinput">{$save}&nbsp;{$cancel}&nbsp;{$apply}</p>
+<div class="pageinput pageoptions">{$save}&nbsp;{$cancel}&nbsp;{$apply}</div>
 {/if}
+
 <div id="confirm" class="modal-overlay">
 <div class="confirm-container">
 <p style="text-align:center;font-weight:bold;"></p>

@@ -1,13 +1,15 @@
 <h4 class="pagetext">{$pagetitle}</h4>
 {$form_start}{$hidden}
+<div class="pageinput pageoverflow">
 {foreach from=$opts item=entry}
-{if !empty($entry[0])}<p class="pagetext">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
-{if isset($entry[1])}<div class="pageinput">{$entry[1]}</div>{/if}
-{if !empty($entry[2])}<p class="pageinput help">{$entry[2]}</p>{/if}
+{if !empty($entry[0])}<p class="pagetext leftward">{$entry[0]}:{if !empty($entry[2])} {$showtip}{/if}</p>{/if}
+{if isset($entry[1])}<div>{$entry[1]}</div>{/if}
+{if !empty($entry[2])}<p class="help">{$entry[2]}</p>{/if}
 {/foreach}
+</div>
 <br />
+<div class="pageinput pageoverflow style="display:inline-block;">
 {if $pc > 0}
-	<div class="pageinput">
 	<table id="team" class="table_sort" style="margin:0 auto 0 0; border-collapse:collapse">
 	 <thead><tr>
 	  <th class="{ldelim}sss:'textinput'{rdelim}">{$nametext}</th>
@@ -29,10 +31,10 @@
 	 </tbody>
 	</table>
 {if $canmod && $pc > 1}<p class="dndhelp">{$dndhelp}</p>{/if}
-	</div>
 	<br />
 {/if}
-	<div class="pageinput">{if $canmod}{if isset($add)}{$add} {/if}{$submit} {/if}{$export}{if $canmod} {$delete}{/if} {$cancel}</div>
+	<div class="pageoptions">{if $canmod}{if isset($add)}{$add} {/if}{$submit} {/if}{$export}{if $canmod} {$delete}{/if} {$cancel}</div>
+</div>
 <div id="confirm" class="modal-overlay">
 <div class="confirm-container">
 <p style="text-align:center;font-weight:bold;"></p>
