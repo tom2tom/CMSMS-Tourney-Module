@@ -4,7 +4,6 @@ This file is part of CMS Made Simple module: Tourney.
 Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
 Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
-This class is not suitable for static calling.
 */
 
 class tmtEditSetup
@@ -107,7 +106,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		}
 	}
 
-	function Setup(&$mod,&$smarty,&$data,$id,$returnid,$activetab='',$message='')
+	function Setup(&$mod,&$tplvars,&$data,$id,$returnid,$activetab='',$message='')
 	{
 		$gCms = cmsms();
 		$config = $gCms->GetConfig();
@@ -124,17 +123,17 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			$pscore = $pmod || $mod->CheckAccess('score');
 		}
 
-		$smarty->assign('canmod',$pmod ? 1:0);
-//		$smarty->assign('canscore',$pscore ? 1:0);
+		$tplvars['canmod'] = $pmod ? 1:0;
+//		$tplvars['canscore'] = $pscore ? 1:0;
 
-		if(!empty($message)) $smarty->assign('message',$message);
+		if(!empty($message)) $tplvars['message'] = $message;
 
-		$smarty->assign('form_start',$mod->CreateFormStart($id,'addedit_comp',$returnid));
-		$smarty->assign('form_end',$mod->CreateFormEnd());
+		$tplvars['form_start'] = $mod->CreateFormStart($id,'addedit_comp',$returnid);
+		$tplvars['form_end'] = $mod->CreateFormEnd();
 
 		if($activetab == FALSE)
 			$activetab = 'maintab';
-		$smarty->assign('tabs_start',$mod->StartTabHeaders().
+		$tplvars['tabs_start'] = $mod->StartTabHeaders().
 			$mod->SetTabHeader('maintab',$mod->Lang('tab_main'),($activetab == 'maintab')).
 			$mod->SetTabHeader('scheduletab',$mod->Lang('tab_schedule'),($activetab == 'scheduletab')).
 			$mod->SetTabHeader('advancedtab',$mod->Lang('tab_advanced'),($activetab == 'advancedtab')).
@@ -143,20 +142,21 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			$mod->SetTabHeader('matchestab',$mod->Lang('tab_matches'),($activetab =='matchestab')).
 			$mod->SetTabHeader('resultstab',$mod->Lang('tab_results'),($activetab =='resultstab')).
 //			$mod->SetTabHeader('historytab',$mod->Lang('tab_history'),($activetab =='historytab')).
-			$mod->EndTabHeaders() . $mod->StartTabContent());
-		$smarty->assign('tabs_end',$mod->EndTabContent());
+			$mod->EndTabHeaders() . $mod->StartTabContent();
+		$tplvars['tabs_end'] = $mod->EndTabContent();
 
-		$smarty->assign('maintab_start',$mod->StartTab('maintab'));
-		$smarty->assign('scheduletab_start',$mod->StartTab('scheduletab'));
-		$smarty->assign('advancedtab_start',$mod->StartTab('advancedtab'));
-		$smarty->assign('charttab_start',$mod->StartTab('charttab'));
-		$smarty->assign('playertab_start',$mod->StartTab('playerstab'));
-		$smarty->assign('matchtab_start',$mod->StartTab('matchestab'));
-		$smarty->assign('resultstab_start',$mod->StartTab('resultstab'));
-//		$smarty->assign('historytab_start',$mod->StartTab('historytab'));
+		$tplvars += array(
+			'maintab_start' => $mod->StartTab('maintab'),
+			'scheduletab_start' => $mod->StartTab('scheduletab'),
+			'advancedtab_start' => $mod->StartTab('advancedtab'),
+			'charttab_start' => $mod->StartTab('charttab'),
+			'playertab_start' => $mod->StartTab('playerstab'),
+			'matchtab_start' => $mod->StartTab('matchestab'),
+			'resultstab_start' => $mod->StartTab('resultstab'),
+//			'historytab_start' => $mod->StartTab('historytab'),
 
-		$smarty->assign('tab_end',$mod->EndTab()); //for CMSMS 2+ must be after EndTabContent()
-
+			'tab_end' => $mod->EndTab() //for CMSMS 2+ must be after EndTabContent()
+		);
 		//accumulator for hidden items,to be parked on page
 		$hidden = $mod->CreateInputHidden($id,'bracket_id',$data->bracket_id);
 		if(!empty($data->added))
@@ -167,7 +167,18 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$jsfuncs = array();
 		$jsloads = array();
 
-		$smarty->assign('incpath',$mod->GetModuleURLPath().'/include/');
+		$baseurl = $mod->GetModuleURLPath();
+		$jsincs[] = <<<EOS
+<script type="text/javascript" src="{$baseurl}/include/jquery.tmtfuncs.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.tablednd.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/moment.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/pikaday.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.pikaday.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.modalconfirm.min.js"></script>
+EOS;
+
 		if($pmod)
 		{
 			//setup some ajax-parameters - partial data for tableDnD::onDrop
@@ -340,7 +351,7 @@ EOS;
 		$theme = ($mod->before20) ? cmsms()->get_variable('admintheme'):
 			cms_utils::get_theme_object();
 		$iconinfo = $theme->DisplayImage('icons/system/info.gif',$mod->Lang('showhelp'),'','','systemicon tipper');
-		$smarty->assign('showtip',$iconinfo);
+		$tplvars['showtip'] = $iconinfo;
 
 //========= MAIN OPTIONS ==========
 		$main = array();
@@ -388,6 +399,7 @@ EOS;
 		$main[] = array(
 			$mod->Lang('title_zone'),
 			($pmod && !$this->committed) ?
+//	tmtUtils()?
 			$mod->CreateInputDropdown($id,'tmt_timezone',$mod->GetTimeZones(),'',$data->timezone) :
 			$data->timezone.(($pmod)?$mod->CreateInputHidden($id,'tmt_timezone',$data->timezone):''),
 			$mod->Lang('help_zone2')
@@ -455,7 +467,7 @@ EOS;
 			$data->twtfrom,
 			$help
 		);
-		$sms = class_exists('SMSG',FALSE);
+		$sms = class_exists('Notifier',FALSE);
 		if($sms)
 		{
 			$main[] = array(
@@ -490,7 +502,7 @@ EOS;
 			);
 		}
 
-		$smarty->assign('main',$main);
+		$tplvars['main'] = $main;
 
 //========= ADVANCED OPTIONS ==========
 
@@ -593,7 +605,7 @@ EOS;
 			$data->totemplate,
 			$helpabove
 		);  //TODO maybe specific $tplhelp[]
-	
+
 		$tplhelp = array();
 		$tplhelp[] = $mod->Lang('help_template');
 		foreach(array(
@@ -634,7 +646,7 @@ EOS;
 			$mod->Lang('help_logic')
 		);
 
-		$smarty->assign('advanced',$adv);
+		$tplvars['advanced'] = $adv;
 
 //========= SCHEDULE ==========
 
@@ -763,7 +775,7 @@ EOS;
 			$mod->Lang('help_play_gap')
 		);
 
-		$smarty->assign('schedulers',$sched);
+		$tplvars['schedulers'] = $sched;
 
 //========= CHART ==========
 
@@ -869,20 +881,20 @@ EOS;
 			$help
 		);
 
-		$smarty->assign('names',$names);
+		$tplvars['names'] = $names;
 
-		$smarty->assign('print',$mod->CreateInputSubmit($id,'print',$mod->Lang('print'),
-			'title="'.$mod->Lang('print_tip').'" onclick="set_params(this);"'));
+		$tplvars['print'] = $mod->CreateInputSubmit($id,'print',$mod->Lang('print'),
+			'title="'.$mod->Lang('print_tip').'" onclick="set_params(this);"');
 
 //========= TEAMS ==========
 
-		$smarty->assign('ordertitle',$mod->Lang('title_order'));
-		$smarty->assign('seedtitle',$mod->Lang('title_seed'));
-		$smarty->assign('contacttitle',$mod->Lang('title_contact'));
-		$smarty->assign('movetitle',$mod->Lang('title_move'));
-		$isteam = ((int)$data->teamsize > 1); 
+		$tplvars['ordertitle'] = $mod->Lang('title_order');
+		$tplvars['seedtitle'] = $mod->Lang('title_seed');
+		$tplvars['contacttitle'] = $mod->Lang('title_contact');
+		$tplvars['movetitle'] = $mod->Lang('title_move');
+		$isteam = ((int)$data->teamsize > 1);
 		$teamtitle = ($isteam) ? $mod->Lang('title_team') : $mod->Lang('title_player');
-		$smarty->assign('teamtitle',$teamtitle);
+		$tplvars['teamtitle'] = $teamtitle;
 		$finds = array('/class="(.*)"/','/id=.*\[\]" /'); //for xhtml string cleanup
 
 		if($data->teams)
@@ -942,7 +954,7 @@ EOS;
 				$teams[] = $one;
 				($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
 			}
-			$smarty->assign('teams',$teams);
+			$tplvars['teams'] = $teams;
 
 			if($pmod)
 			{
@@ -964,7 +976,7 @@ EOS;
 			$(this).removeClass().addClass(name);
 			odd = !odd;
 		});
-		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {		
+		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {
 			var ajaxdata = ajaxData(droprow,droprows.length);
 			if (ajaxdata) {
 				$.ajax({
@@ -1011,9 +1023,9 @@ EOS;
 		else //no team-data
 		{
 			$tcount = 0;
-			$smarty->assign('noteams',$mod->Lang('info_noteam'));
+			$tplvars['noteams'] = $mod->Lang('info_noteam');
 		}
-		$smarty->assign('teamcount',$tcount);
+		$tplvars['teamcount'] = $tcount;
 
 		$t = '';
 		if($pmod)
@@ -1027,7 +1039,7 @@ EOS;
 					$linktext,'onclick="set_params(this);"');
 			}
 		}
-		$smarty->assign('addteam',$t);
+		$tplvars['addteam'] = $t;
 
 		if($tcount)
 		{
@@ -1039,11 +1051,11 @@ function select_all_teams(cb) {
 }
 
 EOS;
-				$smarty->assign('selteams',$mod->CreateInputCheckbox($id,'t',FALSE,-1,
-					'id="teamsel" onclick="select_all_teams(this);"'));
+				$tplvars['selteams'] = $mod->CreateInputCheckbox($id,'t',FALSE,-1,
+					'id="teamsel" onclick="select_all_teams(this);"');
 			}
 			else
-				$smarty->assign('selteams','');
+				$tplvars['selteams'] = '';
 
 			$jsfuncs[] = <<< EOS
 function team_count() {
@@ -1066,11 +1078,11 @@ EOS;
 			{
 				if($data->matches || !$this->any) //not finished
 				{
-					$smarty->assign('dndhelp',$mod->Lang('help_dnd'));
-					$smarty->assign('update1',$mod->CreateInputSubmit($id,'update['.$id.'teams]',$mod->Lang('update'),
-						'title="'.$mod->Lang('update_tip').'" onclick="return teams_selected(event,this);"'));
-					$smarty->assign('delete',$mod->CreateInputSubmit($id,'delteams',$mod->Lang('delete'),
-						'title="'.$mod->Lang('delete_tip').'"'));
+					$tplvars['dndhelp'] = $mod->Lang('help_dnd');
+					$tplvars['update1'] = $mod->CreateInputSubmit($id,'update['.$id.'teams]',$mod->Lang('update'),
+						'title="'.$mod->Lang('update_tip').'" onclick="return teams_selected(event,this);"');
+					$tplvars['delete'] = $mod->CreateInputSubmit($id,'delteams',$mod->Lang('delete'),
+						'title="'.$mod->Lang('delete_tip').'"');
 					$t = ($isteam) ? $mod->Lang('sel_teams') : $mod->Lang('sel_players');
 					$t = $mod->Lang('confirm_delete',$t);
 					$jsloads[] = <<< EOS
@@ -1094,20 +1106,20 @@ EOS;
 				}
 				else //finished
 				{
-					$smarty->assign('dndhelp','');
-					$smarty->assign('update1','');
-					$smarty->assign('delete','');
+					$tplvars['dndhelp'] = '';
+					$tplvars['update1'] = '';
+					$tplvars['delete'] = '';
 				}
 			}
-			$smarty->assign('export',$mod->CreateInputSubmit($id,'export',$mod->Lang('export'),
-				'title="'.$mod->Lang('export_tip').'" onclick="return teams_selected(event,this);"'));
+			$tplvars['export'] = $mod->CreateInputSubmit($id,'export',$mod->Lang('export'),
+				'title="'.$mod->Lang('export_tip').'" onclick="return teams_selected(event,this);"');
 		}
 		if($pmod && ($data->matches || !$this->any)) //not finished
 			$t = $mod->CreateInputSubmit($id,'import_team',$mod->Lang('import'),
 				'title="'.$mod->Lang('import_tip').'" onclick="set_params(this);"');
 		else
 			$t = '';
-		$smarty->assign('import',$t);
+		$tplvars['import'] = $t;
 
 //========== MATCHES ===========
 
@@ -1115,9 +1127,9 @@ EOS;
 			$data->matchview = 'actual';
 		$plan = ($data->matchview != 'actual');
 		//these labels are shared with results tab, and may be used for history-view when all matches finished i.e. none displayed now
-		$smarty->assign('scheduledtitle',$mod->Lang('scheduled'));
-		$smarty->assign('placetitle',$mod->Lang('title_venue'));
-		$smarty->assign('statustitle',$mod->Lang('title_status'));
+		$tplvars['scheduledtitle'] = $mod->Lang('scheduled');
+		$tplvars['placetitle'] = $mod->Lang('title_venue');
+		$tplvars['statustitle'] = $mod->Lang('title_status');
 
 		if($data->matches)
 		{
@@ -1339,7 +1351,7 @@ EOS;
 				$matches[] = $one;
 				($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
 			}
-			$smarty->assign('matches',$matches);
+			$tplvars['matches'] = $matches;
 			if($pmod && $matches)
 			{
 				//embedded vars here were defined for start/end-date calendars
@@ -1369,11 +1381,11 @@ function select_all_matches(cb) {
 }
 
 EOS;
-				$smarty->assign('selmatches',$mod->CreateInputCheckbox($id,'m',FALSE,-1,
-					'id="matchsel" onclick="select_all_matches(this);"'));
+				$tplvars['selmatches'] = $mod->CreateInputCheckbox($id,'m',FALSE,-1,
+					'id="matchsel" onclick="select_all_matches(this);"');
 			}
 			else
-				$smarty->assign('selmatches','');
+				$tplvars['selmatches'] = '';
 
 			$jsfuncs[] = <<< EOS
 function match_count() {
@@ -1393,12 +1405,12 @@ function matches_selected(ev,btn) {
 EOS;
 			if($pmod)
 			{
-				$smarty->assign('update2',$mod->CreateInputSubmit($id,'update['.$id.'matches]',$mod->Lang('update'),
-					'title="'.$mod->Lang('update_tip').'" onclick="return matches_selected(event,this);"'));
+				$tplvars['update2'] = $mod->CreateInputSubmit($id,'update['.$id.'matches]',$mod->Lang('update'),
+					'title="'.$mod->Lang('update_tip').'" onclick="return matches_selected(event,this);"');
 				if(!$this->committed)	//no match actually 'locked in'
 				{
-					$smarty->assign('reset',$mod->CreateInputSubmit($id,'reset',$mod->Lang('reset'),
-						'title="'.$mod->Lang('reset_tip').'"'));
+					$tplvars['reset'] = $mod->CreateInputSubmit($id,'reset',$mod->Lang('reset'),
+						'title="'.$mod->Lang('reset_tip').'"');
 					$jsloads[] = <<< EOS
  $('#{$id}reset').modalconfirm({
   overlayID: 'confirm',
@@ -1435,10 +1447,10 @@ EOS;
  });
 
 EOS;
-			$smarty->assign('notify',$mod->CreateInputSubmit($id,'notify',$mod->Lang('notify'),
-				'title="'.$mod->Lang('notify_tip').'"')); //modal confirm for this
-			$smarty->assign('abandon',$mod->CreateInputSubmit($id,'abandon',$mod->Lang('abandon'),
-				'title="'.$mod->Lang('abandon_tip').'"')); //modal confirm for this
+			$tplvars['notify'] = $mod->CreateInputSubmit($id,'notify',$mod->Lang('notify'),
+				'title="'.$mod->Lang('notify_tip').'"'); //modal confirm for this
+			$tplvars['abandon'] = $mod->CreateInputSubmit($id,'abandon',$mod->Lang('abandon'),
+				'title="'.$mod->Lang('abandon_tip').'"'); //modal confirm for this
 			if($plan)
 			{
 				$bdata = array(
@@ -1473,30 +1485,30 @@ EOS;
 					$rooturl = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
 					$basename = basename($chartfile);
 					list($height,$width) = $lyt->GetChartSize();
-					$smarty->assign('image',$mod->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30));
+					$tplvars['image'] = $mod->CreateImageObject($rooturl.'/tmp/'.$basename,(int)$height+30);
 				}
 				else
 				{
 					$message = $mod->Lang('err_chart');
 						if($errkey)
 							$message .= '<br /><br />'.$mod->Lang($errkey);
-					$smarty->assign('image',$message);
+					$tplvars['image'] = $message;
 				}
 			}
-			$smarty->assign('malldone',0);
+			$tplvars['malldone'] = 0;
 		}
 		elseif($this->any) //match(es) exist
 		{
-			$smarty->assign('malldone',1);
-			$smarty->assign('nomatches',$mod->Lang('info_nomatch2'));
+			$tplvars['malldone'] = 1;
+			$tplvars['nomatches'] = $mod->Lang('info_nomatch2');
 		}
 		else //no matches at all
 		{
-			$smarty->assign('malldone',0);
-			$smarty->assign('nomatches',$mod->Lang('info_nomatch'));
+			$tplvars['malldone'] = 0;
+			$tplvars['nomatches'] = $mod->Lang('info_nomatch');
 			if($pmod && $tcount > 1)
-				$smarty->assign('schedule',$mod->CreateInputSubmit($id,'schedule',$mod->Lang('schedule'),
-					'onclick="set_params(this);"'));
+				$tplvars['schedule'] = $mod->CreateInputSubmit($id,'schedule',$mod->Lang('schedule'),
+					'onclick="set_params(this);"');
 		}
 
 		$hidden .= $mod->CreateInputHidden($id,'matchview',$data->matchview);
@@ -1512,22 +1524,22 @@ function matches_view(btn) {
 EOS;
 		if($plan)
 		{
-			$smarty->assign('plan',1);
-			$smarty->assign('idtitle',$mod->Lang('title_mid'));
-			$smarty->assign('altmview',$mod->CreateInputSubmit($id,'actual',$mod->Lang('actual'),
-				'title="'.$mod->Lang('actual_tip').'" onclick="matches_view(this);"'));
+			$tplvars['plan'] = 1;
+			$tplvars['idtitle'] = $mod->Lang('title_mid');
+			$tplvars['altmview'] = $mod->CreateInputSubmit($id,'actual',$mod->Lang('actual'),
+				'title="'.$mod->Lang('actual_tip').'" onclick="matches_view(this);"');
 		}
 		else
 		{
-			$smarty->assign('plan',0);
-			$smarty->assign('altmview',$mod->CreateInputSubmit($id,'plan',$mod->Lang('plan'),
-				'title="'.$mod->Lang('plan_tip').'" onclick="matches_view(this);"'));
+			$tplvars['plan'] = 0;
+			$tplvars['altmview'] = $mod->CreateInputSubmit($id,'plan',$mod->Lang('plan'),
+				'title="'.$mod->Lang('plan_tip').'" onclick="matches_view(this);"');
 		}
 		//these may be used on results tab as well or instead
-		$smarty->assign('chart',$mod->CreateInputSubmit($id,'chart',$mod->Lang('chart'),
-			'onclick="set_params(this);"'));
-		$smarty->assign('list',$mod->CreateInputSubmit($id,'list',$mod->Lang('list'),
-			'onclick="set_params(this);"'));
+		$tplvars['chart'] = $mod->CreateInputSubmit($id,'chart',$mod->Lang('chart'),
+			'onclick="set_params(this);"');
+		$tplvars['list'] = $mod->CreateInputSubmit($id,'list',$mod->Lang('list'),
+			'onclick="set_params(this);"');
 
 //========= RESULTS ==========
 
@@ -1545,6 +1557,7 @@ EOS;
 						$mod->Lang('possible')=>Tourney::SOFT,
 						$mod->Lang('confirmed')=>Tourney::FIRM);
 			}
+//	tmtUtils()?
 			$relations = $mod->ResultTemplates($data->bracket_id,FALSE);
 			$results = array();
 			$rowclass = 'row1';
@@ -1621,7 +1634,7 @@ EOS;
 			}
 			if($results) //there's something other than a bye
 			{
-				$smarty->assign('results',$results);
+				$tplvars['results'] = $results;
 				if($pmod)
 				{
 					//embedded vars here were defined for start/end-date calendars
@@ -1650,15 +1663,15 @@ function select_all_results(cb) {
 }
 
 EOS;
-					$smarty->assign('selresults',$mod->CreateInputCheckbox($id,'r',FALSE,-1,
-						'id="resultsel" onclick="select_all_results(this);"'));
+					$tplvars['selresults'] = $mod->CreateInputCheckbox($id,'r',FALSE,-1,
+						'id="resultsel" onclick="select_all_results(this);"');
 				}
 				else
-					$smarty->assign('selresults','');
+					$tplvars['selresults'] = '';
 
-				$smarty->assign('playedtitle',$mod->Lang('played'));
-				$smarty->assign('resulttitle',$mod->Lang('title_result'));
-				$smarty->assign('scoretitle',$mod->Lang('score'));
+				$tplvars['playedtitle'] = $mod->Lang('played');
+				$tplvars['resulttitle'] = $mod->Lang('title_result');
+				$tplvars['scoretitle'] = $mod->Lang('score');
 
 				$jsfuncs[] = <<< EOS
 function result_count() {
@@ -1676,25 +1689,25 @@ function results_selected(ev,btn) {
 }
 
 EOS;
-				$smarty->assign('update3',$mod->CreateInputSubmit($id,'update['.$id.'results]',$mod->Lang('update'),
-					'title="'.$mod->Lang('update_tip').'" onclick="return results_selected(event,this);"'));
+				$tplvars['update3'] = $mod->CreateInputSubmit($id,'update['.$id.'results]',$mod->Lang('update'),
+					'title="'.$mod->Lang('update_tip').'" onclick="return results_selected(event,this);"');
 			}
 			else //no relevant result
 			{
-				$smarty->assign('ralldone',0);
-				$smarty->assign('noresults',$mod->Lang('info_noresult'));
+				$tplvars['ralldone'] = 0;
+				$tplvars['noresults'] = $mod->Lang('info_noresult');
 			}
 		}
 		elseif($this->any) //any match in the database
 		{
-			$smarty->assign('ralldone',1);
+			$tplvars['ralldone'] = 1;
 			$key = ($this->committed) ? 'info_noresult2':'info_noresult';
-			$smarty->assign('noresults',$mod->Lang($key));
+			$tplvars['noresults'] = $mod->Lang($key);
 		}
 		else //nothing at all
 		{
-			$smarty->assign('ralldone',0);
-			$smarty->assign('noresults',$mod->Lang('info_noresult'));
+			$tplvars['ralldone'] = 0;
+			$tplvars['noresults'] = $mod->Lang('info_noresult');
 		}
 
 		$hidden .= $mod->CreateInputHidden($id,'resultview',$data->resultview);
@@ -1709,22 +1722,22 @@ function results_view(btn) {
 
 EOS;
 		if($future)
-			$smarty->assign('altrview',$mod->CreateInputSubmit($id,'past',$mod->Lang('history'),
-				'title="'.$mod->Lang('history_tip').'" onclick="results_view(this);"'));
+			$tplvars['altrview'] = $mod->CreateInputSubmit($id,'past',$mod->Lang('history'),
+				'title="'.$mod->Lang('history_tip').'" onclick="results_view(this);"');
 		else
-			$smarty->assign('altrview',$mod->CreateInputSubmit($id,'future',$mod->Lang('future'),
-				'title="'.$mod->Lang('future_tip').'" onclick="results_view(this);"'));
-		$smarty->assign('changes',$mod->CreateInputSubmit($id,'changelog',$mod->Lang('changes'),
-			'title="'.$mod->Lang('changes_tip').'" onclick="set_action(this);"'));
-		$smarty->assign('getscore',$mod->CreateInputSubmit($id,'getscore',$mod->Lang('getscore'),
-			'title="'.$mod->Lang('getscore_tip').'" onclick="return results_selected(event,this);"'));
+			$tplvars['altrview'] = $mod->CreateInputSubmit($id,'future',$mod->Lang('future'),
+				'title="'.$mod->Lang('future_tip').'" onclick="results_view(this);"');
+		$tplvars['changes'] = $mod->CreateInputSubmit($id,'changelog',$mod->Lang('changes'),
+			'title="'.$mod->Lang('changes_tip').'" onclick="set_action(this);"');
+		$tplvars['getscore'] = $mod->CreateInputSubmit($id,'getscore',$mod->Lang('getscore'),
+			'title="'.$mod->Lang('getscore_tip').'" onclick="return results_selected(event,this);"');
 
 //===============================
 
-		$smarty->assign('save',$mod->CreateInputSubmitDefault($id,'submit',$mod->Lang('save'),
-			'onclick="set_action(this);"'));
-		$smarty->assign('apply',$mod->CreateInputSubmit($id,'apply',$mod->Lang('apply'),
-			'title = "'.$mod->Lang('apply_tip').'" onclick="set_params(this);"'));
+		$tplvars['save'] = $mod->CreateInputSubmitDefault($id,'submit',$mod->Lang('save'),
+			'onclick="set_action(this);"');
+		$tplvars['apply'] = $mod->CreateInputSubmit($id,'apply',$mod->Lang('apply'),
+			'title = "'.$mod->Lang('apply_tip').'" onclick="set_params(this);"');
 		//setup cancel-confirmation popup
 		if(!empty($data->added)) //allways check cancellation for new bracket
 			$test = 'null';
@@ -1753,10 +1766,10 @@ function(){
 EOS;
 		}
 
-		$smarty->assign('cancel',$mod->CreateInputSubmit($id,'cancel',$mod->Lang('cancel')));
+		$tplvars['cancel'] = $mod->CreateInputSubmit($id,'cancel',$mod->Lang('cancel'));
 		//for popup confirmation
-		$smarty->assign('no',$mod->Lang('no'));
-		$smarty->assign('yes',$mod->Lang('yes'));
+		$tplvars['no'] = $mod->Lang('no');
+		$tplvars['yes'] = $mod->Lang('yes');
 		//onCheckFail: true means onConfirm() if no check needed
 		$jsloads[] = <<< EOS
  $('#{$id}cancel').modalconfirm({
@@ -1784,18 +1797,18 @@ EOS;
  });
 
 EOS;
-		$smarty->assign('hidden',$hidden);
+		$tplvars['hidden'] = $hidden;
 
 		if($jsloads)
 		{
-			$jsfuncs[] = '
-$(document).ready(function() {
+			$jsfuncs[] = '$(document).ready(function() {
 ';
 			$jsfuncs = array_merge($jsfuncs,$jsloads);
 			$jsfuncs[] = '});
 ';
 		}
-		$smarty->assign('jsfuncs',$jsfuncs);
+		$tplvars['jsfuncs'] = $jsfuncs;
+		$tplvars['jsincs'] = $jsincs;
 	}
 }
 
