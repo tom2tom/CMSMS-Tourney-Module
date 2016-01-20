@@ -25,30 +25,33 @@ class tmtComm
 	@mod: reference to current module object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
-	@smarty: reference to CMSMS smarty object
+	@tplvars: reference to array of template variables
 	*/
-	private function SetTplVars(&$mod,&$bdata,&$mdata,&$smarty)
+	private function SetTplVars(&$mod,&$bdata,&$mdata,&$tplvars)
 	{
-		$smarty->assign('title',$bdata['name']);
-		$smarty->assign('description',$bdata['description']);
-		$smarty->assign('owner',$bdata['owner']);
-		$smarty->assign('contact',$bdata['contact']);
-		$smarty->assign('smsfrom',$bdata['smsfrom']);
-		$smarty->assign('where',$mdata['place']);
+		$tplvars += array(
+			'title' => $bdata['name'],
+			'description' => $bdata['description'],
+			'owner' => $bdata['owner'],
+			'contact' => $bdata['contact'],
+			'smsfrom' => $bdata['smsfrom'],
+			'where' => $mdata['place']
+		);
 		$tfmt = $mod->GetPreference('time_format');
+//	tmtUtils()?
 		$dfmt = $mod->GetZoneDateFormat($bdata['timezone']);
 		$dt = new DateTime($mdata['playwhen'],new DateTimeZone($bdata['timezone']));
 		$stamp = $dt->GetTimestamp();
-		$smarty->assign('time',date($tfmt,$stamp));
-		$smarty->assign('date',date($dfmt,$stamp));
+		$tplvars['time'] = date($tfmt,$stamp);
+		$tplvars['date'] = date($dfmt,$stamp);
 		//time before date, can't rely on $bdata['atformat']
-		$smarty->assign('when',date($tfmt.', '.$dfmt,$stamp));
+		$tplvars['when'] = date($tfmt.', '.$dfmt,$stamp);
 		$tid = (int)$mdata['teamA'];
 		$tA = ($tid > 0) ? $mod->TeamName($mdata['teamA']) : '';
 		$tid = (int)$mdata['teamB'];
 		$tB = ($tid > 0) ? $mod->TeamName($mdata['teamB']) : '';
 		if($tA && $tB)
-			$smarty->assign('teams',$tA.', '.$tB);
+			$tplvars['teams'] = $tA.', '.$tB;
 		else
 		{
 			switch($bdata['type'])
@@ -60,7 +63,7 @@ class tmtComm
 				$op = $mod->Lang('anonother');
 				break;
 			}
-			$smarty->assign('teams',$tA.$tB.', '.$op);
+			$tplvars['teams'] = $tA.$tB.', '.$op;
 		}
 	}
 
@@ -69,10 +72,10 @@ class tmtComm
 	Sends message via relevant channel(s) to tournament owner, and to one member of both teams in the match
 	@bracket_id: index of competition to be processed
 	@match_id: index of match to be processed
-	@body: array of lines for message body
+	@bodylines: array of lines for message body
 	Returns: array with two members: 1st TRUE|FALSE representing success, 2nd specific problem message or FALSE
 	*/
-	public function TellOwner($bracket_id,$match_id,$body)
+	public function TellOwner($bracket_id,$match_id,$bodylines)
 	{
 		if($this->sender == NULL)
 			return array(FALSE,$this->mod->Lang('nonotifier'));
@@ -85,16 +88,16 @@ class tmtComm
 		{
 			$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 			$bdata = $db->GetRow($sql,array($bracket_id));
-			$smarty = cmsms()->GetSmarty();
 			//general vars for template
-			$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
+			$tplvars = array();
+			$this->SetTplVars($this->mod,$bdata,$mdata,$tplvars);
 			//channel-specific var report set downstream
 			$ok = FALSE;
 			$msgs = array();
 			if($this->sender->text)
 			{
-				$funcs = new tmtSMS($this->mod,$this->sender->text,$smarty);
-				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$body);
+				$funcs = new tmtSMS($this->mod,$this->sender->text);
+				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$tplvars,$bodylines);
 				if(!$ok && $msg1)
 					$msgs[] = $msg1;
 				else
@@ -102,8 +105,8 @@ class tmtComm
 			}
 			if($this->sender->mail)
 			{
-				$funcs = new tmtMail($this->mod,$this->sender->mail,$smarty);
-				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$body);
+				$funcs = new tmtMail($this->mod,$this->sender->mail);
+				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$tplvars,$bodylines);
 				if(!$ok && $msg1)
 					$msgs[] = $msg1;
 				else
@@ -111,8 +114,8 @@ class tmtComm
 			}
 			if($this->sender->tweet)
 			{
-				$funcs = new tmtTweet($this->mod,$this->sender->tweet,$smarty);
-				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$body);
+				$funcs = new tmtTweet($this->mod,$this->sender->tweet);
+				list($ok,$msg1) = $funcs->TellOwner($bdata,$mdata,$tplvars,$bodylines);
 				if(!$ok && $msg1)
 					$msgs[] = $msg1;
 				else
@@ -133,13 +136,13 @@ class tmtComm
 	Sends message via relevant channel(s) to one or all members of both teams in the match
 	@bracket_id: index of competition to be processed
 	@match_id: index of match to be processed
-	@tpl: enum for type of message: 1 = announcement, 2 = cancellation, 3 = score-request
+	@type: enum for type of message: 1 = announcement, 2 = cancellation, 3 = score-request
 	@first: TRUE to send only to first recognised address, FALSE to send per
 		the teams' respective contactall settings, optional, default FALSE
 	Returns: array with two members: 1st TRUE|FALSE representing success or nothing to do,
 		2nd a specific problem message or FALSE
 	*/
-	public function TellTeams($bracket_id,$match_id,$tpl,$first=FALSE)
+	public function TellTeams($bracket_id,$match_id,$type,$first=FALSE)
 	{
 		if($this->sender == NULL)
 			return array(FALSE,$this->mod->Lang('nonotifier'));
@@ -157,30 +160,30 @@ class tmtComm
 			{
 				$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 				$bdata = $db->GetRow($sql,array($bracket_id));
-				$smarty = cmsms()->GetSmarty();
 				//general vars for template
-				$this->SetTplVars($this->mod,$bdata,$mdata,$smarty);
+				$tplvars = array();
+				$this->SetTplVars($this->mod,$bdata,$mdata,$tplvars);
 				//team-specific vars recipient(for email),toall,opponent set downstream
 				$ok = FALSE;
 				$msgs = array();
 				if($this->sender->text)
 				{
-					$funcs = new tmtSMS($this->mod,$this->sender->text,$smarty);
-					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tpl,$first);
+					$funcs = new tmtSMS($this->mod,$this->sender->text);
+					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tplvars,$type,$first);
 					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
 				if($this->sender->mail)
 				{
-					$funcs = new tmtMail($this->mod,$this->sender->mail,$smarty);
-					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tpl,$first);
+					$funcs = new tmtMail($this->mod,$this->sender->mail);
+					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tplvars,$type,$first);
 					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
 				if($this->sender->tweet)
 				{
-					$funcs = new tmtTweet($this->mod,$this->sender->tweet,$smarty);
-					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tpl,$first);
+					$funcs = new tmtTweet($this->mod,$this->sender->tweet);
+					list($ok,$msg1) = $funcs->TellTeams($bdata,$mdata,$tplvars,$type,$first);
 					if(!$ok && $msg1)
 						$msgs[] = $msg1;
 				}
