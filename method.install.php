@@ -309,7 +309,7 @@ else
 
 		'textin',
 		'textout',
-		'textrequest'
+		'textrequest',
 		'textcancel',
 
 		'mailin',
@@ -319,7 +319,7 @@ else
 
 		'tweetin',
 		'tweetout',
-		'tweetrequest'
+		'tweetrequest',
 		'tweetcancel',
 	) as $i=>$name)
 	{
