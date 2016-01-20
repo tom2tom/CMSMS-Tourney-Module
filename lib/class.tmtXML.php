@@ -197,7 +197,7 @@ EOS;
 EOS;
 		}
 		$xml[] = '</tourney>';
-		return implode("\n",$xml);
+		return implode(PHP_EOL,$xml);
 	}
 
 	/**
