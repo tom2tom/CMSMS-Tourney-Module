@@ -4,9 +4,9 @@
 
 {$start_items_tab}
 {$start_itemsform}
+<div class="pageinput pageoverflow" style="display:inline-block;">
 {if $icount}
-<div style="overflow:auto;">
- <table id="items" class="pagetable" style="border-collapse:collapse;">
+ <table id="items" class="pagetable">
   <thead><tr>
   <th>{$title_name}</th>
 {if $candev}
@@ -44,32 +44,32 @@
 {/foreach}
  </tbody>
  </table>
-</div>
 {else}
 <p>{$notourn}</p>
 {/if}
 <div class="pageoptions">
-{if $canmod}{$addlink}&nbsp;{$addlink2}{/if}
-{if $icount}
-<div style="margin:0;float:right;text-align:right">
+ {if $canmod}{$addlink}&nbsp;{$addlink2}{/if}
+ {if $icount}
+  <div style="float:right;">
 {$printbtn}{if $canmod} {$notifybtn} {$groupbtn} {$clonebtn} {$deletebtn}{/if} {$exportbtn}
+  </div>
+  <div class="clearb"></div>
+ {/if}
 </div>
-<div class="clearb"></div>
-{/if}
+</div>
 {if $canmod}
-<div class="pageoverflow">
+<div class="pageinput pageoverflow">
  <p class="pagetext">{$title_import}:</p>
- <p class="pageinput">{$input_import}&nbsp;&nbsp;{$submitxml}</p>
+ <div>{$input_import}&nbsp;&nbsp;{$submitxml}</div>
 </div>
 {/if}
-</div>
 {$end_form}
 {$end_tab}
 
 {$start_grps_tab}
 {$start_groupsform}
 {if $gcount}
-<div style="overflow:auto;">
+<div class="pageinput pageoverflow" style="display:inline-block;">
  <table id="groups" class="pagetable" style="border-collapse:collapse">
   <thead><tr>
    <th style="display:none;"></th>
@@ -97,17 +97,17 @@
   </tbody>
  </table>
 {if $canmod && $gcount > 1}<p class="dndhelp">{$dndhelp}</p>{/if}
-</div>
 {else}
- <p class="pageinput" style="margin:20px;">{$nogroups}</p>
+ <p style="margin:20px;">{$nogroups}</p>
 {/if}
 <div class="pageoptions">
 {if $canmod}{$addgrplink}
 {if $gcount}
-<div style="margin:0;float:right;text-align:right">
+<div style="float:right;">
 {$cancelbtn2} {$activebtn2} {$sortbtn2} {$deletebtn2} {$submitbtn2}
 </div>
 <div class="clearb"></div>
+</div>
 {/if}
 {/if}
 </div>
@@ -117,17 +117,17 @@
 {if $config}
 {$start_config_tab}
 {$start_configform}
- <div class="module_fbr_overflow">
+ <div class="pageinput pageoverflow" style="display:inline-block;">
  <fieldset><legend>{$title_names_fieldset}</legend>
 {foreach from=$names item=entry}
   <p class="pagetext">{$entry[0]}:</p>
-  <p class="pageinput">{$entry[1]}{if isset($entry[2])}<br />{$entry[2]}{/if}</p>
+  <p>{$entry[1]}{if isset($entry[2])}<br />{$entry[2]}{/if}</p>
 {/foreach}
  </fieldset>
  <fieldset><legend>{$title_misc_fieldset}</legend>
 {foreach from=$misc item=entry}
   <p class="pagetext">{$entry[0]}:</p>
-  <p class="pageinput">{$entry[1]}{if isset($entry[2])}<br />{$entry[2]}{/if}</p>
+  <p>{$entry[1]}{if isset($entry[2])}<br />{$entry[2]}{/if}</p>
 {/foreach}
  </fieldset>
 {if isset($hidden)}{$hidden}{/if}
@@ -135,6 +135,7 @@
 {$cancel} {$save}
 </div>
 <div class="clearb"></div>
+</div>
 {$end_form}
 {$end_tab}
 {/if}
