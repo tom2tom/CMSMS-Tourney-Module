@@ -136,9 +136,11 @@ class tmtChartDE extends tmtChartBase
 		//levels in the winners' draw + 1 = lowest level in losers' draw
 		$lvlmid = $this->ldata['winnerbands'] + 1;
 		$fmt = $bdata['atformat'];
+//	tmtUtils()?
 		if(!$fmt)
 			$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
 		$dt = new DateTime('1900-01-01 00:00:00',new DateTimeZone($bdata['timezone']));
+//	tmtUtils()?
 		$relations = $this->mod->ResultTemplates($bracket_id);
 
 		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 ORDER BY match_id';
@@ -182,7 +184,7 @@ firm1:
 									$dt->modify($mdata['playwhen']);
 									$at .= ' '.date($fmt,$dt->getTimestamp());
 								}
-								$text = $rel."\n".trim($at);
+								$text = $rel.PHP_EOL.trim($at);
 								break;
 							case Tourney::FORFB:
 								if(!$mdata['score']) //no reason given
@@ -190,7 +192,7 @@ firm1:
 							case Tourney::WONA:
 								$type = ($lvl < $lvlmax) ? 'done' : 'final';
 								$rel = sprintf($relations['def'],$nameA,$nameB);
-								$text = $rel."\n".trim($mdata['score']);
+								$text = $rel.PHP_EOL.trim($mdata['score']);
 								break;
 							case Tourney::FORFA:
 								if(!$mdata['score'])
@@ -198,36 +200,36 @@ firm1:
 							case Tourney::WONB:
 								$type = ($lvl < $lvlmax) ? 'done' : 'final';
 								$rel = sprintf($relations['def'],$nameB,$nameA);
-								$text = $rel."\n".trim($mdata['score']);
+								$text = $rel.PHP_EOL.trim($mdata['score']);
 								break;
 							case Tourney::NOWIN:
 								$type = 'done';
 								$rel = sprintf($relations['vs'],$nameA,$nameB);
-								$text = $rel."\n".$bdata['nomatch'];
+								$text = $rel.PHP_EOL.$bdata['nomatch'];
 								break;
 							default:
 								$type = 'deflt';
 								$rel = sprintf($relations['vs'],$nameA,$nameB);
-								$text = $rel."\n".trim($mdata['score']);
+								$text = $rel.PHP_EOL.trim($mdata['score']);
 								break;
 							}
 						}
 						elseif($nameA)
 						{
 							$type = 'done';
-							$text = "\n".$nameA."\n".$bdata['bye'];
+							$text = PHP_EOL.$nameA.PHP_EOL.$bdata['bye'];
 						}
 						elseif($nameB)
 						{
 							$type = 'done';
-							$text = "\n".$nameB."\n".$bdata['bye'];
+							$text = PHP_EOL.$nameB.PHP_EOL.$bdata['bye'];
 						}
 						elseif($tA == -1 && $tB == -1)
 							$type = 'hide';
 						else
 						{
 							$type = 'deflt';
-							$text = "\n".$this->mod->Lang('err_match');
+							$text = PHP_EOL.$this->mod->Lang('err_match');
 						}
 					}
 					else //either or both teams unknown
@@ -246,7 +248,7 @@ firm1:
 							$type = 'firm';
 firm2:
 							if(!($tA || $tB) || $tA == '-1' || $tB == '-1')
-								$rel = ($titles == 1)?"\n".$this->rnd->LevelName($this->mod,$bdata,$tc,$lvl):'';
+								$rel = ($titles == 1)?PHP_EOL.$this->rnd->LevelName($this->mod,$bdata,$tc,$lvl):'';
 							elseif($tA)
 							{
 								$other = $this->rnd->AnonLevelName($this->mod,$bdata,$tc,$lvl);
@@ -255,7 +257,7 @@ firm2:
 							break;
 						 default:
 							$type = 'deflt';
-							$rel = ($titles == 1)?"\n".$this->rnd->LevelName($this->mod,$bdata,$tc,$lvl):'';
+							$rel = ($titles == 1)?PHP_EOL.$this->rnd->LevelName($this->mod,$bdata,$tc,$lvl):'';
 							break;
 						}
 						$at = ($mdata['place']) ? $mdata['place'] : '';
@@ -264,7 +266,7 @@ firm2:
 							$dt->modify($mdata['playwhen']);
 							$at .= ' '.date($fmt,$dt->getTimestamp());
 						}
-						$text = $rel."\n".trim($at);
+						$text = $rel.PHP_EOL.trim($at);
 					}
 				}
 				else //plan mode
@@ -290,12 +292,12 @@ firm2:
 					}
 					else
 						$type = 'done';
-					$rel = $this->mod->Lang('matchnum',$mid)."\n";
+					$rel = $this->mod->Lang('matchnum',$mid).PHP_EOL;
 					$anon = TRUE;
 					if($tA != FALSE && $tA != -1)
 					{
 						$anon = FALSE;
-						$rel .= $names[$tA]."\n";
+						$rel .= $names[$tA].PHP_EOL;
 						if($tB != FALSE)
 							$rel .= (($tB != -1)?$names[$tB]:$bdata['bye']);
 						else
@@ -305,10 +307,10 @@ firm2:
 					{
 						$anon = FALSE;
 						if ($tA == -1)
-							$rel .= $names[$tB]."\n".$bdata['bye'];
+							$rel .= $names[$tB].PHP_EOL.$bdata['bye'];
 						else
 							$rel .= $this->rnd->MatchTeamID_Team($this->mod,$bdata,$tc,$matches,$mid,$lvl,$tB).
-							"\n".$names[$tB];
+							PHP_EOL.$names[$tB];
 					}
 					if($anon) //both teams unknown or bye
 					{
@@ -319,7 +321,7 @@ firm2:
 							$two = $this->rnd->MatchTeamID_Mid($this->mod,$bdata,$tc,$matches,$mid,$lvl,$here-1);
 							//prevent display of 2 byes
 							if($one != $bdata['bye'] || $two != $one)
-								$rel .= $one."\n".$two;
+								$rel .= $one.PHP_EOL.$two;
 							else
 								$type = 'hide';
 						}
@@ -332,7 +334,7 @@ firm2:
 						$dt->modify($mdata['playwhen']);
 						$at .= ' '.date($fmt,$dt->getTimestamp());
 					}
-					$text = $rel."\n".trim($at);
+					$text = $rel.PHP_EOL.trim($at);
 				}
 				unset($mdata);
 				$row['type'] = $type;

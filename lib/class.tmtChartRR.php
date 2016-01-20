@@ -85,9 +85,11 @@ class tmtChartRR extends tmtChartBase
 			$order++;
 		}
 		$fmt = $bdata['atformat'];
+//	tmtUtils()?
 		if(!$fmt)
 			$fmt = $this->mod->GetZoneDateFormat($bdata['timezone']).' '.$this->mod->GetPreference('time_format');
 		$dt = new DateTime('1900-01-01 00:00:00',new DateTimeZone($bdata['timezone']));
+//	tmtUtils()?
 		$relations = $this->mod->ResultTemplates($bdata['bracket_id']);
 		$anon = $this->mod->Lang('anonother');
 		//process all recorded matches
@@ -134,7 +136,7 @@ firm2:
 						$dt->modify($mdata['playwhen']);
 						$at .= ' '.date($fmt,$dt->getTimestamp());
 					}
-					$text = $rel."\n".trim($at);
+					$text = $rel.PHP_EOL.trim($at);
 					break;
 				case Tourney::ASOFT:
 					$type = 'nonf';
@@ -143,7 +145,7 @@ firm2:
 					if($mdata['status'] == Tourney::AFIRM)
 						$type = 'firm';
 					if(!($mdata['teamA'] || $mdata['teamB'])) //should never happen for planned RR match
-						$rel = ($titles==1)?"\n".$this->mod->Lang('anonanon'):''; //TODO better descriptor
+						$rel = ($titles==1)?PHP_EOL.$this->mod->Lang('anonanon'):''; //TODO better descriptor
 					elseif($mdata['teamA'])
 						$rel = sprintf($relations['vs'],$tA,$anon);
 					else
@@ -154,7 +156,7 @@ firm2:
 						$dt->modify($mdata['playwhen']);
 						$at .= ' '.date($fmt,$dt->getTimestamp());
 					}
-					$text = $rel."\n".trim($at);
+					$text = $rel.PHP_EOL.trim($at);
 					break;
 				case Tourney::FORFB:
 					if(!$mdata['score']) //no reason given
@@ -162,7 +164,7 @@ firm2:
 				case Tourney::WONA:
 					$type = 'done';
 					$rel = sprintf($relations['def'],$tA,$tB);
-					$text = $rel."\n".trim($mdata['score']);
+					$text = $rel.PHP_EOL.trim($mdata['score']);
 					break;
 				case Tourney::FORFA:
 					if(!$mdata['score'])
@@ -170,23 +172,23 @@ firm2:
 				case Tourney::WONB:
 					$type = 'done';
 					$rel = sprintf($relations['def'],$tB,$tA);
-					$text = $rel."\n".trim($mdata['score']);
+					$text = $rel.PHP_EOL.trim($mdata['score']);
 					break;
 				case Tourney::MTIED:
 					$type = 'done';
 					$rel = sprintf($relations['tied'],$tA,$tB);
-					$text = $rel."\n".trim($mdata['score']);
+					$text = $rel.PHP_EOL.trim($mdata['score']);
 					break;
 				case Tourney::NOWIN:
 					$type = 'done';
 					$text = sprintf($relations['nomatch'],$tA,$tB);
 					$rel = sprintf($relations['vs'],$tA,$tB);
-					$text = $rel."\n".$bdata['nomatch'];
+					$text = $rel.PHP_EOL.$bdata['nomatch'];
 					break;
 				default:
 					$type = 'deflt';
 					$rel = sprintf($relations['vs'],$tA,$tB);
-					$text = $rel."\n".trim($mdata['score']);
+					$text = $rel.PHP_EOL.trim($mdata['score']);
 					break;
 				}
 			}
@@ -219,13 +221,13 @@ firm2:
 				}
 				if($at)
 				{
-					$rel = ''; //$this->mod->Lang('matchnum',(int)$mdata['match_id'])."\n";
+					$rel = ''; //$this->mod->Lang('matchnum',(int)$mdata['match_id']).PHP_EOL;
 					if($tA != FALSE)
-						$rel .= $tA."\n";
+						$rel .= $tA.PHP_EOL;
 					if($tB != FALSE)
-						$rel .= $tB."\n";
+						$rel .= $tB.PHP_EOL;
 					if($tA == FALSE || $tB == FALSE)
-						$rel .= $anon."\n";
+						$rel .= $anon.PHP_EOL;
 					$text = $rel.trim($at);
 				}
 				else
