@@ -98,7 +98,24 @@ $this->RemovePermission($this->PermSeeName);
 $this->RemovePreference();
 
 // templates
-$this->DeleteTemplate();
+$this->DeleteTemplate(); //old-style templates can be for any version
+if(!$this->before20)
+{
+	$types = CmsLayoutTemplateType::load_all_by_originator($this->GetName());
+	if($types)
+	{
+		foreach($types as $type)
+		{
+			$templates = $type->get_template_list();
+			if($templates)
+			{
+				foreach($templates as $tpl)
+					$tpl->delete();
+			}
+			$type->delete();
+		}
+	}
+}
 
 // events
 //$this->RemoveEvent('ResultAdd');
