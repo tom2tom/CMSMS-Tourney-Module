@@ -191,7 +191,7 @@ class tmtData
 			if($params['tmt_motemplate'])
 				$data->motemplate = $params['tmt_motemplate'];
 			else
-				$data->motemplate = $mod->GetTemplate('mailout_default_template');
+				$data->motemplate = tmtTemplate::Get($mod,'mailout_default_template');
 		}
 		else
 			$data->motemplate = NULL;
@@ -200,7 +200,7 @@ class tmtData
 			if($params['tmt_mcanctemplate'])
 				$data->mcanctemplate = $params['tmt_mcanctemplate'];
 			else
-				$data->mcanctemplate = $mod->GetTemplate('mailcancel_default_template');
+				$data->mcanctemplate = tmtTemplate::Get($mod,'mailcancel_default_template');
 		}
 		else
 			$data->mcanctemplate = NULL;
@@ -209,7 +209,7 @@ class tmtData
 			if($params['tmt_mreqtemplate'])
 				$data->mreqtemplate = $params['tmt_mreqtemplate'];
 			else
-				$data->mreqtemplate = $mod->GetTemplate('mailrequest_default_template');
+				$data->mreqtemplate = tmtTemplate::Get($mod,'mailrequest_default_template');
 		}
 		else
 			$data->mreqtemplate = NULL;
@@ -218,7 +218,7 @@ class tmtData
 			if($params['tmt_mitemplate'])
 				$data->mitemplate = $params['tmt_mitemplate'];
 			else
-				$data->mitemplate = $mod->GetTemplate('mailin_default_template');
+				$data->mitemplate = tmtTemplate::Get($mod,'mailin_default_template');
 		}
 		else
 			$data->mitemplate = NULL;
@@ -228,7 +228,7 @@ class tmtData
 			if($params['tmt_totemplate'])
 				$data->totemplate = $params['tmt_totemplate'];
 			else
-				$data->totemplate = $mod->GetTemplate('tweetout_default_template');
+				$data->totemplate = tmtTemplate::Get($mod,'tweetout_default_template');
 		}
 		else
 			$data->totemplate = NULL;
@@ -237,7 +237,7 @@ class tmtData
 			if($params['tmt_tcanctemplate'])
 				$data->tcanctemplate = $params['tmt_tcanctemplate'];
 			else
-				$data->tcanctemplate = $mod->GetTemplate('tweetcancel_default_template');
+				$data->tcanctemplate = tmtTemplate::Get($mod,'tweetcancel_default_template');
 		}
 		else
 			$data->tcanctemplate = NULL;
@@ -246,7 +246,7 @@ class tmtData
 			if($params['tmt_treqtemplate'])
 				$data->treqtemplate = $params['tmt_treqtemplate'];
 			else
-				$data->treqtemplate = $mod->GetTemplate('tweetrequest_default_template');
+				$data->treqtemplate = tmtTemplate::Get($mod,'tweetrequest_default_template');
 		}
 		else
 			$data->treqtemplate = NULL;
@@ -255,7 +255,7 @@ class tmtData
 			if($params['tmt_titemplate'])
 				$data->titemplate = $params['tmt_titemplate'];
 			else
-				$data->titemplate = $mod->GetTemplate('tweetin_default_template');
+				$data->titemplate = tmtTemplate::Get($mod,'tweetin_default_template');
 		}
 		else
 			$data->titemplate = NULL;
@@ -264,7 +264,7 @@ class tmtData
 		if($params['tmt_chttemplate'])
 			$data->chttemplate = $params['tmt_chttemplate'];
 		else
-			$data->chttemplate = $mod->GetTemplate('chart_default_template');
+			$data->chttemplate = tmtTemplate::Get($mod,'chart_default_template');
 		$data->chartcss = $params['tmt_chartcss'];
 		if (isset($params['cssfile']))
 			$data->cssfile = $params['cssfile'];
@@ -387,18 +387,18 @@ class tmtData
 			$data->smspattern = $mod->GetPreference('phone_regex');
 			$data->feu_editgroup = 'none';
 
-			$data->motemplate = $mod->GetTemplate('mailout_default_template');
-			$data->mcanctemplate = $mod->GetTemplate('mailcancel_default_template');
-			$data->mreqtemplate = $mod->GetTemplate('mailrequest_default_template');
-			$data->mitemplate = $mod->GetTemplate('mailin_default_template');
-			$data->totemplate = $mod->GetTemplate('tweetout_default_template');
-			$data->tcanctemplate = $mod->GetTemplate('tweetcancel_default_template');
-			$data->treqtemplate = $mod->GetTemplate('tweetrequest_default_template');
-			$data->titemplate = $mod->GetTemplate('tweetin_default_template');
+			$data->motemplate = tmtTemplate::Get($mod,'mailout_default_template');
+			$data->mcanctemplate = tmtTemplate::Get($mod,'mailcancel_default_template');
+			$data->mreqtemplate = tmtTemplate::Get($mod,'mailrequest_default_template');
+			$data->mitemplate = tmtTemplate::Get($mod,'mailin_default_template');
+			$data->totemplate = tmtTemplate::Get($mod,'tweetout_default_template');
+			$data->tcanctemplate = tmtTemplate::Get($mod,'tweetcancel_default_template');
+			$data->treqtemplate = tmtTemplate::Get($mod,'tweetrequest_default_template');
+			$data->titemplate = tmtTemplate::Get($mod,'tweetin_default_template');
 			$data->html = 0;
 			$data->logic = '';
 
-			$data->chttemplate = $mod->GetTemplate('chart_default_template');
+			$data->chttemplate = tmtTemplate::Get($mod,'chart_default_template');
 			$data->chartcss = '';
 			$data->atformat = $mod->GetPreference('date_format').' '.$mod->GetPreference('time_format');
 			$data->final = $mod->GetPreference('last_match_name');
@@ -469,18 +469,18 @@ class tmtData
 			$data->smspattern = $row['smspattern'];
 			$data->feu_editgroup = $row['feu_editgroup'];
 
-			$data->motemplate = $mod->GetTemplate('mailout_'.$row['bracket_id'].'_template');
-			$data->mcanctemplate = $mod->GetTemplate('mailcancel_'.$row['bracket_id'].'_template');
-			$data->mreqtemplate = $mod->GetTemplate('mailrequest_'.$row['bracket_id'].'_template');
-			$data->mitemplate = $mod->GetTemplate('mailin_'.$row['bracket_id'].'_template');
-			$data->totemplate = $mod->GetTemplate('tweetout_'.$row['bracket_id'].'_template');
-			$data->tcanctemplate = $mod->GetTemplate('tweetcancel_'.$row['bracket_id'].'_template');
-			$data->treqtemplate = $mod->GetTemplate('tweetrequest_'.$row['bracket_id'].'_template');
-			$data->titemplate = $mod->GetTemplate('tweetin_'.$row['bracket_id'].'_template');
+			$data->motemplate = tmtTemplate::Get($mod,'mailout_'.$row['bracket_id'].'_template');
+			$data->mcanctemplate = tmtTemplate::Get($mod,'mailcancel_'.$row['bracket_id'].'_template');
+			$data->mreqtemplate = tmtTemplate::Get($mod,'mailrequest_'.$row['bracket_id'].'_template');
+			$data->mitemplate = tmtTemplate::Get($mod,'mailin_'.$row['bracket_id'].'_template');
+			$data->totemplate = tmtTemplate::Get($mod,'tweetout_'.$row['bracket_id'].'_template');
+			$data->tcanctemplate = tmtTemplate::Get($mod,'tweetcancel_'.$row['bracket_id'].'_template');
+			$data->treqtemplate = tmtTemplate::Get($mod,'tweetrequest_'.$row['bracket_id'].'_template');
+			$data->titemplate = tmtTemplate::Get($mod,'tweetin_'.$row['bracket_id'].'_template');
 			$data->html = (int)$row['html'];
 			$data->logic = $row['logic'];
 
-			$data->chttemplate = $mod->GetTemplate('chart_'.$row['bracket_id'].'_template');
+			$data->chttemplate = tmtTemplate::Get($mod,'chart_'.$row['bracket_id'].'_template');
 			$data->chartcss = $row['chartcss'];
 			$data->atformat = $row['atformat'];
 			$data->final = $row['final'];

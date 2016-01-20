@@ -39,6 +39,7 @@ class tmtDelete
 						unlink($path);
 				}
 			}
+//	tmtUtils()?
 			$file = $mod->ChartImageFile($bid);
 			if ($file)
 				unlink($file);
@@ -56,15 +57,15 @@ class tmtDelete
 			$db->Execute($sql,array($bid));
 
 			$bid = $params['bracket_id'];
-			$mod->DeleteTemplate('mailout_'.$bid.'_template');
-			$mod->DeleteTemplate('mailcancel_'.$bid.'_template');
-			$mod->DeleteTemplate('mailrequest_'.$bid.'_template');
-			$mod->DeleteTemplate('mailin_'.$bid.'_template');
-			$mod->DeleteTemplate('tweetout_'.$bid.'_template');
-			$mod->DeleteTemplate('tweetcancel_'.$bid.'_template');
-			$mod->DeleteTemplate('tweetrequest_'.$bid.'_template');
-			$mod->DeleteTemplate('tweetin_'.$bid.'_template');
-			$mod->DeleteTemplate('chart_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'mailout_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'mailcancel_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'mailrequest_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'mailin_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'tweetout_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'tweetcancel_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'tweetrequest_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'tweetin_'.$bid.'_template');
+			tmtTemplate::Delete($mod,'chart_'.$bid.'_template');
 		}
 	}
 }
