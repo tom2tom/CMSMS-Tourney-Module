@@ -5,8 +5,8 @@ Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
 Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
-
-if (! $this->CheckAccess('admin')) return;
+if(!$this->CheckAccess('admin'))
+	return $this->Lang('lackpermission');
 
 $taboptarray = array('mysql' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci',
  'mysqli' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci');
@@ -221,58 +221,131 @@ $this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$'); //for SMS messages t
 $this->SetPreference('privaccess','xCX2ecz275nuFjMb966o9Z/Jc4XiXWnDDEo0RI3gN69nGnpM2a0ZDKU1L5ZKsXBgwbw1/Si0IbD7T5M6z2B5fOBmCNCDXXbDCYcjHzuz49P4UtBlYIQxc0PRO5nU0E0eFMNl4A4Jl2khiEWJ+tQF4HSI2p2lhSCRP4FElptLrYP0QsxKfbWroib1GQmyzUI0q/4SoI82hTc0TAybAretL/dnNsnRVcB7pgjVeAosNeihHE1S6IcdVrLxGOlDz+qLbQ0c2caY95562a+gOBYNHbAp316Q3bbeSGF3wHyTY0IBLJhWmjYyDgdw2htJHJvf');
 $this->SetPreference('privapi','70yCqX4fBPRJH/4HZAIrZGE2j9UCrzjwRwKux/Pd2SEq9uPpzKYZKXgOdvVOhgSoL0b6R0NOBkjovfSLatQCw7uvGyaG612elW4OetyTI4l3ZnTy9k1F7t1NZy/lkuhc2z0VOoZ/1lzWYMnryVnvWZtuJtD/xIpotehtN84x9bnnov/sTfw9piARiX7WRaC/YImVW2+enZn4FvXRqz1jBaKe7P172iymNA8tEUuEP66M8px4i5I5YNj3IwEhkK2c27IKbdFn0NTyp80eUQEbxq39qMIABZE1/96COTa8toBieZNbmuJbX3OuY/1ytoFwSU9F07wAb1E=');
 
-$fn = cms_join_path(dirname(__FILE__),'templates','chart_custom.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '<div id="bracketchart" style="overflow:auto;">{$image}</div>';
-$this->SetTemplate('chart_default_template',$s);
-$fn = cms_join_path(dirname(__FILE__),'templates','email_out.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '{$title}'."\n\n".$this->Lang('default_email','{$where}','{$when}')."\n";
-$this->SetTemplate('mailout_default_template',$s);
-$fn = cms_join_path(dirname(__FILE__),'templates','email_cancelled.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '{$title}'."\n\n".$this->Lang('cancelled_email','{$when}');
-$this->SetTemplate('mailcancel_default_template',$s);
+$base = cms_join_path(dirname(__FILE__),'templates','');
+if($this->before20)
+{
+	$s = ''.@file_get_contents($base.'chart_custom.tpl');
+/*if ($s == FALSE)
+		$s = '<div id="bracketchart" style="overflow:auto;">{$image}</div>';
+*/
+	$this->SetTemplate('chart_default_template',$s);
+	$s = ''.@file_get_contents($base.'email_out.tpl');
+/*if ($s == FALSE)
+		$s = '{$title}'.PHP_EOL.PHP_EOL.$this->Lang('default_email','{$where}','{$when}').PHP_EOL;
+*/
+	$this->SetTemplate('mailout_default_template',$s);
+	$s = ''.@file_get_contents($base.'email_cancelled.tpl');
+/*if ($s == FALSE)
+		$s = '{$title}'.PHP_EOL.PHP_EOL.$this->Lang('cancelled_email','{$when}');
+*/
+	$this->SetTemplate('mailcancel_default_template',$s);
+	$s = ''.@file_get_contents($base.'email_request.tpl');
+/*if ($s == FALSE)
+		$s = '{$title}'.PHP_EOL.PHP_EOL.
+		$this->Lang('title_mid').'{if $where} {$where}{/if}{if $when} {$when}{/if} {$teams}'.PHP_EOL.PHP_EOL.
+		$this->Lang('tpl_mailresult','{if $contact}{$contact}{elseif $smsfrom}{$smsfrom}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
+*/
+	$this->SetTemplate('mailrequest_default_template',$s);
+	$s = ''.@file_get_contents($base.'email_in.tpl');
+/*if ($s == FALSE)
+		$s = '{$report}';
+*/
+	$this->SetTemplate('mailin_default_template',$s);
 
-$fn = cms_join_path(dirname(__FILE__),'templates','email_request.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '{$title}'."\n\n".
-	$this->Lang('title_mid').'{if $where} {$where}{/if}{if $when} {$when}{/if} {$teams}'."\n\n".
-	$this->Lang('tpl_mailresult','{if $contact}{$contact}{elseif $smsfrom}{$smsfrom}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
-$this->SetTemplate('mailrequest_default_template',$s);
-$fn = cms_join_path(dirname(__FILE__),'templates','email_in.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '{$report}';
-$this->SetTemplate('mailin_default_template',$s);
+	$s = ''.@file_get_contents($base.'tweet_out.tpl');
+/*if ($s == FALSE)
+		$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' {$where} {$when} {$teams}';
+*/
+	$this->SetTemplate('tweetout_default_template',$s);
+	$this->SetTemplate('textout_default_template',$s);
 
-$fn = cms_join_path(dirname(__FILE__),'templates','tweet_out.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' {$where} {$when} {$teams}';
-$this->SetTemplate('tweetout_default_template',$s);
-$fn = cms_join_path(dirname(__FILE__),'templates','tweet_cancelled.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' '.
-	 mb_strtoupper($this->Lang('cancelled')).'{if $when}, '.mb_strtoupper($this->Lang('not')).' {$when}{elseif $opponent},'.$this->Lang('name_against').' {$opponent}{/if}';
-$this->SetTemplate('tweetcancel_default_template',$s);
+	$s = ''.@file_get_contents($base.'tweet_cancelled.tpl');
+/*if ($s == FALSE)
+		$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' '.
+		 mb_strtoupper($this->Lang('cancelled')).'{if $when}, '.mb_strtoupper($this->Lang('not')).' {$when}{elseif $opponent},'.$this->Lang('name_against').' {$opponent}{/if}';
+*/
+	$this->SetTemplate('tweetcancel_default_template',$s);
+	$this->SetTemplate('textcancel_default_template',$s);
 
-$fn = cms_join_path(dirname(__FILE__),'templates','tweet_request.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' {$where} {$when} {$teams} '.
-	 $this->Lang('tpl_tweetresult','{if $smsfrom}{$smsfrom}{elseif $contact}{$contact}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
-$this->SetTemplate('tweetrequest_default_template',$s);
-$fn = cms_join_path(dirname(__FILE__),'templates','tweet_in.tpl');
-$s = @file_get_contents($fn);
-if ($s == FALSE)
-	$s = '{$report}';
-$this->SetTemplate('tweetin_default_template',$s);
+	$s = ''.@file_get_contents($base.'tweet_request.tpl');
+/*if ($s == FALSE)
+		$s = '{$title} '.mb_strtolower($this->Lang('title_mid')).' {$where} {$when} {$teams} '.
+		 $this->Lang('tpl_tweetresult','{if $smsfrom}{$smsfrom}{elseif $contact}{$contact}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
+*/
+	$this->SetTemplate('tweetrequest_default_template',$s);
+	$this->SetTemplate('textrequest_default_template',$s);
+
+	$s = ''.@file_get_contents($base.'tweet_in.tpl');
+/*if ($s == FALSE)
+		$s = '{$report}';
+*/
+	$this->SetTemplate('tweetin_default_template',$s);
+	$this->SetTemplate('textin_default_template',$s);
+}
+else
+{
+	$myname = $this->GetName();
+	$me = get_userid(false);
+	$files = array(
+		'chart_custom.tpl',
+
+		'tweet_in.tpl',
+		'tweet_out.tpl',
+		'tweet_request.tpl',
+		'tweet_cancelled.tpl',
+
+		'email_in.tpl',
+		'email_out.tpl',
+		'email_request.tpl',
+		'email_cancelled.tpl',
+
+		'tweet_in.tpl',
+		'tweet_out.tpl',
+		'tweet_request.tpl',
+		'tweet_cancelled.tpl',
+	);
+	foreach(array(
+		'chart',
+
+		'textin',
+		'textout',
+		'textrequest'
+		'textcancel',
+
+		'mailin',
+		'mailout',
+		'mailrequest',
+		'mailcancel',
+
+		'tweetin',
+		'tweetout',
+		'tweetrequest'
+		'tweetcancel',
+	) as $i=>$name)
+	{
+		$ttype = new CmsLayoutTemplateType();
+		$ttype->set_originator($myname);
+		$ttype->set_name($name);
+		$ttype->set_owner($me);
+		$s = ''.@file_get_contents($base.$files[$i]);
+		if($s)
+		{
+			$ttype->set_dflt_flag();
+			$ttype->set_dflt_contents($s);
+		}
+		$ttype->save();
+		if($s)
+		{
+			$tpl = new CmsLayoutTemplate();
+			$tpl->set_type($ttype);
+			$tpl->set_name('tmt_'.$name.'_default_content'); //must be unique!
+			$tpl->set_content($s);
+			$tpl->set_type_dflt(true);
+//		$tpl->set_listable($flag); //CMSMS 2.1+
+			$tpl->save();
+		}
+	}
+}
 
 //$this->CreateEvent('ResultAdd');
 //$this->CreateEvent('MatchChange');
