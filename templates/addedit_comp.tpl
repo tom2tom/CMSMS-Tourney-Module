@@ -173,14 +173,7 @@
 </div>
 {$form_end}
 
-<script type="text/javascript" src="{$incpath}jquery.tmtfuncs.js"></script>
-<script type="text/javascript" src="{$incpath}jquery.metadata.min.js"></script>
-<script type="text/javascript" src="{$incpath}jquery.SSsort.min.js"></script>
-<script type="text/javascript" src="{$incpath}jquery.tablednd.min.js"></script>
-<script type="text/javascript" src="{$incpath}moment.min.js"></script>
-<script type="text/javascript" src="{$incpath}pikaday.min.js"></script>
-<script type="text/javascript" src="{$incpath}jquery.pikaday.min.js"></script>
-<script type="text/javascript" src="{$incpath}jquery.modalconfirm.min.js"></script>
+{foreach from=$jsincs item=file}{$file}{/foreach}
 <script type="text/javascript">
 //<![CDATA[
 {foreach from=$jsfuncs item=func}{$func}{/foreach}
