@@ -11,19 +11,17 @@ class tmtTweet
 {
 	private $mod; //reference to Tourney module object
 	private $twt; //reference to TweetSender object
-	private $smarty; //reference to current smarty object, with some template-vars already set
 	//details for default twitter application: CMSMS TourneyModule, owned by @CMSMSTourney
 	private $api_key = 'JnUL9AU1RxOW8xIjrBXeZfTnr';
 	private $api_secret;
 	private $access_token = '2426259434-64ADfkcEKgyUr1BL63HIPLOdCbgmkM6Zjdt55tp';
 	private $access_secret;
 
-	function __construct(&$mod,&$twt,&$smarty)
+	function __construct(&$mod,&$twt)
 	{
 		$this->mod = $mod;
 		$this->twt = $twt;
-		$this->smarty = $smarty;
-		$this->api_secret = $mod->GetPreference('privapi');
+		$this->api_secret = $mod->GetPreference('privapi'); //not yet decoded
 		$this->access_secret = $mod->GetPreference('privaccess');
 	}
 
@@ -32,12 +30,13 @@ class tmtTweet
 	Sends tweet(s) about a match
 	@codes: associative array of 4 Twitter access-codes
 	@to: array of validated hashtag(s) for recipient(s)
-	@tpl: smarty template to use for message body
+	@tpltxt: smarty template to use for message body
+	@tplvars: reference to array of template variables
 	Returns: 2-member array -
 	 [0] FALSE if no addressee or no twitter module, otherwise boolean cumulative result of twt->Send()
 	 [1] '' or error message e.g. from twt->send()
 	*/
-	private function DoSend($codes,$to,$tpl)
+	private function DoSend($codes,$to,$tpltxt,$tplvars)
 	{
 		if(!$to)
 			return array(FALSE,'');
@@ -51,7 +50,7 @@ class tmtTweet
 			'access_token'=>$this->access_token,
 			'access_secret'=>$funcs->decrypt_value($this->mod,$this->access_secret)
 		);
-		$body = $this->mod->ProcessDataTemplate($tpl);
+		$body = tmtTemplate::ProcessfromData($this->mod,$tpltxt,$tplvars);
 
 		return $this->twt->Send($creds,FALSE,$to,$body);
 	}
@@ -131,15 +130,16 @@ class tmtTweet
 
 	/**
 	TellOwner:
-	Sends tweets with respective hashtags of tournament owner, and one member of both teams in the match
+	Posts tweets with respective hashtags of tournament owner, and one member of both teams in the match
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
+	@tplvars: reference to array of template variables
 	@lines: array of lines for message body
 	Returns: 2-member array -
 	 [0] TRUE|FALSE representing success
 	 [1] '' or specific failure message
 	*/
-	public function TellOwner(&$bdata,&$mdata,$lines)
+	public function TellOwner(&$bdata,&$mdata,&$tplvars,$lines)
 	{
 		//owner
 		$clean = $this->twt->ValidateAddress($bdata['contact']);
@@ -169,44 +169,45 @@ class tmtTweet
 				$to = array_merge($to,$more);
 		}
 		//submitted data
-		$this->smarty->assign('report',implode(' ',$lines));
+		$tplvars['report'] = implode(' ',$lines);
 
-		$tpl = $this->mod->GetTemplate('tweetin_'.$bdata['bracket_id'].'_template');
-		if($tpl == FALSE)
-			$tpl = $this->mod->GetTemplate('tweetin_default_template');
-		return self::DoSend($this->mod,$tokens,$to,$tpl);
+		$tpltxt = tmtTemplate::Get($this->mod,'tweetin_'.$bdata['bracket_id'].'_template');
+		if($tpltxt == FALSE)
+			$tpltxt = tmtTemplate::Get($this->mod,'tweetin_default_template');
+		return self::DoSend($tokens,$to,$tpltxt,$tplvars);
 	}
 
 	/**
 	TellTeams:
-	Sends tweets with respective hashtags of one or all members of both teams in the match, plus the owner
+	Posts tweets with respective hashtags of one or all members of both teams in the match, plus the owner
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
-	@tpl: enum for type of message: 1 = announcement, 2 = cancellation, 3 = score-request
+	@tplvars: reference to array of template variables
+	@type: enum for type of message: 1 = announcement, 2 = cancellation, 3 = score-request
 	@first: TRUE to send only to first recognised address, FALSE to send per
 		the teams' respective contactall settings, optional, default FALSE
 	Returns: 2-member array -
 	 [0] TRUE|FALSE representing success, or TRUE if nobody to send to
 	 [1] '' or specific failure message
 	*/
-	public function TellTeams(&$bdata,&$mdata,$tpl,$first=FALSE)
+	public function TellTeams(&$bdata,&$mdata,&$tplvars,$type,$first=FALSE)
 	{
-		switch($tpl)
+		switch($type)
 		{
 		 case 1:
-			$tpl = $this->mod->GetTemplate('tweetout_'.$bdata['bracket_id'].'_template');
-			if($tpl == FALSE)
-				$tpl = $this->mod->GetTemplate('tweetout_default_template');
+			$tpltxt = tmtTemplate::Get($this->mod,'tweetout_'.$bdata['bracket_id'].'_template');
+			if($tpltxt == FALSE)
+				$tpltxt = tmtTemplate::Get($this->mod,'tweetout_default_template');
 			break;
 		 case 2:
-			$tpl = $this->mod->GetTemplate('tweetcancel_'.$bdata['bracket_id'].'_template');
-			if($tpl == FALSE)
-				$tpl = $this->mod->GetTemplate('tweetcancel_default_template');
+			$tpltxt = tmtTemplate::Get($this->mod,'tweetcancel_'.$bdata['bracket_id'].'_template');
+			if($tpltxt == FALSE)
+				$tpltxt = tmtTemplate::Get($this->mod,'tweetcancel_default_template');
 			break;
 		 case 3:
-			$tpl = $this->mod->GetTemplate('tweetrequest_'.$bdata['bracket_id'].'_template');
-			if($tpl == FALSE)
-				$tpl = $this->mod->GetTemplate('tweetrequest_default_template');
+			$tpltxt = tmtTemplate::Get($this->mod,'tweetrequest_'.$bdata['bracket_id'].'_template');
+			if($tpltxt == FALSE)
+				$tpltxt = tmtTemplate::Get($this->mod,'tweetrequest_default_template');
 			break;
 		}
 
@@ -225,10 +226,10 @@ class tmtTweet
 				if($tokens)
 				{
 					reset($to);
-					$this->smarty->assign('recipient',key($to));
+					$tplvars['recipient'] = key($to);
 					$tc = count($to);
 					$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
-					$this->smarty->assign('toall',$toall);
+					$tplvars['toall'] = $toall;
 					if ((int)$mdata['teamB'] > 0)
 						$op = $this->mod->TeamName($mdata['teamB']);
 					else
@@ -245,10 +246,10 @@ class tmtTweet
 */
 						$op = '';
 					}
-					$this->smarty->assign('opponent',$op);
+					$tplvars['opponent'] = $op;
 					if($owner)
 						$to[] = $owner;
-					list($resA,$msg) = self::DoSend($this->mod,$tokens,$to,$tpl);
+					list($resA,$msg) = self::DoSend($tokens,$to,$tpltxt,$tplvars);
 					if(!$resA)
 					{
 						if(!$msg)
@@ -271,10 +272,10 @@ class tmtTweet
 				if($tokens)
 				{
 					reset($to);
-					$this->smarty->assign('recipient',key($to));
+					$tplvars['recipient'] = key($to);
 					$tc = count($to);
 					$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
-					$this->smarty->assign('toall',$toall);
+					$tplvars['toall'] = $toall;
 					if ((int)$mdata['teamA'] > 0)
 						$op = $this->mod->TeamName($mdata['teamA']);
 					else
@@ -291,10 +292,10 @@ class tmtTweet
 */
 						$op = '';
 					}
-					$this->smarty->assign('opponent',$op);
+					$tplvars['opponent'] = $op;
 					if($owner)
 						$to[] = $owner;
-					list($resB,$msg) = self::DoSend($this->mod,$tokens,$to,$tpl);
+					list($resB,$msg) = self::DoSend($tokens,$to,$tpltxt,$tplvars);
 					if(!$resB)
 					{
 						if($err) $err .= '<br />';
@@ -310,6 +311,7 @@ class tmtTweet
 				}
 			}
 		}
+
 		if($resA && $resB)
 			return array(TRUE,'');
 		return array(FALSE,$err);
