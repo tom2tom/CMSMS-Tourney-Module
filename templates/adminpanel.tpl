@@ -131,7 +131,7 @@
 {/foreach}
  </fieldset>
 {if isset($hidden)}{$hidden}{/if}
-<br /><br />
+<br />
 <div class="pageoptions">
 {$cancel} {$save}
 </div>
