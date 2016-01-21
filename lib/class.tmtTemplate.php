@@ -8,48 +8,77 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
 
 class tmtTemplate
 {
-	public static function Set(&$mod,$name)
+	/**
+	Set:
+	@mod: reference to current Tourney module object
+	@tplname: template identifier
+	@content: template contents
+	*/
+	public static function Set(&$mod,$tplname,$content)
 	{
-		if($mod->before20)
-			$mod->SetTemplate($name);
+		if($mod->before20 || 1)	//TODO if using old templates anyway
+			$mod->SetTemplate($tplname,$content);
 		else
 		{
-			if(1) //using old templates anyway
-				$mod->SetTemplate($name);
-			else
-			{
-				//TODO new form
+			try {
+				$tpl = new CmsLayoutTemplate();
+				$tpl->set_name('tmt_'.$tplname); //must be unique!
+			} catch (CmsInvalidDataException $e) {
+				$tpl = CmsLayoutTemplate::load('tmt_'.$tplname);
+				$tpl->set_content($content);
+				$tpl->save();
+				return;
 			}
+			$offs = strpos($tplname,'_');
+			if($offs !== FALSE)
+				$type = substr($tplname,0,$offs);
+			else
+				$type = $tplname; //probably BAD!
+			$tpl->set_type($type);
+			$tpl->set_content($content);
+			$tpl->set_type_dflt(false);
+//		$tpl->set_listable(true); //CMSMS 2.1+
+			$tpl->save();
 		}
 	}
 
-	public static function Get(&$mod,$name)
+	/**
+	Get:
+	@mod: reference to current Tourney module object
+	@tplname: template identifier
+	*/
+	public static function Get(&$mod,$tplname)
 	{
-		if($mod->before20)
-			return $mod->GetTemplate($name);
+		if($mod->before20 || 1) //TODO if using old templates anyway
+			return $mod->GetTemplate($tplname);
 		else
 		{
-			if(1) //using old templates anyway
-				return $mod->GetTemplate($name);
-			else
-			{
-				//TODO new form
+			try {
+				$tpl = CmsLayoutTemplate::load('tmt_'.$tplname);
+			} catch (CmsDataNotFoundException $e) {
+				return '';
 			}
+			return $tpl->get_content();
 		}
 	}
 
-	public static function Delete(&$mod,$name)
+	/**
+	Delete:
+	@mod: reference to current Tourney module object
+	@tplname: template identifier
+	*/
+	public static function Delete(&$mod,$tplname)
 	{
-		if($mod->before20)
-			$mod->DeleteTemplate($name);
+		if($mod->before20 || 1) //TODO if using old templates anyway
+			$mod->DeleteTemplate($tplname);
 		else
 		{
-			if(1) //using old templates anyway
-				$mod->DeleteTemplate($name);
-			else
-			{
-				//TODO new form
+			try {
+				$tpl = CmsLayoutTemplate::load('tmt_'.$tplname);
+			} catch (CmsDataNotFoundException $e) {
+				return;
 			}
+			$tpl->delete();
 		}
 	}
 
