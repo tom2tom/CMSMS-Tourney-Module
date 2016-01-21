@@ -363,7 +363,7 @@ EOS;
 		$main[] = array(
 			$mod->Lang('title_desc'),
 			($pmod) ?
-			$mod->CreateTextArea(TRUE,$id,$data->description,'tmt_description','','','','',65,10,'','','style="height:8em;"') :
+			$mod->CreateTextArea(TRUE,$id,$data->description,'tmt_description','tallarea','','','',65,8,'','','style="height:6em;"') :
 			$data->description
 		);
 		$main[] = array(
@@ -449,6 +449,7 @@ EOS;
 			$mod->Lang('help_contact')
 		);
 		$help = $mod->Lang('help_twt1');
+/* TODO notifier
 		if($pmod)
 		{
 			$twt = new tmtTweet();
@@ -467,6 +468,7 @@ EOS;
 			$data->twtfrom,
 			$help
 		);
+*/
 		$sms = class_exists('Notifier',FALSE);
 		if($sms)
 		{
@@ -559,7 +561,7 @@ EOS;
 			$adv[] = array(
 				$mod->Lang('title_mailouttemplate'),
 				($pmod) ?
-				$mod->CreateTextArea(FALSE,$id,$data->motemplate,'tmt_motemplate','','','','',65,10,'','','style="height:8em"') :
+				$mod->CreateTextArea(FALSE,$id,$data->motemplate,'tmt_motemplate','tallarea','','','',65,10) :
 				$data->motemplate,
 				$help
 			);
@@ -567,7 +569,7 @@ EOS;
 		$adv[] = array(
 			$mod->Lang('title_tweetouttemplate'),
 			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->totemplate,'tmt_totemplate','','','','',65,3,'','','style="height:3em"') :
+			$mod->CreateTextArea(FALSE,$id,$data->totemplate,'tmt_totemplate','shortarea','','','',65,3) :
 			$data->totemplate,
 			(($mail)?$helpabove:$help)
 		);  //TODO maybe specific $tplhelp[]
@@ -576,7 +578,7 @@ EOS;
 			$adv[] = array(
 				$mod->Lang('title_mailcanceltemplate'),
 				($pmod) ?
-				$mod->CreateTextArea(FALSE,$id,$data->mcanctemplate,'tmt_mcanctemplate','','','','',65,10,'','','style="height:8em"') :
+				$mod->CreateTextArea(FALSE,$id,$data->mcanctemplate,'tmt_mcanctemplate','tallarea','','','',65,10) :
 				$data->mcanctemplate,
 				$helpabove
 			);
@@ -584,7 +586,7 @@ EOS;
 		$adv[] = array(
 			$mod->Lang('title_tweetcanceltemplate'),
 			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->tcanctemplate,'tmt_tcanctemplate','','','','',65,3,'','','style="height:3em"') :
+			$mod->CreateTextArea(FALSE,$id,$data->tcanctemplate,'tmt_tcanctemplate','shortarea','','','',65,3) :
 			$data->tcanctemplate,
 			$helpabove
 		);  //TODO maybe specific $tplhelp[]
@@ -593,7 +595,7 @@ EOS;
 			$adv[] = array(
 				$mod->Lang('title_mailrequesttemplate'),
 				($pmod) ?
-				$mod->CreateTextArea(FALSE,$id,$data->mreqtemplate,'tmt_mreqtemplate','','','','',65,10,'','','style="height:8em"') :
+				$mod->CreateTextArea(FALSE,$id,$data->mreqtemplate,'tmt_mreqtemplate','tallarea','','','',65,10) :
 				$data->mreqtemplate,
 				$helpabove
 			);
@@ -601,7 +603,7 @@ EOS;
 		$adv[] = array(
 			$mod->Lang('title_tweetrequesttemplate'),
 			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->treqtemplate,'tmt_treqtemplate','','','','',65,3,'','','style="height:3em"') :
+			$mod->CreateTextArea(FALSE,$id,$data->treqtemplate,'tmt_treqtemplate','shortarea','','','',65,3) :
 			$data->totemplate,
 			$helpabove
 		);  //TODO maybe specific $tplhelp[]
@@ -625,7 +627,7 @@ EOS;
 			$adv[] = array(
 				$mod->Lang('title_mailintemplate'),
 				($pmod) ?
-				$mod->CreateTextArea(FALSE,$id,$data->mitemplate,'tmt_mitemplate','','','','',65,10,'','','style="height:8em"') :
+				$mod->CreateTextArea(FALSE,$id,$data->mitemplate,'tmt_mitemplate','tallarea','','','',65,10) :
 				$data->mitemplate,
 				$help
 			);
@@ -633,7 +635,7 @@ EOS;
 		$adv[] = array(
 			$mod->Lang('title_tweetintemplate'),
 			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->titemplate,'tmt_titemplate','','','','',65,3,'','','style="height:3em"') :
+			$mod->CreateTextArea(FALSE,$id,$data->titemplate,'tmt_titemplate','shortarea','','','',65,3) :
 			$data->titemplate,
 			(($mail)?$helpabove:$help)
 		);  //TODO maybe specific $tplhelp[]
@@ -641,7 +643,7 @@ EOS;
 		$adv[] = array(
 			$mod->Lang('title_logic'),
 			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->logic,'tmt_logic','','','','',65,15,'','','style="height:8em"') :
+			$mod->CreateTextArea(FALSE,$id,$data->logic,'tmt_logic','tallarea','','','',65,15) :
 			$data->logic,
 			$mod->Lang('help_logic')
 		);
@@ -726,7 +728,7 @@ EOS;
 		$sched[] = array(
 			$mod->Lang('title_available').' (NOT YET WORKING)',
 			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->available,'tmt_available','','','','',40,3,'','','style="height:3em"') :
+			$mod->CreateTextArea(FALSE,$id,$data->available,'tmt_available','shortarea','','','',40,3) :
 			$data->available,
 			$mod->Lang('help_available')
 		);
@@ -876,7 +878,7 @@ EOS;
 		$names[] = array(
 			$mod->Lang('title_chttemplate'),
 			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->chttemplate,'tmt_chttemplate','','','','',65,20,'','','style="height:10em"') :
+			$mod->CreateTextArea(FALSE,$id,$data->chttemplate,'tmt_chttemplate','tallarea','','','',65,20) :
 			$data->chttemplate,
 			$help
 		);

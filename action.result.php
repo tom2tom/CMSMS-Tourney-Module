@@ -253,7 +253,7 @@ if ($mdata)
 		'titlesender' => $this->Lang('titlesender'),
 		'inputsender' => $this->CreateInputText($id,'sender','',15,30),
 		'titlecomment' => $this->Lang('titlecomment'),
-		'inputcomment' => $this->CreateTextArea(FALSE,$id,'','comment','','','','',50,5,'','','style="height:5em;"')
+		'inputcomment' => $this->CreateTextArea(FALSE,$id,'','comment','shortarea','','','',50,5)
 	);
 	$ob = cms_utils::get_module('Captcha');
 	if ($ob)
