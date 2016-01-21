@@ -449,26 +449,26 @@ EOS;
 			$mod->Lang('help_contact')
 		);
 		$help = $mod->Lang('help_twt1');
-/* TODO notifier
+/*TODO Notifier CHECK if handle @CMSMSTourney is registered, report that as the default
 		if($pmod)
 		{
-			$twt = new tmtTweet();
+			$twt = new tmtTweet($mod);
 			if($twt->GetTokens($data->bracket_id,TRUE,TRUE))
 				$help .= $mod->Lang('help_twt2',$data->twtfrom);
 			else
 				$help .= $mod->Lang('help_twt3');
 			$help .= ' '.$mod->Lang('help_twt4');
 		}
+*/
 		$main[] = array(
 			$mod->Lang('title_twtfrom'),
 			($pmod) ?
-			$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16).' '.
+			$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16) /*TODO Notifier.' '.
 			$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
-				'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"'):
+				'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"')*/:
 			$data->twtfrom,
 			$help
 		);
-*/
 		$sms = class_exists('Notifier',FALSE);
 		if($sms)
 		{

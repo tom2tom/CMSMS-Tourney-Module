@@ -109,9 +109,9 @@ else
 	 case 'result_view':
 	 case 'match_view':
 		break;
+/*TODO Notifier
 	 case 'connect':
-/* TODO Notifier
-		$twt = new tmtTweet();
+		$twt = new tmtTweet($this->mod);
 		list($key,$secret) = $twt->ModuleAppTokens();
 		try
 		{
@@ -132,16 +132,14 @@ else
 		{
 			$message = $e->getMessage();
 		}
-*/
 		if(!empty($message))
 			$message = $this->PrettyMessage($message,FALSE,FALSE,FALSE);
 		$params['real_action'] = 'edit';
 	 	break;
 	 case 'fromtwt':
-/* TODO Notifier
 		if(isset($_REQUEST['oauth_verifier'])) //authorisation done
 		{
-			$twt = new tmtTweet();
+			$twt = new tmtTweet($this->mod);
 			list($key,$secret) = $twt->ModuleAppTokens();
 			try
 			{
@@ -164,17 +162,17 @@ else
 			if(!empty($message))
 				$message = $this->PrettyMessage($message,FALSE,FALSE,FALSE);
 		}
-*/
-/*		else
+/ *		else
 		{
 			$pref = cms_db_prefix();
 			$sql = 'DELETE FROM '.$pref.'module_tmt_tweet WHERE bracket_id=?';
 			$db->Execute($sql,array($bid));
 			$message = $this-Lang('TODO');
 		}
-*/
+* /
 		$params['real_action'] = 'edit';
 		break;
+*/
 	 case 'movedown':
 	 case 'moveup':
 		$pref = cms_db_prefix();
