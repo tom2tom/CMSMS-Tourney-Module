@@ -3,6 +3,14 @@ img.tipper { display:none; } /* ditto */
 .leftward {margin-left:0 !important }
 fieldset.settings { padding:0 5px; max-width:50em; }
 
+table.leftside {
+	margin-left: 0;
+	padding: 3px;
+	border-spacing: 0;
+	border-collapse: collapse;
+	width: auto;
+}
+
 table.table_sort thead tr th
 {
 	margin: 0 20px;
@@ -65,7 +73,25 @@ th
 
 th.divider, td.divider { padding-left: 5px; border-left: 3px dotted #E5B400; }
 
-texarea { width:650px; }
+textarea.tallarea {
+ font-family:auto;
+ font-family:inherit;
+ font-size:1.1em;
+// font-size:inherit;
+ line-height:1.2;
+ width:50em;
+ height:8em;
+}
+textarea.shortarea {
+ font-family:auto;
+ font-family:inherit;
+ font-size:1.1em;
+// font-size:inherit;
+ line-height:1.2;
+ width:50em;
+ height:3em;
+}
+
 textarea.cloaked
 {
 	font-family:auto;
@@ -112,7 +138,7 @@ div.modal\-overlay
 	height:100%;
 	width:100%;
 	z-index:1001;
-	background-color:rgba(0,0,0,.3); //can be safely ignored
+	background-color:rgba(0,0,0,.3); /*can be safely ignored*/
 }
 div.confirm\-container
 {
@@ -132,7 +158,7 @@ input#mc_conf
 {
 	font-weight:bold;
 	color:#000;
-	background:#C4A636; //:#66D166;
+	background:#C4A636; /*:#66D166;*/
 }
 input#mc_conf:hover
 {
