@@ -550,10 +550,19 @@ EOS;
 		$jsloads[] = <<< EOS
  teamtable.find('.plr_delete').children().modalconfirm({
   overlayID: 'confirm',
-  preShow: function(d){
-   var name = \$(this).closest('tr').find('.plr_name').attr('value');
-   var para = d.children('p:first')[0];
-   para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+  preShow: function(tg,dlg){
+   var name = \$(tg).closest('tr').find('.plr_name').attr('value'),
+    msg;
+   if (name) {
+    if (name.search(' ') > -1){
+     name = '"'+name+'"';
+    }
+     msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name); 
+   } else {
+     msg = '{$this->Lang('confirm')}';
+   }
+   var para = dlg.children('p:first')[0];
+   para.innerHTML = msg;
   }
  });
 
@@ -741,8 +750,8 @@ if($pmod)
  $('#{$id}delete').modalconfirm({
   overlayID: 'confirm',
   doCheck: player_selected,
-  preShow: function(d){
-   var para = d.children('p:first')[0];
+  preShow: function(tg,dlg){
+   var para = dlg.children('p:first')[0];
    para.innerHTML = '{$t}';
   }
  });
@@ -782,8 +791,8 @@ EOS;
  $('#{$id}cancel').modalconfirm({
   overlayID: 'confirm',
   doCheck: {$test},
-  preShow: function(d){
-   var para = d.children('p:first')[0];
+  preShow: function(tg,dlg){
+   var para = dlg.children('p:first')[0];
    para.innerHTML = '{$this->Lang('allabandon')}';
   },
   onCheckFail: true

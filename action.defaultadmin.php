@@ -239,20 +239,26 @@ EOS;
 		$jsloads[] = <<<EOS
  $('.delitmlink').modalconfirm({
   overlayID: 'confirm',
-  preShow: function(d){
-   var name = \$('td:first > a', $(this).closest('tr')).text();
-   if (name.search(' ') > -1){
-    name = '"'+name+'"';
+  preShow: function(tg,dlg){
+   var name = \$('td:first > a', $(tg).closest('tr')).text(),
+    msg;
+   if (name) {
+    if (name.search(' ') > -1){
+     name = '"'+name+'"';
+    }
+    msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+   } else {
+    msg = '{$this->Lang('confirm')}';
    }
-   var para = d.children('p:first')[0];
-   para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+   var para = dlg.children('p:first')[0];
+   para.innerHTML = msg;
   }
  });
  $('#{$id}delete_item').modalconfirm({
   overlayID: 'confirm',
   doCheck: confirm_selitm_count,
-  preShow: function(d){
-   var para = d.children('p:first')[0];
+  preShow: function(tg,dlg){
+   var para = dlg.children('p:first')[0];
    para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_items'))}';
   }
  });
@@ -474,20 +480,26 @@ $(document).ready(function(){
  $('.dndhelp').css('display','block');
  $('.delgrplink').modalconfirm({
   overlayID: 'confirm',
-  preShow: function(d){
-   var name = \$('td > input:text', $(this).closest('tr')).val();
-   if (name.search(' ') > -1){
-    name = '"'+name+'"';
+  preShow: function(tg,dlg){
+   var name = \$('td > input:text', $(tg).closest('tr')).val(),
+    msg;
+   if (name) {
+    if (name.search(' ') > -1){
+     name = '"'+name+'"';
+    }
+    msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+   } else {
+    msg = '{$this->Lang('confirm')}';
    }
-   var para = d.children('p:first')[0];
-   para.innerHTML = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+   var para = dlg.children('p:first')[0];
+   para.innerHTML = msg;
   }
  });
  $('#{$id}delete_group').modalconfirm({
   overlayID: 'confirm',
   doCheck: confirm_selgrp_count,
-  preShow: function(d){
-   var para = d.children('p:first')[0];
+  preShow: function(tg,dlg){
+   var para = dlg.children('p:first')[0];
    para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_groups'))}';
   }
  });
