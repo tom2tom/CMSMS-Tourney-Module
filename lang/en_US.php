@@ -74,6 +74,7 @@ $lang['plan_tip']='show all matches';
 $lang['actual']='Actual';
 $lang['actual_tip']='show pending matches';
 
+$lang['confirm']='Are you sure?';
 $lang['confirm_delete']='Are you sure you want to delete %s?';
 $lang['confirm_deletethis']='Are you sure you want to delete this %s?';
 //these are for inclusion in the above template to create delete-confirmation prompts
