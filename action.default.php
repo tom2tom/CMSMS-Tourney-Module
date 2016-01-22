@@ -91,6 +91,9 @@ switch($bdata['type'])
 	break;
 }
 
+$tplvars['title'] = $bdata['name'];
+$tplvars['description'] = $bdata['description'];
+
 if($res === TRUE)
 	$bdata['chartbuild'] = 1; //tell downstream that rebuild is needed
 $lyt = new tmtLayout();
@@ -103,8 +106,6 @@ if(empty($params['view']) || $params['view'] == 'chart')
 		$sql = 'UPDATE '.$pref.'module_tmt_brackets SET chartbuild=0 WHERE bracket_id=?';
 		$db->Execute($sql,array($bracket_id));
 		//variables available for use in template(conform these with tmtEditSetup::Setup())
-		$tplvars['title'] = $bdata['name'];
-		$tplvars['description'] = $bdata['description'];
 		$tplvars['owner'] = $bdata['owner'];
 		$tplvars['contact'] = $bdata['contact'];
 		$rooturl = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
