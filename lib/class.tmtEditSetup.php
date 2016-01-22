@@ -445,28 +445,40 @@ EOS;
 			$mod->CreateInputText($id,'tmt_contact',$data->contact,50) : $data->contact,
 			$mod->Lang('help_contact')
 		);
-		$help = $mod->Lang('help_twt1');
-/*TODO Notifier CHECK if handle @CMSMSTourney is registered, report that as the default
-		if($pmod)
+
+		$ob = cms_utils::get_module('Notifier');
+		if($ob)
 		{
-			$twt = new tmtTweet($mod);
-			if($twt->GetTokens($data->bracket_id,TRUE,TRUE))
-				$help .= $mod->Lang('help_twt2',$data->twtfrom);
-			else
-				$help .= $mod->Lang('help_twt3');
-			$help .= ' '.$mod->Lang('help_twt4');
+			
+			$ob = new MessageSender();
+			$ob->Load();
+			$sms = ($ob->text != FALSE);
+			$mail = ($ob->mail != FALSE);
+			$tweet = ($ob->tweet != FALSE);
 		}
-*/
-		$main[] = array(
-			$mod->Lang('title_twtfrom'),
-			($pmod) ?
-			$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16) /*TODO Notifier.' '.
-			$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
-				'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"')*/:
-			$data->twtfrom,
-			$help
-		);
-		$sms = class_exists('Notifier',FALSE);
+		else
+		{
+			$sms = FALSE;
+			$mail = FALSE;
+			$tweet = FALSE;
+		}
+
+		if($tweet)
+		{
+			$help = $mod->Lang('help_twt1');
+			if($pmod)
+				$help .= ' '.$mod->Lang('help_twt5');
+
+			$main[] = array(
+				$mod->Lang('title_twtfrom'),
+				($pmod) ?
+				$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16).' '.
+				$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
+					'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"'):
+				$data->twtfrom,
+				$help
+			);
+		}
 		if($sms)
 		{
 			$main[] = array(
@@ -522,7 +534,7 @@ EOS;
 				$mod->Lang('help_phone_regex')
 			);
 		}
-		$mail = class_exists('CMSMailer',FALSE);
+
 		$tplhelp = array();
 		$tplhelp[] = $mod->Lang('help_template');
 		foreach(array(
@@ -563,13 +575,16 @@ EOS;
 				$help
 			);
 		}
-		$adv[] = array(
-			$mod->Lang('title_tweetouttemplate'),
-			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->totemplate,'tmt_totemplate','shortarea','','','',65,3) :
-			$data->totemplate,
-			(($mail)?$helpabove:$help)
-		);  //TODO maybe specific $tplhelp[]
+		if($sms || $tweet)
+		{
+			$adv[] = array(
+				$mod->Lang('title_tweetouttemplate'),
+				($pmod) ?
+				$mod->CreateTextArea(FALSE,$id,$data->totemplate,'tmt_totemplate','shortarea','','','',65,3) :
+				$data->totemplate,
+				(($mail)?$helpabove:$help)
+			);  //TODO maybe specific $tplhelp[]
+		}
 		if($mail)
 		{
 			$adv[] = array(
@@ -580,13 +595,16 @@ EOS;
 				$helpabove
 			);
 		}
-		$adv[] = array(
-			$mod->Lang('title_tweetcanceltemplate'),
-			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->tcanctemplate,'tmt_tcanctemplate','shortarea','','','',65,3) :
-			$data->tcanctemplate,
-			$helpabove
-		);  //TODO maybe specific $tplhelp[]
+		if($sms || $tweet)
+		{
+			$adv[] = array(
+				$mod->Lang('title_tweetcanceltemplate'),
+				($pmod) ?
+				$mod->CreateTextArea(FALSE,$id,$data->tcanctemplate,'tmt_tcanctemplate','shortarea','','','',65,3) :
+				$data->tcanctemplate,
+				$helpabove
+			);  //TODO maybe specific $tplhelp[]
+		}
 		if($mail)
 		{
 			$adv[] = array(
@@ -597,13 +615,16 @@ EOS;
 				$helpabove
 			);
 		}
-		$adv[] = array(
-			$mod->Lang('title_tweetrequesttemplate'),
-			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->treqtemplate,'tmt_treqtemplate','shortarea','','','',65,3) :
-			$data->totemplate,
-			$helpabove
-		);  //TODO maybe specific $tplhelp[]
+		if($sms || $tweet)
+		{
+			$adv[] = array(
+				$mod->Lang('title_tweetrequesttemplate'),
+				($pmod) ?
+				$mod->CreateTextArea(FALSE,$id,$data->treqtemplate,'tmt_treqtemplate','shortarea','','','',65,3) :
+				$data->totemplate,
+				$helpabove
+			);  //TODO maybe specific $tplhelp[]
+		}
 
 		$tplhelp = array();
 		$tplhelp[] = $mod->Lang('help_template');
@@ -629,13 +650,16 @@ EOS;
 				$help
 			);
 		}
-		$adv[] = array(
-			$mod->Lang('title_tweetintemplate'),
-			($pmod) ?
-			$mod->CreateTextArea(FALSE,$id,$data->titemplate,'tmt_titemplate','shortarea','','','',65,3) :
-			$data->titemplate,
-			(($mail)?$helpabove:$help)
-		);  //TODO maybe specific $tplhelp[]
+		if($sms || $tweet)
+		{
+			$adv[] = array(
+				$mod->Lang('title_tweetintemplate'),
+				($pmod) ?
+				$mod->CreateTextArea(FALSE,$id,$data->titemplate,'tmt_titemplate','shortarea','','','',65,3) :
+				$data->titemplate,
+				(($mail)?$helpabove:$help)
+			);  //TODO maybe specific $tplhelp[]
+		}
 
 		$adv[] = array(
 			$mod->Lang('title_logic'),
