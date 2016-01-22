@@ -688,7 +688,7 @@ before the account is used.</p>
 </ul></p>
 <p>For the latest version of the module, or to report a bug, visit the module's <a href="http://dev.cmsmadesimple.org/projects/tourney">forge-page</a>.</p>
 <h3>Copyright and License</h3>
-<p>Copyright &copy; 2014-2015 Tom Phane. All rights reserved.</p>
+<p>Copyright &copy; 2014-2016 Tom Phane. All rights reserved.</p>
 <p>This module has been released under version 3 of the <a href="http://www.gnu.org/licenses/agpl.html">GNU Affero General Public License</a>, and may be used only in accordance with the terms of that licence, or any later version of that license which is applied to the module.<br />
 The included fonts have been licensed by <a href="http://www.urwpp.de/english/home.html">URW</a> under the GPL.</p>
 EOS;

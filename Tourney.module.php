@@ -1,7 +1,7 @@
 <?php
 #-------------------------------------------------------------------------
 # CMS Made Simple module: Tourney.
-# Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
+# Copyright (C) 2014-2016 Tom Phane <tpgww@onepost.net>
 # Version: 0.3
 # More info at http://dev.cmsmadesimple.org/projects/tourney
 #-------------------------------------------------------------------------

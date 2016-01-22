@@ -1,10 +1,9 @@
 <?php
 /*
 This file is part of CMS Made Simple module: Tourney.
-Copyright (C) 2014-2015 Tom Phane <tpgww@onepost.net>
+Copyright (C) 2014-2016 Tom Phane <tpgww@onepost.net>
 Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
-NOTE this class is not suited for static method-calling
 */
 
 class tmtLayout
@@ -28,6 +27,7 @@ class tmtLayout
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
+//	tmtUtils()?
 		$chartfile = $mod->ChartImageFile($bdata['bracket_id'],FALSE);
 		if ($bdata['chartbuild'] || !file_exists($chartfile))
 		{
@@ -144,9 +144,11 @@ class tmtLayout
 		 	break;
 		}
 		$fmt = $bdata['atformat'];
+//	tmtUtils()?
 		if(!$fmt)
 			$fmt = $mod->GetZoneDateFormat($bdata['timezone']).' '.$mod->GetPreference('time_format');
 		$dt = new DateTime('1900-01-01 00:00:00',new DateTimeZone($bdata['timezone']));
+//	tmtUtils()?
 		$relations = $mod->ResultTemplates($bdata['bracket_id'],FALSE);
 		$showrows = array();
 		foreach($matches as $mid=>$mdata)

@@ -1,7 +1,7 @@
 <?php
 /*
 This file is a class for CMS Made Simple (TM).
-Copyright(C) 2014-2015 Tom Phane <tpgww@onepost.net>
+Copyright(C) 2014-2016 Tom Phane <tpgww@onepost.net>
 
 This file is free software; you can redistribute it and/or modify it under
 the terms of the GNU Affero General Public License as published by the
@@ -1385,7 +1385,7 @@ OR 6 IF
 		$week = $this->mod->Lang('week'); //OR bkrshared::RangeNames($this->mod,1);
 		//NB long-forms before short-
 		$finds = array_merge($longdays,$shortdays,$longmonths,$shortmonths,
-			array($not,$excpt,$rise,$set,$week,' ',"\n"));
+			array($not,$excpt,$rise,$set,$week,' ',PHP_EOL));
 		$repls = array_merge($daycodes,$daycodes,$monthcodes,$monthcodes,
 			array('!','!','R','S','W','',''));
 		$clean = str_replace($finds,$repls,$descriptor);

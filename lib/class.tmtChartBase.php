@@ -1,10 +1,9 @@
 <?php
 /*
 This file is part of CMS Made Simple module: Tourney.
-Copyright(C) 2014-2015 Tom Phane <tpgww@onepost.net>
+Copyright(C) 2014-2016 Tom Phane <tpgww@onepost.net>
 Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
-This class is not suited for static method-calling
 */
 abstract class tmtChartBase
 {
@@ -41,6 +40,7 @@ abstract class tmtChartBase
 		$teamscount = (int)$db->GetOne($sql,array($bdata['bracket_id']));
 		if($teamscount == 0)
 			return 'info_nomatch'; //if no team, then no match
+//	tmtUtils()?
 		list($minteams,$maxteams) = $mod->GetLimits($bdata['type']);
 		if($teamscount > $maxteams || $teamscount < $minteams)
 			return 'err_value';
