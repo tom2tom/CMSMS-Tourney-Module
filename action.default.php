@@ -190,8 +190,8 @@ if($bdata['contact'])
 	if($sch->UnRecorded($bracket_id))
 	{
 		//check for valid address for results
-		$funcs = new tmtComm($this);
-		if($funcs->ValidateAddress($bdata['contact'],$bdata['smsprefix'],$bdata['smspattern']))
+		$funcs = new MessageSender(); //TODO does this load for CMSMS 1.9? 
+		if($funcs->ValidateAddress($bdata['contact'],$bdata['smspattern']))
 			$submit = $this->CreateInputSubmitDefault($id,'result',$this->Lang('submit2'));
 	}
 }
