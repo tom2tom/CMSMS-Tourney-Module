@@ -2,6 +2,7 @@
 img.tipper { display:none; } /* ditto */
 .leftward {margin-left:0 !important }
 fieldset.settings { padding:0 5px; max-width:50em; }
+fieldset.settings legend { padding:0 5px; }
 
 table.leftside {
 	margin-left: 0;
