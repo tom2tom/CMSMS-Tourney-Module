@@ -171,7 +171,8 @@
 </div>
 {$form_end}
 
-{foreach from=$jsincs item=file}{$file}{/foreach}
+{foreach from=$jsincs item=file}{$file}
+{/foreach}
 <script type="text/javascript">
 //<![CDATA[
 {foreach from=$jsfuncs item=func}{$func}{/foreach}

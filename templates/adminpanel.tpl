@@ -153,8 +153,8 @@
 </div>
 {/if}
 
-{if isset($jsincs)}{foreach from=$jsincs item=file}{$file}{/foreach}
-{/if}
+{if isset($jsincs)}{foreach from=$jsincs item=file}{$file}
+{/foreach}{/if}
 {if isset($jsfuncs)}
 <script type="text/javascript">
 //<![CDATA[

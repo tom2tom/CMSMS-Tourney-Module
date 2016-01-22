@@ -544,9 +544,8 @@ if($rows)
 
 	if($pmod)
 	{
-		$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/jquery.modalconfirm.min.js"></script>
-EOS;
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
+
 		$jsloads[] = <<< EOS
  teamtable.find('.plr_delete').children().modalconfirm({
   overlayID: 'confirm',
@@ -578,9 +577,8 @@ if($pc > 1)
 {
 	if($pmod)
 	{
-		$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/jquery.tablednd.min.js"></script>
-EOS;
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
+
 		//setup some ajax-parameters - partial data for tableDnD::onDrop
 		$url = $this->CreateLink($id,'order_team',NULL,NULL,array('team_id'=>$thistid,'neworders'=>''),NULL,TRUE);
 		$offs = strpos($url,'?mact=');
@@ -809,9 +807,7 @@ if($pc > 0)
 
 $tplvars['hidden'] = $hidden;
 
-$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/jquery.tmtfuncs.js"></script>
-EOS;
+$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tmtfuncs.js"></script>';
 
 if($jsloads)
 {
