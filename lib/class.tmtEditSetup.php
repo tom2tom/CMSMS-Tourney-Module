@@ -163,21 +163,13 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			$hidden .= $mod->CreateInputHidden($id,'newbracket',$data->bracket_id);
 		$hidden .= $mod->CreateInputHidden($id,'active_tab').
 			$mod->CreateInputHidden($id,'real_action');
-		//accumulators for script funcs,to be parked at end of the page
+		//script accumulators
 		$jsfuncs = array();
 		$jsloads = array();
-
+		$jsincs = array();
 		$baseurl = $mod->GetModuleURLPath();
-		$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/jquery.tmtfuncs.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.tablednd.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/moment.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/pikaday.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.pikaday.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.modalconfirm.min.js"></script>
-EOS;
+
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tmtfuncs.js"></script>';
 
 		if($pmod)
 		{
@@ -319,6 +311,11 @@ EOS;
  });
 
 EOS;
+	$jsincs[] = <<<EOS
+<script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
+EOS;
+
 	$jsfuncs[] = <<< EOS
 function eventCancel(ev) {
  if(!ev) {
@@ -690,6 +687,11 @@ EOS;
 		if($pmod)
 		{
 			//for popup calendars
+			$jsincs[] = <<<EOS
+<script type="text/javascript" src="{$baseurl}/include/moment.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/pikaday.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.pikaday.min.js"></script>
+EOS;
 			$nextm = $mod->Lang('nextm');
 			$prevm = $mod->Lang('prevm');
 			//js wants quoted period-names
@@ -962,6 +964,8 @@ EOS;
 			{
 				if($tcount>1)
 				{
+					$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
+
 					$jsloads[] = <<< EOS
  $('#tmt_players').addClass('table_drag').tableDnD({
 	dragClass: 'row1hover',
@@ -1007,10 +1011,19 @@ EOS;
 				$jsloads[] = <<< EOS
  $('#tmt_players').find('.tem_delete').children().modalconfirm({
   overlayID: 'confirm',
-  preShow: function(d){
-	 var teamname = \$(this).closest('tr').find('.tem_name').attr('value');
-	 var para = d.children('p:first')[0];
-	 para.innerHTML = '{$mod->Lang('confirm_delete','%s')}'.replace('%s',teamname);
+  preShow: function(tg,dlg){
+   var name = \$(this).closest('tr').find('.tem_name').attr('value'),
+    msg;
+    if (name) {
+     if (name.search(' ') > -1) {
+      name = '"'+name+'"';
+     }
+     msg = '{$mod->Lang('confirm_delete','%s')}'.replace('%s',name);
+    } else {
+     msg = '{$mod->Lang('confirm')}';
+    }
+	 var para = dlg.children('p:first')[0];
+	 para.innerHTML = msg;
   },
   onConfirm: function(){
 	 set_tab();
@@ -1093,8 +1106,8 @@ EOS;
   doCheck: function(){
 	 return (team_count() > 0);
   },
-  preShow: function(d){
-	 var para = d.children('p:first')[0];
+  preShow: function(tg,dlg){
+	 var para = dlg.children('p:first')[0];
 	 para.innerHTML = '{$t}';
   },
   onConfirm: function(){
@@ -1416,8 +1429,8 @@ EOS;
 					$jsloads[] = <<< EOS
  $('#{$id}reset').modalconfirm({
   overlayID: 'confirm',
-  preShow: function(d){
-	 var para = d.children('p:first')[0];
+  preShow: function(tg,dlg){
+	 var para = dlg.children('p:first')[0];
 	 para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
   },
   onConfirm: function(){
@@ -1437,8 +1450,8 @@ EOS;
   doCheck: function(){
 	 return (match_count() > 0);
   },
-  preShow: function(d){
-	 var para = d.children('p:first')[0];
+  preShow: function(tg,dlg){
+	 var para = dlg.children('p:first')[0];
 	 para.innerHTML = '{$mod->Lang('allsaved')}';
   },
   onConfirm: function(){
@@ -1777,8 +1790,8 @@ EOS;
  $('#{$id}cancel').modalconfirm({
   overlayID: 'confirm',
   doCheck: {$test},
-  preShow: function(d){
-	 var para = d.children('p:first')[0];
+  preShow: function(tg,dlg){
+	 var para = dlg.children('p:first')[0];
 	 para.innerHTML = '{$mod->Lang('allabandon')}';
   },
   onCheckFail: true,
@@ -1789,6 +1802,8 @@ EOS;
  });
 
 EOS;
+	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
+
 		//prevent immediate activation by textinput <Enter> press
 		$jsloads[] = <<< EOS
  $('form input[type=text]').keypress(function(e){
