@@ -6,8 +6,12 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
 if (!$this->CheckAccess())
-	$this->Redirect($id, 'defaultadmin', '',
+	$this->Redirect($id,'defaultadmin','',
 		array('tmt_message'=>$this->PrettyMessage('lackpermission',FALSE)));
+		
+if(isset($params['cancel']))
+	$this->Redirect($id,'defaultadmin','');
+		
 /*
 Arrive here following adminpanel add or edit click, or one of the various actions
 initiated from the page setup and displayed here
