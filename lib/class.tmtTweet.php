@@ -10,25 +10,17 @@ Functions involved with twitter communications
 class tmtTweet
 {
 	private $mod; //reference to Tourney module object
-	private $twt; //reference to TweetSender object
-	//details for default twitter application: CMSMS TourneyModule, owned by @CMSMSTourney
-	private $api_key = 'JnUL9AU1RxOW8xIjrBXeZfTnr';
-	private $api_secret;
-	private $access_token = '2426259434-64ADfkcEKgyUr1BL63HIPLOdCbgmkM6Zjdt55tp';
-	private $access_secret;
 
-	function __construct(&$mod,&$twt)
+	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		$this->twt = $twt;
-		$this->api_secret = $mod->GetPreference('privapi'); //not yet decoded
-		$this->access_secret = $mod->GetPreference('privaccess');
 	}
 
 	/**
 	DoSend:
 	Sends tweet(s) about a match
-	@codes: associative array of 4 Twitter access-codes
+	@sender: reference to MessageSender object
+	@handle: twitter handle of poseter, or FALSE
 	@to: array of validated handle(s)
 	@tpltxt: smarty template to use for message body
 	@tplvars: reference to array of template variables
@@ -36,97 +28,49 @@ class tmtTweet
 	 [0] FALSE if no addressee or no twitter module, otherwise boolean cumulative result of twt->Send()
 	 [1] '' or error message e.g. from twt->send()
 	*/
-	private function DoSend($codes,$to,$tpltxt,$tplvars)
+	private function DoSend(&$sender,$handle,$to,$tpltxt,$tplvars)
 	{
 		if(!$to)
 			return array(FALSE,'');
 		if(!$this->twt)
 			return array(FALSE,$this->mod->Lang('err_system'));
 
-		$funcs = new tmtUtils();
-		$creds = array(
-			'api_key'=>$this->api_key,
-			'api_secret'=>$funcs->decrypt_value($this->mod,$this->api_secret),
-			'access_token'=>$this->access_token,
-			'access_secret'=>$funcs->decrypt_value($this->mod,$this->access_secret)
-		);
 		$body = tmtTemplate::ProcessfromData($this->mod,$tpltxt,$tplvars);
 
-		return $this->twt->Send(array(
-			'creds'=>$creds,
-			'handle'=>FALSE,
+		return $sender->tweet->Send(array(
+			'handle'=>$handle,
 			'to'=>$to,
 			'body'=>$body));
 	}
 
 	/**
 	GetTeamContacts:
+	@sender: reference to MessageSender object
 	@team_id: enumerator of team being processed
 	@first: whether to only try for the first relevant tag, optional, default = FALSE
-	Returns: array of validated hashtags (maybe empty), or FALSE.
+	Returns: array of validated handles, or FALSE.
 	*/
-	private function GetTeamContacts($team_id,$first=FALSE)
+	private function GetTeamContacts(&$sender,$team_id,$first=FALSE)
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
-		$sql = 'SELECT name,contact FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
-		$members = $db->GetAll($sql,array($team_id));
-		if($members)
+		$sql = 'SELECT contact FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
+		$contacts = $db->GetCol($sql,array($team_id));
+		if($contacts)
 		{
-			if(!$first)
+			$clean = $sender->ValidateAddress($contacts);
+			if(!empty($clean['tweet']))
 			{
-				$sql = 'SELECT contactall FROM '.$pref.'module_tmt_teams WHERE team_id=?';
-				$all = $db->GetOne($sql,array($team_id));
-				if(!$all)
-					$first = TRUE;
-			}
-			$sends = array();
-			foreach($members as $one)
-			{
-				$clean = $this->twt->ValidateAddress($one['contact']);
-				if($clean)
+				if(!$first)
 				{
-					$sends[] = $clean;
-					if($first)
-						break;
+					$sql = 'SELECT contactall FROM '.$pref.'module_tmt_teams WHERE team_id=?';
+					if(!$db->GetOne($sql,array($team_id)))
+						$first = TRUE;
 				}
+				if($first)
+					return array(reset($clean['tweet']));
+				return $clean['tweet'];
 			}
-			return $sends;
-		}
-		return FALSE;
-	}
-
-	/**
-	NeedAuth:
-	@bracket_id: identifier of the bracket being processed
-	@mid: match identifier, or array of them
-	Returns: TRUE if temporary send-authority is needed from Twitter
-	*/
-	public function NeedAuth($bracket_id,$mid)
-	{
-		$db = cmsms()->GetDb();
-		$pref = cms_db_prefix();
-		$sql = 'SELECT twtfrom FROM '.$pref.'tmt_module_brackets WHERE bracket_id=?';
-		$source = $db->GetOne($sql,array($bracket_id));
-		if(!$source || !$this->twt->ValidateAddress($source))
-			return FALSE;
-		$sql = 'SELECT teamA,teamB FROM '.$pref.'tmt_module_matches WHERE match_id';
-		if(!is_array($mid))
-		{
-			$mid = array($mid);
-			$sql .= '=?';
-		}
-		else
-			$sql .= ' IN ('.str_repeat('?,',count($mids)-1).'?)';
-		$teams = $db->GetAll($sql,$mid);
-		foreach($teams as $mteam)
-		{
-			$tid = (int)$mteam['teamA'];
-			if($tid > 0 && self::GetTeamContacts($tid))
-				return TRUE;
-			$tid = (int)$mteam['teamB'];
-			if($tid > 0 && self::GetTeamContacts($tid))
-				return TRUE;
 		}
 		return FALSE;
 	}
@@ -134,6 +78,7 @@ class tmtTweet
 	/**
 	TellOwner:
 	Posts tweets with respective hashtags of tournament owner, and one member of both teams in the match
+	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@tplvars: reference to array of template variables
@@ -142,31 +87,28 @@ class tmtTweet
 	 [0] TRUE|FALSE representing success
 	 [1] '' or specific failure message
 	*/
-	public function TellOwner(&$bdata,&$mdata,&$tplvars,$lines)
+	public function TellOwner(&$sender,&$bdata,&$mdata,&$tplvars,$lines)
 	{
 		//owner
-		$clean = $this->twt->ValidateAddress($bdata['contact']);
-		if($clean)
-		{
-			$to = array($clean);
-		}
+		$clean = $sender->ValidateAddress($bdata['contact']);
+		if(!empty($clean['tweet']))
+			$to = $clean['tweet'];
 		else
 			return array(FALSE,''); //silent, try another channel
-		$tokens = self::GetTokens($bdata['bracket_id']);
-		if(!$tokens)
-			return array(FALSE,$this->mod->Lang('lackpermission'));
+
+		$handle = (!empty($bdata['twtfrom'])) ? $bdata['twtfrom'] : FALSE;
 		//teams
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$more = self::GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($sender,$tid,TRUE);
 			if($more)
 				$to = array_merge($to,$more);
 		}
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$more = self::GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($sender,$tid,TRUE);
 			if($more)
 				$to = array_merge($to,$more);
 		}
@@ -176,12 +118,13 @@ class tmtTweet
 		$tpltxt = tmtTemplate::Get($this->mod,'tweetin_'.$bdata['bracket_id'].'_template');
 		if($tpltxt == FALSE)
 			$tpltxt = tmtTemplate::Get($this->mod,'tweetin_default_template');
-		return self::DoSend($tokens,$to,$tpltxt,$tplvars);
+		return self::DoSend($sender,$handle,$to,$tpltxt,$tplvars);
 	}
 
 	/**
 	TellTeams:
 	Posts tweets with respective hashtags of one or all members of both teams in the match, plus the owner
+	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@tplvars: reference to array of template variables
@@ -192,7 +135,7 @@ class tmtTweet
 	 [0] TRUE|FALSE representing success, or TRUE if nobody to send to
 	 [1] '' or specific failure message
 	*/
-	public function TellTeams(&$bdata,&$mdata,&$tplvars,$type,$first=FALSE)
+	public function TellTeams(&$sender,&$bdata,&$mdata,&$tplvars,$type,$first=FALSE)
 	{
 		switch($type)
 		{
@@ -213,53 +156,49 @@ class tmtTweet
 			break;
 		}
 
-		$owner = $this->twt->ValidateAddress($bdata['contact']);
+		$clean = $sender->ValidateAddress($bdata['contact']);
+		$owner = (!empty($clean['tweet'])) ? $clean['tweet'] : FALSE;
 
-		$tokens = self::GetTokens($bdata['bracket_id']);
+		$handle = (!empty($bdata['twtfrom'])) ? $bdata['twtfrom'] : FALSE;
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($tid,$first);
+			$to = self::GetTeamContacts($sender,$tid,$first);
 			if($to)
 			{
-				if($tokens)
-				{
-					reset($to);
-					$tplvars['recipient'] = key($to);
-					$tc = count($to);
-					$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
-					$tplvars['toall'] = $toall;
-					if ((int)$mdata['teamB'] > 0)
-						$op = $this->mod->TeamName($mdata['teamB']);
-					else
-					{
-/*					switch($bdata['type'])
-						{
-						 case Tourney::KOTYPE:
-							$op = $this->mod->Lang('anonwinner');
-							break;
-						 default:
-							$op = $this->mod->Lang('anonother');
-							break;
-						}
-*/
-						$op = '';
-					}
-					$tplvars['opponent'] = $op;
-					if($owner)
-						$to[] = $owner;
-					list($resA,$msg) = self::DoSend($tokens,$to,$tpltxt,$tplvars);
-					if(!$resA)
-					{
-						if(!$msg)
-							$msg = $this->mod->Lang('err_notice');
-						$err .= $this->mod->TeamName($tid).': '.$msg;
-					}
-				}
+				reset($to);
+				$tplvars['recipient'] = key($to);
+				$tc = count($to);
+				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
+				$tplvars['toall'] = $toall;
+				if ((int)$mdata['teamB'] > 0)
+					$op = $this->mod->TeamName($mdata['teamB']);
 				else
-					$err = $this->mod->TeamName($tid).': '.$this->mod->Lang('lackpermission');
+				{
+/*					switch($bdata['type'])
+					{
+					 case Tourney::KOTYPE:
+						$op = $this->mod->Lang('anonwinner');
+						break;
+					 default:
+						$op = $this->mod->Lang('anonother');
+						break;
+					}
+*/
+					$op = '';
+				}
+				$tplvars['opponent'] = $op;
+				if($owner)
+					$to[] = $owner;
+				list($resA,$msg) = self::DoSend($sender,$handle,$to,$tpltxt,$tplvars);
+				if(!$resA)
+				{
+					if(!$msg)
+						$msg = $this->mod->Lang('err_notice');
+					$err .= $this->mod->TeamName($tid).': '.$msg;
+				}
 			}
 		}
 
@@ -267,48 +206,40 @@ class tmtTweet
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($tid,$first);
+			$to = self::GetTeamContacts($sender,$tid,$first);
 			if($to)
 			{
-				if($tokens)
-				{
-					reset($to);
-					$tplvars['recipient'] = key($to);
-					$tc = count($to);
-					$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
-					$tplvars['toall'] = $toall;
-					if ((int)$mdata['teamA'] > 0)
-						$op = $this->mod->TeamName($mdata['teamA']);
-					else
-					{
-/*					switch($bdata['type'])
-						{
-						 case Tourney::KOTYPE:
-							$op = $this->mod->Lang('anonwinner');
-							break;
-						 default:
-							$op = $this->mod->Lang('anonother');
-							break;
-						}
-*/
-						$op = '';
-					}
-					$tplvars['opponent'] = $op;
-					if($owner)
-						$to[] = $owner;
-					list($resB,$msg) = self::DoSend($tokens,$to,$tpltxt,$tplvars);
-					if(!$resB)
-					{
-						if($err) $err .= '<br />';
-						if(!$msg)
-							$msg = $this->mod->Lang('err_notice');
-						$err .= $this->mod->TeamName($tid).': '.$msg;
-					}
-				}
+				reset($to);
+				$tplvars['recipient'] = key($to);
+				$tc = count($to);
+				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
+				$tplvars['toall'] = $toall;
+				if ((int)$mdata['teamA'] > 0)
+					$op = $this->mod->TeamName($mdata['teamA']);
 				else
 				{
+/*					switch($bdata['type'])
+					{
+					 case Tourney::KOTYPE:
+						$op = $this->mod->Lang('anonwinner');
+						break;
+					 default:
+						$op = $this->mod->Lang('anonother');
+						break;
+					}
+*/
+					$op = '';
+				}
+				$tplvars['opponent'] = $op;
+				if($owner)
+					$to[] = $owner;
+				list($resB,$msg) = self::DoSend($sender,$handle,$to,$tpltxt,$tplvars);
+				if(!$resB)
+				{
 					if($err) $err .= '<br />';
-					$err .= $this->mod->TeamName($tid).': '.$this->mod->Lang('lackpermission');
+					if(!$msg)
+						$msg = $this->mod->Lang('err_notice');
+					$err .= $this->mod->TeamName($tid).': '.$msg;
 				}
 			}
 		}

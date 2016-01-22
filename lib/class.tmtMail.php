@@ -10,17 +10,16 @@ Functions involved with email communications
 class tmtMail
 {
 	private $mod; //reference to Tourney module object
-	private $mlr; //reference to EmailSender object
 
-	function __construct(&$mod,&$mlr)
+	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		$this->mlr = $mlr;
 	}
 
 	/**
 	DoSend:
 	Sends email notice(s) about a match
+	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@to: array of 'To' destinations. Key = recipient name, value = validated email address
 	@cc: array of 'CC' destinations, or FALSE. Array key = recipient name, value = validated email address
@@ -30,12 +29,10 @@ class tmtMail
 	 [0] FALSE if no addressee or no mlr module, otherwise boolean result of mlr->Send()
 	 [1] '' or error message e.g. from mlr->Send()
 	*/
-	private function DoSend(&$bdata,$to,$cc,$tpltxt,$tplvars)
+	private function DoSend(&$sender,&$bdata,$to,$cc,$tpltxt,$tplvars)
 	{
 		if(!($to || $cc))
 			return array(FALSE,''); //nothing to do
-		if(!$this->mlr)
-			return array(FALSE,$this->mod->Lang('err_system'));
 
 		$subject = $this->mod->Lang('tournament').' - '.$bdata['name'];
 		if(!array_key_exists($bdata['owner'],$to))
@@ -45,7 +42,7 @@ class tmtMail
 		$body = tmtTemplate::ProcessfromData($this->mod,$tpltxt,$tplvars);
 		$html = ($bdata['html'] == '1');
 
-		return $this->mlr->Send(array(
+		return $sender->mail->Send(array(
 			'subject'=>$subject,
 			'to'=>$to,
 			'cc'=>$cc,
@@ -57,17 +54,18 @@ class tmtMail
 
 	/**
 	GetTeamContacts:
+	@sender: reference to MessageSender object
 	@team_id: enumerator of team being processed
 	@first: whether to only try for the first relevant email address, optional, default = FALSE
 	Returns: array, or FALSE. Array members' key = contact name, value = validated email address
 	*/
-	private function GetTeamContacts($team_id,$first=FALSE)
+	private function GetTeamContacts(&$sender,$team_id,$first=FALSE)
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
 		$sql = 'SELECT name,contact FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
-		$members = $db->GetAll($sql,array($team_id));
-		if($members)
+		$contacts = $db->GetAll($sql,array($team_id));
+		if($contacts)
 		{
 			if(!$first)
 			{
@@ -77,12 +75,12 @@ class tmtMail
 					$first = TRUE;
 			}
 			$sends = array();
-			foreach($members as $one)
+			foreach($contacts as $one)
 			{
-				$clean = $this->mlr->ValidateAddress($one['contact']);
-				if($clean)
+				$clean = $sender->ValidateAddress($one['contact']);
+				if(!empty($clean['email']))
 				{
-					$sends[$one['name']] = $clean;
+					$sends[$one['name']] = reset($clean['email']);
 					if($first)
 						break;
 				}
@@ -95,6 +93,7 @@ class tmtMail
 	/**
 	TellOwner:
 	Sends email to tournament owner if possible, and then with cc to one member of both teams in the match
+	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@tplvars: reference to array of template variables
@@ -103,12 +102,12 @@ class tmtMail
 	 [0] TRUE|FALSE representing success
 	 [1] '' or specific failure message
 	*/
-	public function TellOwner(&$bdata,&$mdata,&$tplvars,$lines)
+	public function TellOwner(&$sender,&$bdata,&$mdata,&$tplvars,$lines)
 	{
 		//owner
-		$clean = $this->mlr->ValidateAddress($bdata['contact']);
-		if($clean)
-			$to[$bdata['owner']] = $clean;
+		$clean = $sender->ValidateAddress($bdata['contact']);
+		if(!empty($clean['email']))
+			$to[$bdata['owner']] = reset($clean['email']);
 		else
 			return array(FALSE,''); //silent, try another channel
 		//teams
@@ -116,14 +115,14 @@ class tmtMail
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$more = self::GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($sender,$tid,TRUE);
 			if($more)
 				$cc = $cc + $more;
 		}
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$more = self::GetTeamContacts($tid,TRUE);
+			$more = self::GetTeamContacts($sender,$tid,TRUE);
 			if($more)
 				$cc = $cc + $more;
 		}
@@ -134,12 +133,13 @@ class tmtMail
 		$tpltxt = tmtTemplate::Get($this->mod,'mailin_'.$bdata['bracket_id'].'_template');
 		if($tpltxt == FALSE)
 			$tpltxt = tmtTemplate::Get($this->mod,'mailin_default_template');
-		return self::DoSend($bdata,$to,$cc,$tpltxt,$tplvars);
+		return self::DoSend($sender,$bdata,$to,$cc,$tpltxt,$tplvars);
 	}
 
 	/**
 	TellTeams:
 	Sends email to one or all members of both teams in the match, with cc to the owner
+	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@tplvars: reference to array of template variables
@@ -150,7 +150,7 @@ class tmtMail
 	 [0] TRUE|FALSE representing success, or TRUE if nobody to send to
 	 [1] '' or specific failure message
 	*/
-	public function TellTeams(&$bdata,&$mdata,&$tplvars,$type,$first=FALSE)
+	public function TellTeams(&$sender,&$bdata,&$mdata,&$tplvars,$type,$first=FALSE)
 	{
 		switch($type)
 		{
@@ -171,14 +171,14 @@ class tmtMail
 			break;
 		}
 
-		$clean = $this->mlr->ValidateAddress($bdata['contact']);
-		$cc = ($clean) ? array($bdata['owner']=>$clean) : FALSE;
+		$clean = $sender->ValidateAddress($bdata['contact']);
+		$cc = (!empty($clean['email'])) ? array($bdata['owner']=>reset($clean['email'])) : FALSE;
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($tid,$first);
+			$to = self::GetTeamContacts($sender,$tid,$first);
 			if($to)
 			{
 				reset($to);
@@ -203,7 +203,7 @@ class tmtMail
 					$op = '';
 				}
 				$tplvars['opponent'] = $op;
-				list($resA,$msg) = self::DoSend($bdata,$to,$cc,$tpltxt,$tplvars);
+				list($resA,$msg) = self::DoSend($sender,$bdata,$to,$cc,$tpltxt,$tplvars);
 				if(!$resA)
 				{
 					if(!$msg)
@@ -217,7 +217,7 @@ class tmtMail
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$to = self::GetTeamContacts($tid,$first);
+			$to = self::GetTeamContacts($sender,$tid,$first);
 			if($to)
 			{
 				reset($to);
@@ -242,7 +242,7 @@ class tmtMail
 					$op = '';
 				}
 				$tplvars['opponent'] = $op;
-				list($resB,$msg) = self::DoSend($bdata,$to,$cc,$tpltxt,$tplvars);
+				list($resB,$msg) = self::DoSend($sender,$bdata,$to,$cc,$tpltxt,$tplvars);
 				if(!$resB)
 				{
 					if($err) $err .= '<br />';

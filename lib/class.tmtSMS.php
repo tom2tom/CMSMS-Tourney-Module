@@ -10,36 +10,33 @@ Functions involved with SMS communications
 class tmtSMS
 {
 	private $mod; //reference to Tourney module object
-	private $text; //reference to SMSSender object
 
-	function __construct(&$mod,&$text)
+	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		$this->text = $text;
 	}
 
 	/**
 	DoSend:
 	Sends SMS(s) about a match
+	@sender: reference to MessageSender object
 	@prefix: country-code to be prepended to destination phone-numbers, or
 		name of country to be used to look up that code
 	@to: array of validated phone-no(s) for recipient(s)
 	@cc: array of validated phone-no(s) for bracket owner(s), or FALSE
 	@from: validated phone-no to be used (if possible) as sender, or FALSE
-	@tpl: smarty template to use for message body
+	@tpltext: smarty template to use for message body
 	@tplvars: reference to array of template variables
 	Returns: 2-member array -
 	 [0] FALSE if no addressee or no SMSG-module gateway, otherwise boolean cumulative result of gateway->send()
 	 [1] '' or error message e.g. from gateway->send() to $to ($cc errors ignored)
 	*/
-	private function DoSend($prefix,$to,$cc,$from,$tpl,$tplvars)
+	private function DoSend(&$sender,$prefix,$to,$cc,$from,$tpltext,$tplvars)
 	{
 		if(!($to || $cc))
 			return array(FALSE,'');
-		if(!$this->text)
-			return array(FALSE,$this->mod->Lang('err_system'));
 
-		$body = tmtTemplate::ProcessfromData($this->mod,$tpl,$tplvars);
+		$body = tmtTemplate::ProcessfromData($this->mod,$tpltxt,$tplvars);
 		if(!$body || !$this->utils->text_is_valid($body))
 			return array(FALSE,$this->mod->Lang('err_text').' \''.$body.'\'');
 
@@ -51,7 +48,7 @@ class tmtSMS
 					$to[] = $num;
 			}
 		}
-		return $this->text->Send(array(
+		return $sender->text->Send(array(
 			'prefix'=>$prefix,
 			'to'=>$to,
 			'from'=>FALSE,
@@ -60,39 +57,33 @@ class tmtSMS
 
 	/**
 	GetTeamContacts:
+	@sender: reference to MessageSender object
 	@team_id: enumerator of team being processed
-	@prefix: default country-code for phone-numbers to receive text
 	@pattern: regex for matching acceptable phone nos, defaults to module preference
 	@first: whether to only try for the first relevant tag, optional, default = FALSE
-	Returns: array of validated phone nos (maybe empty), or FALSE.
+	Returns: array of validated phone nos, or FALSE.
 	*/
-	private function GetTeamContacts($team_id,$prefix,$pattern,$first=FALSE)
+	private function GetTeamContacts(&$sender,$team_id,$pattern,$first=FALSE)
 	{
 		$db = cmsms()->GetDb();
 		$pref = cms_db_prefix();
-		$sql = 'SELECT name,contact FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
-		$members = $db->GetAll($sql,array($team_id));
-		if($members)
+		$sql = 'SELECT contact FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
+		$contacts = $db->GetCol($sql,array($team_id));
+		if($contacts)
 		{
-			if(!$first)
+			$clean = $sender->ValidateAddress($contacts,$pattern);
+			if(!empty($clean['text']))
 			{
-				$sql = 'SELECT contactall FROM '.$pref.'module_tmt_teams WHERE team_id=?';
-				$all = $db->GetOne($sql,array($team_id));
-				if(!$all)
-					$first = TRUE;
-			}
-			$sends = array();
-			foreach($members as $one)
-			{
-				$clean = $this->text->ValidateAddress($one['contact'],$prefix,$pattern);
-				if($clean)
+				if(!$first)
 				{
-					$sends[] = $clean;
-					if($first)
-						break;
+					$sql = 'SELECT contactall FROM '.$pref.'module_tmt_teams WHERE team_id=?';
+					if(!$db->GetOne($sql,array($team_id)))
+						$first = TRUE;
 				}
+				if($first)
+					return array(reset($clean['text']));
+				return $clean['text'];
 			}
-			return $sends;
 		}
 		return FALSE;
 	}
@@ -101,6 +92,7 @@ class tmtSMS
 	TellOwner:
 	Sends SMS to tournament owner if possible, and then to one member of both teams
 	in the match, using same template as for tweets
+	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@tplvars: reference to array of template variables
@@ -109,36 +101,33 @@ class tmtSMS
 	 [0] TRUE|FALSE representing success
 	 [1] '' or specific failure message
 	*/
-	public function TellOwner(&$bdata,&$mdata,&$tplvars,$lines)
+	public function TellOwner(&$sender,&$bdata,&$mdata,&$tplvars,$lines)
 	{
 		//owner(s)
-		$to = $this->text->ValidateAddress($bdata['contact'],$bdata['smsprefix'],$bdata['smspattern']);
-		if($to)
-		{
-			if(!is_array($to))
-				$to = array($to);
-		}
+		$to = $sender->ValidateAddress($bdata['contact'],$bdata['smspattern']);
+		if(!empty($to['text'])) 
+				$to = $to['text'];
 		else
 			return array(FALSE,''); //silent, try another channel
 		//teams
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
 		{
-			$more = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],TRUE);
+			$more = self::GetTeamContacts($sender,$tid,$bdata['smspattern'],TRUE);
 			if($more)
 				$to = array_merge($to,$more);
 		}
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
 		{
-			$more = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],TRUE);
+			$more = self::GetTeamContacts($sender,$tid,$bdata['smspattern'],TRUE);
 			if($more)
 				$to = array_merge($to,$more);
 		}
-		//maybe >1 owner
-		$from = $this->text->ValidateAddress($bdata['smsfrom'],$bdata['smsprefix'],$bdata['smspattern']);
-		if(is_array($from))
-			$from = reset($from);
+
+		$from = $sender->ValidateAddress($bdata['smsfrom'],$bdata['smspattern']);
+		if(!empty($from['text']))
+			$from = $from['text'];
 
 		//submitted data
 		$tplvars['report'] = implode(' ',$lines);
@@ -146,13 +135,14 @@ class tmtSMS
 		$tpl = tmtTemplate::Get($this->mod,'tweetin_'.$bdata['bracket_id'].'_template');
 		if($tpl == FALSE)
 			$tpl = tmtTemplate::Get($this->mod,'tweetin_default_template');
-		return self::DoSend($bdata['smsprefix'],$to,FALSE,$from,$tpl,$tplvars);
+		return self::DoSend($sender,$bdata['smsprefix'],$to,FALSE,$from,$tpl,$tplvars);
 	}
 
 	/**
 	TellTeams:
 	Sends SMS to one or all members of both teams in the match, plus the owner,
 	using same template as for tweets
+	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
 	@tplvars: reference to array of template variables
@@ -163,7 +153,7 @@ class tmtSMS
 	 [0] TRUE|FALSE representing success, or TRUE if nobody to send to
 	 [1] '' or specific failure message
 	*/
-	public function TellTeams(&$bdata,&$mdata,&$tplvars,$tpl,$first=FALSE)
+	public function TellTeams(&$sender,&$bdata,&$mdata,&$tplvars,$tpl,$first=FALSE)
 	{
 		switch($tpl)
 		{
@@ -185,20 +175,26 @@ class tmtSMS
 		}
 
 		$this->ccmsg = FALSE;
-		$from = $this->text->ValidateAddress($bdata['smsfrom'],$bdata['smsprefix'],$bdata['smspattern']);
-		$owner = $this->text->ValidateAddress($bdata['contact'],$bdata['smsprefix'],$bdata['smspattern']);
-		if($owner)
+		$from = $sender->ValidateAddress($bdata['smsfrom'],$bdata['smspattern']);
+		if(!empty($from['text']))
+			$from = reset($from['text']);
+		else
+			$from = FALSE;
+		$owner = $sender->ValidateAddress($bdata['contact'],$bdata['smspattern']);
+		if(!empty($owner['text']))
 		{
-			if(!is_array($owner))
-				$owner = array($owner);
+			$owner = reset($owner['text']);
 			if(!$from)
-				$from = reset($owner);
+				$from = $owner;
 		}
+		else
+			$owner = FALSE;
+			
 		$err = '';
 		$resA = TRUE; //we're ok if nothing sent
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
-			$to = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],$first);
+			$to = self::GetTeamContacts($sender,$tid,$bdata['smspattern'],$first);
 		else
 			$to = FALSE;
 		if($to || $owner)
@@ -218,7 +214,7 @@ class tmtSMS
 			}
 			$op = ((int)$mdata['teamB'] > 0) ? $this->mod->TeamName($mdata['teamB']) : '';
 			$tplvars['opponent'] = $op;
-			list($resA,$msg) = self::DoSend($bdata['smsprefix'],$to,$owner,$from,$tpl,$tplvars);
+			list($resA,$msg) = self::DoSend($sender,$bdata['smsprefix'],$to,$owner,$from,$tpl,$tplvars);
 			if(!$resA)
 			{
 				if(!$msg)
@@ -230,7 +226,7 @@ class tmtSMS
 		$resB = TRUE;
 		$tid = (int)$mdata['teamB'];
 		if($tid > 0)
-			$to = self::GetTeamContacts($tid,$bdata['smsprefix'],$bdata['smspattern'],$first);
+			$to = self::GetTeamContacts($sender,$tid,$bdata['smspattern'],$first);
 		else
 			$to = FALSE;
 		if($to || $owner)
@@ -250,7 +246,7 @@ class tmtSMS
 			}
 			$op = ((int)$mdata['teamA'] > 0) ? $this->mod->TeamName($mdata['teamA']) : '';
 			$tplvars['opponent'] = $op;
-			list($resB,$msg) = self::DoSend($bdata['smsprefix'],$to,$owner,$from,$tpl,$tplvars);
+			list($resB,$msg) = self::DoSend($sender,$bdata['smsprefix'],$to,$owner,$from,$tpl,$tplvars);
 			if(!$resB)
 			{
 				if($err) $err .= '<br />';
