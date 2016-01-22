@@ -190,10 +190,15 @@ if($bdata['contact'])
 	//check for match(es) scheduled & unscored
 	if($sch->UnRecorded($bracket_id))
 	{
-		//check for valid address for results
-		$funcs = new MessageSender(); //TODO does this load for CMSMS 1.9? 
-		if($funcs->ValidateAddress($bdata['contact'],$bdata['smspattern']))
-			$submit = $this->CreateInputSubmitDefault($id,'result',$this->Lang('submit2'));
+		$ob = cms_utils::get_module('Notifier');
+		if($ob)
+		{
+			unset($ob);
+			//check for valid address for results
+			$funcs = new MessageSender(); //TODO does this auto-load for CMSMS 1.9? 
+			if($funcs->ValidateAddress($bdata['contact'],$bdata['smspattern']))
+				$submit = $this->CreateInputSubmitDefault($id,'result',$this->Lang('submit2'));
+		}
 	}
 }
 unset($sch);
