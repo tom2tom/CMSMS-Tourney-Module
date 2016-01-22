@@ -1011,7 +1011,7 @@ EOS;
 				$jsloads[] = <<< EOS
  $('#tmt_players').find('.tem_delete').children().modalconfirm({
   overlayID: 'confirm',
-  preShow: function(tg,dlg){
+  preShow: function(tg,\$d){
    var name = \$(this).closest('tr').find('.tem_name').attr('value'),
     msg;
     if (name) {
@@ -1022,7 +1022,7 @@ EOS;
     } else {
      msg = '{$mod->Lang('confirm')}';
     }
-	 var para = dlg.children('p:first')[0];
+	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = msg;
   },
   onConfirm: function(){
@@ -1106,8 +1106,8 @@ EOS;
   doCheck: function(){
 	 return (team_count() > 0);
   },
-  preShow: function(tg,dlg){
-	 var para = dlg.children('p:first')[0];
+  preShow: function(tg,\$d){
+	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = '{$t}';
   },
   onConfirm: function(){
@@ -1429,8 +1429,8 @@ EOS;
 					$jsloads[] = <<< EOS
  $('#{$id}reset').modalconfirm({
   overlayID: 'confirm',
-  preShow: function(tg,dlg){
-	 var para = dlg.children('p:first')[0];
+  preShow: function(tg,\$d){
+	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
   },
   onConfirm: function(){
@@ -1450,8 +1450,8 @@ EOS;
   doCheck: function(){
 	 return (match_count() > 0);
   },
-  preShow: function(tg,dlg){
-	 var para = dlg.children('p:first')[0];
+  preShow: function(tg,\$d){
+	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = '{$mod->Lang('allsaved')}';
   },
   onConfirm: function(){
@@ -1790,8 +1790,8 @@ EOS;
  $('#{$id}cancel').modalconfirm({
   overlayID: 'confirm',
   doCheck: {$test},
-  preShow: function(tg,dlg){
-	 var para = dlg.children('p:first')[0];
+  preShow: function(tg,\$d){
+	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = '{$mod->Lang('allabandon')}';
   },
   onCheckFail: true,

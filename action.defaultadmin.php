@@ -239,7 +239,7 @@ EOS;
 		$jsloads[] = <<<EOS
  $('.delitmlink').modalconfirm({
   overlayID: 'confirm',
-  preShow: function(tg,dlg){
+  preShow: function(tg,\$d){
    var name = \$('td:first > a', $(tg).closest('tr')).text(),
     msg;
    if (name) {
@@ -250,15 +250,15 @@ EOS;
    } else {
     msg = '{$this->Lang('confirm')}';
    }
-   var para = dlg.children('p:first')[0];
+   var para = \$d.children('p:first')[0];
    para.innerHTML = msg;
   }
  });
  $('#{$id}delete_item').modalconfirm({
   overlayID: 'confirm',
   doCheck: confirm_selitm_count,
-  preShow: function(tg,dlg){
-   var para = dlg.children('p:first')[0];
+  preShow: function(tg,\$d){
+   var para = \$d.children('p:first')[0];
    para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_items'))}';
   }
  });
@@ -480,7 +480,7 @@ $(document).ready(function(){
  $('.dndhelp').css('display','block');
  $('.delgrplink').modalconfirm({
   overlayID: 'confirm',
-  preShow: function(tg,dlg){
+  preShow: function(tg,\$d){
    var name = \$('td > input:text', $(tg).closest('tr')).val(),
     msg;
    if (name) {
@@ -491,15 +491,15 @@ $(document).ready(function(){
    } else {
     msg = '{$this->Lang('confirm')}';
    }
-   var para = dlg.children('p:first')[0];
+   var para = \$d.children('p:first')[0];
    para.innerHTML = msg;
   }
  });
  $('#{$id}delete_group').modalconfirm({
   overlayID: 'confirm',
   doCheck: confirm_selgrp_count,
-  preShow: function(tg,dlg){
-   var para = dlg.children('p:first')[0];
+  preShow: function(tg,\$d){
+   var para = \$d.children('p:first')[0];
    para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_groups'))}';
   }
  });

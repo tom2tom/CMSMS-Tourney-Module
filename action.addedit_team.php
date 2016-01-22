@@ -549,7 +549,7 @@ if($rows)
 		$jsloads[] = <<< EOS
  teamtable.find('.plr_delete').children().modalconfirm({
   overlayID: 'confirm',
-  preShow: function(tg,dlg){
+  preShow: function(tg,\$d){
    var name = \$(tg).closest('tr').find('.plr_name').attr('value'),
     msg;
    if (name) {
@@ -560,7 +560,7 @@ if($rows)
    } else {
      msg = '{$this->Lang('confirm')}';
    }
-   var para = dlg.children('p:first')[0];
+   var para = \$d.children('p:first')[0];
    para.innerHTML = msg;
   }
  });
@@ -748,8 +748,8 @@ if($pmod)
  $('#{$id}delete').modalconfirm({
   overlayID: 'confirm',
   doCheck: player_selected,
-  preShow: function(tg,dlg){
-   var para = dlg.children('p:first')[0];
+  preShow: function(tg,\$d){
+   var para = \$d.children('p:first')[0];
    para.innerHTML = '{$t}';
   }
  });
@@ -789,8 +789,8 @@ EOS;
  $('#{$id}cancel').modalconfirm({
   overlayID: 'confirm',
   doCheck: {$test},
-  preShow: function(tg,dlg){
-   var para = dlg.children('p:first')[0];
+  preShow: function(tg,\$d){
+   var para = \$d.children('p:first')[0];
    para.innerHTML = '{$this->Lang('allabandon')}';
   },
   onCheckFail: true
