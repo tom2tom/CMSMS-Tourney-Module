@@ -32,7 +32,7 @@ class tmtComm
 
 	private function loader($className)
 	{
-		include $this->incpath.'$className.'.php';
+		include $this->incpath.$className.'.php';
 	}
 
 	/**
