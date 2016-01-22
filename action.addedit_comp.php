@@ -113,70 +113,15 @@ else
 	 case 'result_view':
 	 case 'match_view':
 		break;
-/*TODO Notifier
 	 case 'connect':
-		$twt = new tmtTweet($this->mod);
-		list($key,$secret) = $twt->ModuleAppTokens();
-		try
+		$ob = $this->GetModuleInstance('Notifier');
+		if($ob)
 		{
-			$conn = new TwitterCredential($key,$secret);
-			$backto = 'addedit_comp'; //come back directly to here
-			//parameters needed upon return
-			$keeps = array('real_action'=>'fromtwt','bracket_id'=>$bid,'active_tab'=>$tab);
-			$url = $this->CreateLink($id,$backto,NULL,NULL,$keeps,NULL,TRUE);
-			//cleanup Would be nice to also force https: for return-communication
-			// BUT that freaks the browser first time, and stuffs up
-			// on-page-include-URLS, requiring a local redirect to fix
-			$callback = str_replace('amp;','',$url);
-			$name = ($params['tmt_twtfrom']) ? substr($params['tmt_twtfrom'],1) : FALSE;
-			$message = $conn->gogetToken($callback,$name); //should redirect to get token
-			//if we're still here, an error occurred
+			$ob->DoAction('start',$id,array());
 		}
-		catch (TwitterException $e)
-		{
-			$message = $e->getMessage();
-		}
-		if(!empty($message))
-			$message = $this->PrettyMessage($message,FALSE,FALSE,FALSE);
+		//if still here, some problem occurred
 		$params['real_action'] = 'edit';
 	 	break;
-	 case 'fromtwt':
-		if(isset($_REQUEST['oauth_verifier'])) //authorisation done
-		{
-			$twt = new tmtTweet($this->mod);
-			list($key,$secret) = $twt->ModuleAppTokens();
-			try
-			{
-				$conn = new TwitterCredential($key,$secret,$_REQUEST['oauth_token'],NULL);
-				//seek enduring credentials
-				$token = $conn->getAuthority($_REQUEST['oauth_verifier']);
-				if(is_array($token))
-				{
-					if(!$twt->SaveTokens($token['oauth_token'],
-						$token['oauth_token_secret'],$token['screen_name'],$bid))
-							$message = $this->Lang('err_data_type',$this->Lang('err_token'));
-				}
-				else
-					$message = $token;
-			}
-			catch (TwitterException $e)
-			{
-				$message = $e->getMessage();
-			}
-			if(!empty($message))
-				$message = $this->PrettyMessage($message,FALSE,FALSE,FALSE);
-		}
-/ *		else
-		{
-			$pref = cms_db_prefix();
-			$sql = 'DELETE FROM '.$pref.'module_tmt_tweet WHERE bracket_id=?';
-			$db->Execute($sql,array($bid));
-			$message = $this-Lang('TODO');
-		}
-* /
-		$params['real_action'] = 'edit';
-		break;
-*/
 	 case 'movedown':
 	 case 'moveup':
 		$pref = cms_db_prefix();

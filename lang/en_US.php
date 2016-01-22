@@ -377,11 +377,8 @@ Twitter account handle. If left blank, @CMSMSNotifier will be used.
 Anything else will require authorisation by the account owner, before first use.
 Module help has more details.
 EOS;
-/*TODO Notifier
-$lang['help_twt2']='You can refresh the current authorisation for <strong>%s</strong>, or initiate a change, by clicking the \'Visit\' button.';
-$lang['help_twt3']='You can initiate authorisation by clicking the \'Visit\' button.';
-$lang['help_twt4']='<strong>Ensure all wanted data are saved</strong>, before departing.';
-*/
+$lang['help_twt5']='You can initiate or refresh authorisation by clicking the \'Visit\' button. <strong>Ensure all wanted data are saved</strong>, before departing.';
+
 $lang['title_atformat']='Format of displayed date & time';
 $lang['title_chttemplate']='Front-end chart display template';
 $lang['title_emailhtml']='Generate HTML email';
@@ -600,7 +597,7 @@ $lang['allabandon']='Abandon changes ?';
 $lang['title_auth']='Authorise tournament-related tweets from a specific twitter account';
 $lang['help_auth1']='Tournament: %s';
 $lang['help_auth2']='Nominated account: %s';
-//TODO Notifier $lang['connect']='Visit Twitter';
+$lang['connect']='Visit Twitter';
 
 $lang['comp_deleted']='Tournament deleted.';
 

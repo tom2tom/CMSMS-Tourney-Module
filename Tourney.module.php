@@ -253,7 +253,7 @@ EOS;
 		$this->SetParameterType('real_action',CLEAN_STRING);
 		$this->SetParameterType('result',CLEAN_STRING);
 		$this->SetParameterType('send',CLEAN_STRING);
-//TODO Notifier		$this->SetParameterType('connect',CLEAN_STRING);
+		$this->SetParameterType('connect',CLEAN_STRING);
 		//hidden data
 		$this->SetParameterType('bracket_id',CLEAN_INT);
 		$this->SetParameterType('captcha',CLEAN_STRING);
@@ -918,11 +918,9 @@ Europe/Vilnius'
 				 case 'reset':
 					$name = 'schedule';
 					break;
-/*TODO Notifier
 				 case 'connect':
 					$params['real_action'] = $task;
 					break;
-*/
 				 case 'import_team':
 				 case 'schedule':
 				 case 'upload_css':
