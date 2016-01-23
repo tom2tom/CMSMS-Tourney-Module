@@ -8,10 +8,10 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
 if (!$this->CheckAccess())
 	$this->Redirect($id,'defaultadmin','',
 		array('tmt_message'=>$this->PrettyMessage('lackpermission',FALSE)));
-		
+
 if(isset($params['cancel']))
 	$this->Redirect($id,'defaultadmin','');
-		
+
 /*
 Arrive here following adminpanel add or edit click, or one of the various actions
 initiated from the page setup and displayed here
@@ -79,7 +79,7 @@ if ($add)
 	'timezone' => $data->timezone,
 	'playgap' => $data->playgap,
 	'playgaptype' => $data->playgaptype,
-	'available' => $data->available, 
+	'available' => $data->available,
 	'placegap' => $data->placegap,
 	'placegaptype' => $data->placegaptype);
 	$fields = implode(',',array_keys($args));
