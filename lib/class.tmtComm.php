@@ -23,7 +23,7 @@ class tmtComm
 			$name = $mod->GetName();
 			$offs = strpos($path,$name);
 			$base = substr($path,0,$offs);
-			$this->incpath = cms_join_path($base,'Notifier','lib','class');
+			$this->incpath = cms_join_path($base.'Notifier','lib','class.');
 			spl_autoload_register(array($this,'loader'));
 		}
 		else
