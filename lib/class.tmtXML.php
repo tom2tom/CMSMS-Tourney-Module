@@ -30,7 +30,7 @@ class tmtXML
 		header('Content-Type: text/xml'.$charset);
 		header('Content-Length: '.strlen($content));
 		header('Content-Disposition: attachment; filename="'.$fn.'.xml"');
-		
+
 		echo $content;
 	}
 
@@ -87,7 +87,7 @@ class tmtXML
 
 			if($header)
 			{
-				$s = '<?xml version="1.0" standalone="yes"';
+				$s = '<?xml version="1.0"'; // standalone="yes"'; php xml parser can't cope
 				if($charset)
 					$s .= ' encoding="'.strtoupper($charset).'"?>';
 				else
@@ -99,33 +99,47 @@ class tmtXML
 <!ELEMENT version (#PCDATA)>
 <!ELEMENT date (#PCDATA)>
 <!ELEMENT count (#PCDATA)>
-<!ELEMENT bracket (properties,teams,people,matches)>
+<!ELEMENT bracket (properties,templates,teams,people,matches)>
 EOS;
 				$fields1 = array_keys($properties);
 				$xml[] = '<!ELEMENT properties ('.implode(',',$fields1).')>';
 				foreach($fields1 as $thisfield)
 					$xml[] = "<!ELEMENT $thisfield (#PCDATA)>";
+				$fields2 = array(
+					'mailout',
+					'mailcancel',
+					'mailrequest',
+					'mailin',
+					'tweetout',
+					'tweetcancel',
+					'tweetrequest',
+					'tweetin',
+					'chart'
+				);
+				$xml[] = '<!ELEMENT templates ('.implode(',',$fields2).')>';
+				foreach($fields2 as $thisfield)
+					$xml[] = "<!ELEMENT $thisfield (#PCDATA)>";
 				if($teams)
 				{
-					$fields2 = array_keys($teams[0]);
+					$fields3 = array_keys($teams[0]);
 					$xml[] = '<!ELEMENT teams (team)>';
-					$xml[] = '<!ELEMENT team ('.implode(',',$fields2).')>';
-					foreach($fields2 as $thisfield)
+					$xml[] = '<!ELEMENT team ('.implode(',',$fields3).')>';
+					foreach($fields3 as $thisfield)
 						$xml[] = "<!ELEMENT $thisfield (#PCDATA)>";
 					if($people)
 					{
-						$fields3 = array_keys($people[0]);
+						$fields4 = array_keys($people[0]);
 						$xml[] = '<!ELEMENT people (person)>';
-						$xml[] = '<!ELEMENT person ('.implode(',',$fields3).')>';
-						foreach($fields3 as $thisfield)
+						$xml[] = '<!ELEMENT person ('.implode(',',$fields4).')>';
+						foreach($fields4 as $thisfield)
 							$xml[] = "<!ELEMENT $thisfield (#PCDATA)>";
 					}
 					if($matches)
 					{
-						$fields4 = array_keys($matches[0]);
+						$fields5 = array_keys($matches[0]);
 						$xml[] = '<!ELEMENT matches (match)>';
-						$xml[] = '<!ELEMENT match ('.implode(',',$fields4).')>';
-						foreach($fields4 as $thisfield)
+						$xml[] = '<!ELEMENT match ('.implode(',',$fields5).')>';
+						foreach($fields5 as $thisfield)
 							$xml[] = "<!ELEMENT $thisfield (#PCDATA)>";
 					}
 				}
@@ -147,7 +161,18 @@ EOS;
 EOS;
 			foreach($fields1 as $thisfield)
 				$xml[] = "\t\t\t<$thisfield>".$properties[$thisfield]."</$thisfield>";
-			$xml[] = "\t\t</properties>";
+			$xml[] =<<<EOS
+\t\t</properties>
+\t\t<templates>
+EOS;
+			foreach($fields2 as $thisone)
+			{
+				$content = tmtTemplate::Get($mod,$thisone.'_'.$thisid.'_template');
+				if($content)
+					$content = htmlentities($content); //template probably includes xml-conflicting chars
+				$xml[] = "\t\t\t<$thisone>".$content."</$thisone>";
+			}
+			$xml[] = "\t\t</templates>";
 
 			//to avoid conflicts, other-table fieldnames are namespaced
 			$xml[] =<<<EOS
@@ -158,7 +183,7 @@ EOS;
 				foreach($teams as $thisteam)
 				{
 					$xml[] = "\t\t\t<team>";
-						foreach($fields2 as $thisfield)
+						foreach($fields3 as $thisfield)
 							$xml[] = "\t\t\t\t<t:$thisfield>".$thisteam[$thisfield]."</t:$thisfield>";
 					$xml[] = "\t\t\t</team>";
 				}
@@ -172,7 +197,7 @@ EOS;
 				foreach($people as $thisone)
 				{
 					$xml[] = "\t\t\t<person>";
-						foreach($fields3 as $thisfield)
+						foreach($fields4 as $thisfield)
 							$xml[] = "\t\t\t\t<h:$thisfield>".$thisone[$thisfield]."</h:$thisfield>";
 					$xml[] = "\t\t\t</person>";
 				}
@@ -186,7 +211,7 @@ EOS;
 				foreach($matches as $thismatch)
 				{
 					$xml[] = "\t\t\t<match>";
-						foreach($fields4 as $thisfield)
+						foreach($fields5 as $thisfield)
 							$xml[] = "\t\t\t\t<m:$thisfield>".$thismatch[$thisfield]."</m:$thisfield>";
 					$xml[] = "\t\t\t</match>";
 				}
@@ -407,7 +432,7 @@ EOS;
 			}
 		}
 		unset($check);
-		$expected = array('properties','teams','people','matches');	
+		$expected = array('properties','templates','teams','people','matches');
 		foreach ($array['bracket1'] as $indx=>&$check)
 		{
 			if (!in_array($indx,$expected))
@@ -421,8 +446,11 @@ EOS;
 		{
 			if (!array_key_exists($check, $array['bracket1']))
 			{
-				unset($check);
-				return FALSE;
+				if ($check != 'templates') //previous version didn't do templates
+				{
+					unset($check);
+					return FALSE;
+				}
 			}
 		}
 		unset($check);
