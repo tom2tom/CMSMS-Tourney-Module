@@ -30,8 +30,9 @@ if ($bracketdata && !empty($bracketdata['count'])) //proxy for valid version che
 	$pref = cms_db_prefix();
 	for ($i=1; $i<=$bracketdata['count']; $i++)
 	{
-		$fields = array_keys($bracketdata['bracket'.$i]['properties']);
-		$values = array_values($bracketdata['bracket'.$i]['properties']);
+		$onebracket = $bracketdata['bracket'.$i];
+		$fields = array_keys($onebracket['properties']);
+		$values = array_values($onebracket['properties']);
 		//don't 'force' NULL for fields which default to something else
 		foreach ($values as $indx=>$val)
 		{
@@ -72,16 +73,27 @@ if ($bracketdata && !empty($bracketdata['count'])) //proxy for valid version che
 		$sql = 'INSERT INTO '.$pref.'module_tmt_brackets ('.implode(',',$fields).') VALUES ('.$fillers.')';
 		if ($db->Execute($sql,$values))
 		{
-			if (!empty($bracketdata['teams']) && is_array ($bracketdata['teams']))
+			if (!empty($onebracket['templates']) && is_array ($onebracket['templates']))
+			{
+				foreach ($onebracket['templates'] as $type=>$content)
+				{
+					$thisone = $type.'_'.$bid.'_template';
+					if($content)
+						$content = html_entity_decode($content);
+					tmtTemplate::Set($this,$thisone,$content);
+				}
+			}
+
+			if (!empty($onebracket['teams']) && is_array ($onebracket['teams']))
 			{
 				$teamswaps = array();
-				$fields = array_keys($bracketdata['teams'][0]);
+				$fields = array_keys($onebracket['teams'][0]);
 				$fixer = array_search('bracket_id',$fields);
 				$fixer2 = array_search('team_id',$fields);
 				if ($fixer !== FALSE && $fixer2 !== FALSE)
 				{
 					$fixer3 = array_search('flags',$fields);
-					foreach ($bracketdata['teams'] as $thisone)
+					foreach ($onebracket['teams'] as $thisone)
 					{
 						$values = array_values($thisone);
 						$values[$fixer] = $bid;
@@ -104,12 +116,12 @@ if ($bracketdata && !empty($bracketdata['count'])) //proxy for valid version che
 						$db->Execute($sql,$values);
 					}
 				}
-				if (!empty($bracketdata['people']) && is_array ($bracketdata['people']))
+				if (!empty($onebracket['people']) && is_array ($onebracket['people']))
 				{
-					$fields = array_keys($bracketdata['people'][0]);
+					$fields = array_keys($onebracket['people'][0]);
 					$fixer = array_search('id',$fields);
 					$fixer2 = array_search('flags',$fields);
-					foreach ($bracketdata['people'] as $thisone)
+					foreach ($onebracket['people'] as $thisone)
 					{
 						$values = array_values($thisone);
 						if (array_key_exists($values[$fixer],$teamswaps))
@@ -130,9 +142,9 @@ if ($bracketdata && !empty($bracketdata['count'])) //proxy for valid version che
 						$db->Execute($sql,$values);
 					}
 				}
-				if (!empty($bracketdata['matches']) && is_array ($bracketdata['matches']))
+				if (!empty($onebracket['matches']) && is_array ($onebracket['matches']))
 				{
-					$fields = array_keys($bracketdata['matches'][0]);
+					$fields = array_keys($onebracket['matches'][0]);
 					$fixer = array_search('bracket_id',$fields);
 					$fixer2 = array_search('match_id',$fields);
 					if ($fixer !== FALSE && $fixer2 !== FALSE)
@@ -140,11 +152,11 @@ if ($bracketdata && !empty($bracketdata['count'])) //proxy for valid version che
 						//TODO flag 'added'
 						$fixer3 = array_search('nextm',$fields); //irrelevant for RR
 						$fixer4 = array_search('nextlm',$fields); //ditto and for KO
-						$mc = count($bracketdata['matches']);
+						$mc = count($onebracket['matches']);
 						$sch = new tmtSchedule();
 						$mid = $sch->ReserveMatches($db,$pref,$mc);
-						$offset = $mid - $bracketdata['matches'][0]['match_id']; //lowest match-no. is sorted 1st
-						foreach ($bracketdata['matches'] as $thisone)
+						$offset = $mid - $onebracket['matches'][0]['match_id']; //lowest match-no. is sorted 1st
+						foreach ($onebracket['matches'] as $thisone)
 						{
 							$values = array_values($thisone);
 							$values[$fixer] = $bid;
