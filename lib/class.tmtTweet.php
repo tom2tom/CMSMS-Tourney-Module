@@ -20,10 +20,10 @@ class tmtTweet
 	DoSend:
 	Sends tweet(s) about a match
 	@sender: reference to MessageSender object
-	@handle: twitter handle of poseter, or FALSE
+	@handle: twitter handle of poster, or FALSE
 	@to: array of validated handle(s)
 	@tpltxt: smarty template to use for message body
-	@tplvars: reference to array of template variables
+	@tplvars: array of template variables
 	Returns: 2-member array -
 	 [0] FALSE if no addressee or no twitter module, otherwise boolean cumulative result of twt->Send()
 	 [1] '' or error message e.g. from twt->send()
@@ -32,10 +32,10 @@ class tmtTweet
 	{
 		if(!$to)
 			return array(FALSE,'');
-		if(!$this->twt)
-			return array(FALSE,$this->mod->Lang('err_system'));
 
 		$body = tmtTemplate::ProcessfromData($this->mod,$tpltxt,$tplvars);
+		if(!$body)
+			return array(FALSE,$this->mod->Lang('err_text'));
 
 		return $sender->tweet->Send(array(
 			'handle'=>$handle,
@@ -48,7 +48,7 @@ class tmtTweet
 	@sender: reference to MessageSender object
 	@team_id: enumerator of team being processed
 	@first: whether to only try for the first relevant tag, optional, default = FALSE
-	Returns: array of validated handles, or FALSE.
+	Returns: array of validated handle(s), or FALSE.
 	*/
 	private function GetTeamContacts(&$sender,$team_id,$first=FALSE)
 	{
@@ -59,9 +59,9 @@ class tmtTweet
 		if($contacts)
 		{
 			$clean = $sender->ValidateAddress($contacts);
-			if(!empty($clean['tweet']))
+			if($clean['tweet'])
 			{
-				if(!$first)
+				if(!$first) //maybe override
 				{
 					$sql = 'SELECT contactall FROM '.$pref.'module_tmt_teams WHERE team_id=?';
 					if(!$db->GetOne($sql,array($team_id)))
@@ -81,22 +81,22 @@ class tmtTweet
 	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
-	@tplvars: reference to array of template variables
+	@tplvars: array of template variables
 	@lines: array of lines for message body
 	Returns: 2-member array -
 	 [0] TRUE|FALSE representing success
 	 [1] '' or specific failure message
 	*/
-	public function TellOwner(&$sender,&$bdata,&$mdata,&$tplvars,$lines)
+	public function TellOwner(&$sender,&$bdata,&$mdata,$tplvars,$lines)
 	{
-		//owner
+		//owner(s)
 		$clean = $sender->ValidateAddress($bdata['contact']);
-		if(!empty($clean['tweet']))
-			$to = $clean['tweet'];
-		else
+		$to = $clean['tweet'];
+		if(!$to)
 			return array(FALSE,''); //silent, try another channel
 
 		$handle = (!empty($bdata['twtfrom'])) ? $bdata['twtfrom'] : FALSE;
+
 		//teams
 		$tid = (int)$mdata['teamA'];
 		if($tid > 0)
@@ -127,7 +127,7 @@ class tmtTweet
 	@sender: reference to MessageSender object
 	@bdata: reference to array of bracket-table data
 	@mdata: reference to array of match data (from which we need 'teamA', 'teamB')
-	@tplvars: reference to array of template variables
+	@tplvars: array of template variables
 	@type: enum for type of message: 1 = announcement, 2 = cancellation, 3 = score-request
 	@first: TRUE to send only to first recognised address, FALSE to send per
 		the teams' respective contactall settings, optional, default FALSE
@@ -135,7 +135,7 @@ class tmtTweet
 	 [0] TRUE|FALSE representing success, or TRUE if nobody to send to
 	 [1] '' or specific failure message
 	*/
-	public function TellTeams(&$sender,&$bdata,&$mdata,&$tplvars,$type,$first=FALSE)
+	public function TellTeams(&$sender,&$bdata,&$mdata,$tplvars,$type,$first=FALSE)
 	{
 		switch($type)
 		{
@@ -157,7 +157,7 @@ class tmtTweet
 		}
 
 		$clean = $sender->ValidateAddress($bdata['contact']);
-		$owner = (!empty($clean['tweet'])) ? $clean['tweet'] : FALSE;
+		$owner = $clean['tweet']; //array or FALSE
 
 		$handle = (!empty($bdata['twtfrom'])) ? $bdata['twtfrom'] : FALSE;
 		$err = '';
@@ -168,11 +168,14 @@ class tmtTweet
 			$to = self::GetTeamContacts($sender,$tid,$first);
 			if($to)
 			{
-				reset($to);
-				$tplvars['recipient'] = key($to);
+				$tplvars['recipient'] = reset($to);
 				$tc = count($to);
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$tplvars['toall'] = $toall;
+				if($owner)
+					$to = array_merge($to,$owner);
+				$to = array_unique($to);
+
 				if ((int)$mdata['teamB'] > 0)
 					$op = $this->mod->TeamName($mdata['teamB']);
 				else
@@ -190,8 +193,6 @@ class tmtTweet
 					$op = '';
 				}
 				$tplvars['opponent'] = $op;
-				if($owner)
-					$to[] = $owner;
 				list($resA,$msg) = self::DoSend($sender,$handle,$to,$tpltxt,$tplvars);
 				if(!$resA)
 				{
@@ -209,11 +210,14 @@ class tmtTweet
 			$to = self::GetTeamContacts($sender,$tid,$first);
 			if($to)
 			{
-				reset($to);
-				$tplvars['recipient'] = key($to);
+				$tplvars['recipient'] = reset($to);
 				$tc = count($to);
 				$toall = (($bdata['teamsize'] < 2 && $tc > 0) || $tc > 1);
 				$tplvars['toall'] = $toall;
+				if($owner)
+					$to = array_merge($to,$owner);
+				$to = array_unique($to);
+
 				if ((int)$mdata['teamA'] > 0)
 					$op = $this->mod->TeamName($mdata['teamA']);
 				else
@@ -231,8 +235,6 @@ class tmtTweet
 					$op = '';
 				}
 				$tplvars['opponent'] = $op;
-				if($owner)
-					$to[] = $owner;
 				list($resB,$msg) = self::DoSend($sender,$handle,$to,$tpltxt,$tplvars);
 				if(!$resB)
 				{
