@@ -1049,9 +1049,9 @@ EOS;
 	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = msg;
   },
-  onConfirm: function(){
+  onConfirm: function(tg,\$d){
 	 set_tab();
-	 $('#{$id}real_action').val(this.name);
+	 $('#{$id}real_action').val(tg.name);
 	 return true;
   }
  });
@@ -1134,9 +1134,9 @@ EOS;
 	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = '{$t}';
   },
-  onConfirm: function(){
+  onConfirm: function(tg,\$d){
 	 set_tab();
-	 $('#{$id}real_action').val(this.name);
+	 $('#{$id}real_action').val(tg.name);
 	 return true;
   }
  });
@@ -1457,9 +1457,9 @@ EOS;
 	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
   },
-  onConfirm: function(){
+  onConfirm: function(tg,\$d){
 	 set_tab();
-	 $('#{$id}real_action').val(this.name);
+	 $('#{$id}real_action').val(tg.name);
 	 return true;
   }
  });
@@ -1478,9 +1478,9 @@ EOS;
 	 var para = \$d.children('p:first')[0];
 	 para.innerHTML = '{$mod->Lang('allsaved')}';
   },
-  onConfirm: function(){
+  onConfirm: function(tg,\$d){
 	 set_tab();
-	 $('#{$id}real_action').val(this.name);
+	 $('#{$id}real_action').val(tg.name);
 	 return true;
   }
  });
@@ -1819,8 +1819,8 @@ EOS;
 	 para.innerHTML = '{$mod->Lang('allabandon')}';
   },
   onCheckFail: true,
-  onConfirm: function(){
-	 $('#{$id}real_action').val(this.name);
+  onConfirm: function(tg,\$d){
+	 $('#{$id}real_action').val(tg.name);
 	 return true;
   }
  });
