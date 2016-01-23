@@ -196,7 +196,7 @@ if($bdata['contact'])
 			unset($ob);
 			//check for valid address for results
 			$funcs = new MessageSender(); //TODO does this auto-load for CMSMS 1.9? 
-			if($funcs->ValidateAddress($bdata['contact'],$bdata['smspattern']))
+			if($funcs->ValidateAddress($bdata['contact'],$bdata['smspattern'])) //any comforming address will do
 				$submit = $this->CreateInputSubmitDefault($id,'result',$this->Lang('submit2'));
 		}
 	}
