@@ -613,8 +613,8 @@ if ($padm)
 	else
 		$tplvars['hidden'] =  $this->CreateInputHidden($id,'tmt_export_encoding', $expchars);
 
-	$utils = new tmtUtils(); //TODO other uses
-
+/*
+	$utils = new tmtUtils();
 	$pw = $this->GetPreference('masterpass');
 	if($pw)
 		$pw = $utils->unfusc($pw);
@@ -629,6 +629,7 @@ if ($padm)
  });
 
 EOS;
+*/
 
 	$tplvars['misc'] = $misc;
 

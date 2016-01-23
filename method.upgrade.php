@@ -151,7 +151,7 @@ switch ($oldversion)
 	$sql = $dict->DropTableSQL($pref.'module_tmt_tweet');
 	$dict->ExecuteSQLArray($sql);
 
-	$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
+//	$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
 
 }
 

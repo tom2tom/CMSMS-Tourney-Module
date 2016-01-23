@@ -189,7 +189,7 @@ if ($format)
 else
 	$format = 'd F y';
 $this->SetPreference('date_format',$format);
-$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
+//$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
 
 $updir = $config['uploads_path'];
 if($updir && is_dir($updir))

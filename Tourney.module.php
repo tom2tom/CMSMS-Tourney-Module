@@ -53,7 +53,7 @@ class Tourney extends CMSModule
 	const NOWIN = 16;
 
 	public $before20;
-	public $havemcrypt;
+//	public $havemcrypt;
 
 	protected $PermAdminName = 'Modify TourneyModule Settings';
 	protected $PermModName = 'Modify Brackets';
@@ -66,7 +66,7 @@ class Tourney extends CMSModule
 		$this->RegisterModulePlugin(TRUE);
 		global $CMS_VERSION;
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
-		$this->havemcrypt = function_exists('mcrypt_encrypt');
+//		$this->havemcrypt = function_exists('mcrypt_encrypt');
 	}
 
 	function AllowAutoInstall()
