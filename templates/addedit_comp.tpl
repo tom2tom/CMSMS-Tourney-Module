@@ -112,7 +112,7 @@
  {/foreach}
  </tbody>
 </table><br />
-<p class="pageinput">{if isset($reset)}{$reset}&nbsp;{/if}{$altmview}{if !$plan}&nbsp;{$chart}&nbsp;{$list}&nbsp;{$print}{/if}&nbsp;{$notify}{if $canmod}&nbsp;{$abandon}&nbsp;{$update2}{/if}</p>
+<div>{if isset($reset)}{$reset}&nbsp;{/if}{$altmview}{if !$plan}&nbsp;{$chart}&nbsp;{$list}&nbsp;{$print}{/if}&nbsp;{$notify}{if $canmod}&nbsp;{$abandon}&nbsp;{$update2}{/if}</div>
 {if $plan}<div style="overflow:auto;"><br />{$image}</div>{/if}
 {else}
 <p>{$nomatches}
@@ -148,7 +148,7 @@
  {/foreach}
  </tbody>
 </table><br />
-<div>{$chart}&nbsp;{$list}&nbsp;{$altrview}&nbsp;{$changes}&nbsp;{$getscore}{if $canmod}&nbsp;{$update3}{/if}</div>
+<div>{$chart} {$list} {$altrview}{if $import2} {$import2}{/if} {$changes} {$getscore}{if $canmod} {$update3}{/if}</div>
 {else}
 <p>{$noresults}{if $ralldone}<br /><br />{$chart}&nbsp;{$list}&nbsp;{$altrview}&nbsp;{$changes}{/if}</p>
 {/if}

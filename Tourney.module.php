@@ -922,6 +922,7 @@ Europe/Vilnius'
 					$params['real_action'] = $task;
 					break;
 				 case 'import_team':
+				 case 'import_result':
 				 case 'schedule':
 				 case 'upload_css':
 				 case 'changelog':

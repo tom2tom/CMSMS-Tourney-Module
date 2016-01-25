@@ -1182,7 +1182,7 @@ EOS;
 		}
 		if($pmod && ($data->matches || !$this->any)) //not finished
 			$t = $mod->CreateInputSubmit($id,'import_team',$mod->Lang('import'),
-				'title="'.$mod->Lang('import_tip').'" onclick="set_params(this);"');
+				'title="'.$mod->Lang('importteam_tip').'" onclick="set_params(this);"');
 		else
 			$t = '';
 		$tplvars['import'] = $t;
@@ -1511,6 +1511,14 @@ EOS;
  });
 
 EOS;
+
+			if($pmod && ($data->matches || !$this->any)) //not finished
+				$t = $mod->CreateInputSubmit($id,'import_result',$mod->Lang('import'),
+					'title="'.$mod->Lang('importresult_tip').'" onclick="set_params(this);"');
+			else
+				$t = '';
+			$tplvars['import2'] = $t;
+
 			$tplvars['notify'] = $mod->CreateInputSubmit($id,'notify',$mod->Lang('notify'),
 				'title="'.$mod->Lang('notify_tip').'"'); //modal confirm for this
 			$tplvars['abandon'] = $mod->CreateInputSubmit($id,'abandon',$mod->Lang('abandon'),

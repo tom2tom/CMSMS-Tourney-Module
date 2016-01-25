@@ -93,7 +93,8 @@ $lang['upload']='Upload';
 $lang['update']='Update';
 //$lang['export_selected_records']='export selected records';
 $lang['export_tip']='export data for selected competitors to .csv file';
-$lang['import_tip']='import competitors data from selected .csv file';
+$lang['importteam_tip']='import competitors data from selected .csv file';
+$lang['importresult_tip']='import results data from selected .csv file';
 $lang['delete_tip']='delete selected competitors';
 $lang['upload_tip']='upload selected file to website host';
 $lang['update_tip']='save data for selected rows';
@@ -548,6 +549,35 @@ $lang['asked']='Requested';
 $lang['confirmed']='Confirmed';
 $lang['notified']='Notified';
 $lang['title_result']='Result';
+
+$lang['title_resultimport']='Import match-result data for tournament \'%s\' from CSV file';
+$lang['result_import_failed']='Result data import failed.';
+$lang['result_imported']='Result data imported successfully.';
+$lang['help_resultimport']=<<< EOS
+<h3>File Format Information</h3>
+<p>The input file must be in ASCII format with data fields separated by commas.
+Any actual comma in a field should be represented by '&amp;#44;'.
+Each line in the file (except the header line, discussed below) represents one match.</p>
+<h4>Header Line</h4>
+<p>The first line of the file names the fields in the file. They must be 
+'Bracket','Match','CompetitorA','CompetitorB','Result','Score', and 'Finished' (any order, no quotes, not translated).
+<h4>Other Lines</h4>
+<p>The data in each line must conform to the header columns, of course. Any line may be empty.</p>
+<p>The bracket-field must contain an adequate identifier - the relevant id-number, alias, or title.</p>
+<p>The match-field should contain the relevant id-number, or else if it's empty,
+an attempt will be made to identify the relevant match from the supplied competitor-names.</p>
+<p>The competitor-fields must identify the competitors, matching exactly the names displayed in bracket data.</p>
+<p>The result-field must identify which of the competitors (if any) prevailed, by 'win A', 'win B', 'draw', 'tie', or 'abandon' (no quotes, not translated)</p>
+<p>The finished-field may be a time (as HH:MM) in which case the day will be assumed to be the scheduled day.
+Otherwise a full datestamp (as YYYY-MM-DD HH:MM) may be provided. Or if empty, an approximate date/time will be determined.</p>
+<h3>Problems</h3>
+<p>The import process will fail if:<ul>
+<li>the field names are are not as expected</li>
+<li>there are fewer fields in any line of data than there are fieldnames in the header line</li>
+<li>the data in any field does not meet the conditions set out above</li>
+<li>the data-file size is bigger than 4096 bytes</li>
+</ul></p>
+EOS;
 
 //===========================
 
