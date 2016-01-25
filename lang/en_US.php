@@ -366,17 +366,13 @@ $lang['help_smsfrom']='This will be displayed if the SMS-provider allows. Includ
 $lang['title_smsprefix']='Country-prefix for phone numbers to receive SMS messages';
 $lang['help_smsprefix']='One to four numbers e.g. 1 for USA. <a href="http://countrycode.org">Search</a>. Include a leading \'+\' if the SMS gateway requires that.';
 
-$lang['title_twtfrom']='Tweets about the tournament sent from';
+$lang['title_twtfrom']='Tweets about the tournament posted by';
 //$lang['title_admin_eds']='Admin users group whose members can edit tournament results';
 $lang['title_feu_eds']='FEU group whose members can edit tournament results';
 $lang['help_owner']='The person responsible for the integrity of tournament data';
 $lang['help_editors']='Leave blank for no restriction';
 $lang['help_contact']='Phone or email or handle of responsible person';
-$lang['help_twt1']=<<<EOS
-Twitter account handle. If left blank, @CMSMSNotifier will be used.
-Anything else will require authorisation by the account owner, before first use.
-Module help has more details.
-EOS;
+$lang['help_twt1']='Twitter account handle. The default is @CMSMSNotifier, others may be authorised by the respective account owners.';
 $lang['help_twt5']='You can initiate or refresh authorisation by clicking the \'Visit\' button. <strong>Ensure all wanted data are saved</strong>, before departing.';
 
 $lang['title_atformat']='Format of displayed date & time';
