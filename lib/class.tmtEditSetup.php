@@ -195,9 +195,9 @@ function dropresponse(data,status) {
   var evenclass = 'row2';
   i = true;
   $('#tmt_players').trigger('update').find('tbody tr').each(function() {
-	name = i ? oddclass : evenclass;
-	\$(this).removeClass().addClass(name);
-	i = !i;
+   name = i ? oddclass : evenclass;
+   $(this).removeClass().addClass(name);
+   i = !i;
   });
  } else {
   $('#page_tabs').prepend('<p style="font-weight:bold;color:red;">{$mod->Lang('err_ajax')}!</p><br />');
@@ -219,10 +219,10 @@ function () {
   dataType: 'text',
   success: function (data,status) {
    if(status == 'success' && data) {
-     var i = 1;
-     $('#tmt_players').find('.ord').each(function(){
-	 \$(this).html(i++);
-	 });
+    var i = 1;
+    $('#tmt_players').find('.ord').each(function(){
+     $(this).html(i++);
+    });
    } else {
     $('#page_tabs').prepend('<p style="font-weight:bold;color:red;">{$mod->Lang('err_ajax')}!</p><br />');
    }
@@ -474,10 +474,28 @@ EOS;
 				($pmod) ?
 				$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16).' '.
 				$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
-					'title="'.$mod->Lang('title_auth').'" onclick="set_params(this);"'):
+					'title="'.$mod->Lang('title_auth').'"'):
 				$data->twtfrom,
 				$help
 			);
+
+			if($pmod)
+			{
+				$jsloads[] = <<< EOS
+ $('#{$id}connect').modalconfirm({
+  overlayID: 'confirm',
+  preShow: function(tg,\$d){
+   var para = \$d.children('p:first')[0];
+   para.innerHTML = '{$mod->Lang('allsaved')}';
+  },
+  onConfirm: function(tg,\$d){
+   set_params(tg);
+   return true;
+  }
+ });
+
+EOS;
+			}
 		}
 		if($sms)
 		{
@@ -992,41 +1010,41 @@ EOS;
 
 					$jsloads[] = <<< EOS
  $('#tmt_players').addClass('table_drag').tableDnD({
-	dragClass: 'row1hover',
-	onDrop: function(table, droprows) {
-		var odd = true;
-		var oddclass = 'row1';
-		var evenclass = 'row2';
-		var droprow = $(droprows)[0];
-		$(table).find('tbody tr').each(function() {
-			var name = odd ? oddclass : evenclass;
-			if (this === droprow) {
-				name = name+'hover';
-			}
-			$(this).removeClass().addClass(name);
-			odd = !odd;
-		});
-		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {
-			var ajaxdata = ajaxData(droprow,droprows.length);
-			if (ajaxdata) {
-				$.ajax({
-				 url: 'moduleinterface.php',
-				 type: 'POST',
-				 data: ajaxdata,
-				 dataType: 'text',
-				 success: dropresponse
-				});
-			}
-		}
-	 }
-  }).find('tbody tr').removeAttr('onmouseover').removeAttr('onmouseout').mouseover(function() {
-		var now = $(this).attr('class');
-		$(this).attr('class', now+'hover');
-  }).mouseout(function() {
-		var now = $(this).attr('class');
-		var to = now.indexOf('hover');
-		$(this).attr('class', now.substring(0,to));
-  });
+  dragClass: 'row1hover',
+  onDrop: function(table, droprows) {
+   var odd = true;
+   var oddclass = 'row1';
+   var evenclass = 'row2';
+   var droprow = $(droprows)[0];
+   $(table).find('tbody tr').each(function() {
+    var name = odd ? oddclass : evenclass;
+    if (this === droprow) {
+     name = name+'hover';
+    }
+    $(this).removeClass().addClass(name);
+    odd = !odd;
+   });
+   if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {
+    var ajaxdata = ajaxData(droprow,droprows.length);
+    if (ajaxdata) {
+     $.ajax({
+      url: 'moduleinterface.php',
+      type: 'POST',
+      data: ajaxdata,
+      dataType: 'text',
+      success: dropresponse
+     });
+    }
+   }
+  }
+ }).find('tbody tr').removeAttr('onmouseover').removeAttr('onmouseout').mouseover(function() {
+  var now = $(this).attr('class');
+  $(this).attr('class', now+'hover');
+ }).mouseout(function() {
+  var now = $(this).attr('class');
+  var to = now.indexOf('hover');
+  $(this).attr('class', now.substring(0,to));
+ });
  $('.updown').hide();
  $('.dndhelp').css('display','block');
 
@@ -1046,13 +1064,12 @@ EOS;
     } else {
      msg = '{$mod->Lang('confirm')}';
     }
-	 var para = \$d.children('p:first')[0];
-	 para.innerHTML = msg;
+   var para = \$d.children('p:first')[0];
+   para.innerHTML = msg;
   },
   onConfirm: function(tg,\$d){
-	 set_tab();
-	 $('#{$id}real_action').val(tg.name);
-	 return true;
+   set_params(tg);
+   return true;
   }
  });
 
@@ -1128,16 +1145,15 @@ EOS;
  $('#{$id}delteams').modalconfirm({
   overlayID: 'confirm',
   doCheck: function(){
-	 return (team_count() > 0);
+   return (team_count() > 0);
   },
   preShow: function(tg,\$d){
-	 var para = \$d.children('p:first')[0];
-	 para.innerHTML = '{$t}';
+   var para = \$d.children('p:first')[0];
+   para.innerHTML = '{$t}';
   },
   onConfirm: function(tg,\$d){
-	 set_tab();
-	 $('#{$id}real_action').val(tg.name);
-	 return true;
+   set_params(tg);
+   return true;
   }
  });
 
@@ -1454,13 +1470,12 @@ EOS;
  $('#{$id}reset').modalconfirm({
   overlayID: 'confirm',
   preShow: function(tg,\$d){
-	 var para = \$d.children('p:first')[0];
-	 para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
+   var para = \$d.children('p:first')[0];
+   para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
   },
   onConfirm: function(tg,\$d){
-	 set_tab();
-	 $('#{$id}real_action').val(tg.name);
-	 return true;
+   set_params(tg);
+   return true;
   }
  });
 
@@ -1472,16 +1487,15 @@ EOS;
  $('#{$id}notify,#{$id}abandon').modalconfirm({
   overlayID: 'confirm',
   doCheck: function(){
-	 return (match_count() > 0);
+   return (match_count() > 0);
   },
   preShow: function(tg,\$d){
-	 var para = \$d.children('p:first')[0];
-	 para.innerHTML = '{$mod->Lang('allsaved')}';
+   var para = \$d.children('p:first')[0];
+   para.innerHTML = '{$mod->Lang('allsaved')}';
   },
   onConfirm: function(tg,\$d){
-	 set_tab();
-	 $('#{$id}real_action').val(tg.name);
-	 return true;
+   set_params(tg);
+   return true;
   }
  });
 
@@ -1815,18 +1829,18 @@ EOS;
   overlayID: 'confirm',
   doCheck: {$test},
   preShow: function(tg,\$d){
-	 var para = \$d.children('p:first')[0];
-	 para.innerHTML = '{$mod->Lang('allabandon')}';
+   var para = \$d.children('p:first')[0];
+   para.innerHTML = '{$mod->Lang('allabandon')}';
   },
   onCheckFail: true,
   onConfirm: function(tg,\$d){
-	 $('#{$id}real_action').val(tg.name);
-	 return true;
+   set_action(tg);
+   return true;
   }
  });
 
 EOS;
-	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
 
 		//prevent immediate activation by textinput <Enter> press
 		$jsloads[] = <<< EOS
