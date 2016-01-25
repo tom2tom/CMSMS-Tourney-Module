@@ -469,13 +469,22 @@ EOS;
 			if($pmod)
 				$help .= ' '.$mod->Lang('help_twt5');
 
+			$options = array();
+			$handles = $ob->tweet->GetHandles();
+			foreach($handles as $one)
+					$options[$one] = $one;
+			//first one (the default) set to empty
+			reset($options);
+			$t = key($options);
+			$options[$t] = '';
+
 			$main[] = array(
 				$mod->Lang('title_twtfrom'),
 				($pmod) ?
-				$mod->CreateInputText($id,'tmt_twtfrom',$data->twtfrom,16).' '.
-				$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
+				$mod->CreateInputDropdown($id,'tmt_twtfrom',$options,-1,$data->twtfrom)
+				.' '.$mod->CreateInputSubmit($id,'connect',$mod->Lang('connect'),
 					'title="'.$mod->Lang('title_auth').'"'):
-				$data->twtfrom,
+				array_search($data->twtfrom,$options),
 				$help
 			);
 
@@ -499,20 +508,22 @@ EOS;
 		}
 		if($sms)
 		{
-			$main[] = array(
-				$mod->Lang('title_smsfrom'),
-				($pmod) ?
-				$mod->CreateInputText($id,'tmt_smsfrom',$data->smsfrom,16):
-				$data->smsfrom,
-				$mod->Lang('help_smsfrom')
-			);
-			$main[] = array(
-				$mod->Lang('title_smsprefix'),
-				($pmod) ?
-				$mod->CreateInputText($id,'tmt_smsprefix',$data->smsprefix,4):
-				$data->smsprefix,
-				$mod->Lang('help_smsprefix')
-			);
+			if($ob->text->gateway->support_custom_sender())
+				$main[] = array(
+					$mod->Lang('title_smsfrom'),
+					($pmod) ?
+					$mod->CreateInputText($id,'tmt_smsfrom',$data->smsfrom,16):
+					$data->smsfrom,
+					$mod->Lang('help_smsfrom')
+				);
+			if($ob->text->gateway->require_country_prefix())
+				$main[] = array(
+					$mod->Lang('title_smsprefix'),
+					($pmod) ?
+					$mod->CreateInputText($id,'tmt_smsprefix',$data->smsprefix,4):
+					$data->smsprefix,
+					$mod->Lang('help_smsprefix')
+				);
 		}
 		$ob = cms_utils::get_module('FrontEndUsers');
 		if($ob)
