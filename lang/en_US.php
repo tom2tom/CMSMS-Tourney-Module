@@ -591,7 +591,8 @@ $lang['save']='Submit';
 $lang['saved']='Saved';
 
 //any ' in these prompts must be double-escaped for js inclusion
-$lang['allsaved']='Are all matches\\\' data saved ?';
+$lang['allsaved']='Is everything saved that needs to be ?';
+//$lang['allmatchsaved']='Are all matches\\\' data saved ?';
 $lang['allabandon']='Abandon changes ?';
 
 $lang['title_auth']='Authorise tournament-related tweets from a specific twitter account';
