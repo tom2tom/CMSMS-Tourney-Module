@@ -31,14 +31,11 @@ if (!function_exists('GetSplitLine'))
  }
 }
 
+if (!$this->CheckAccess('admod'))
+	exit ($this->Lang('lackpermission'));
+
 if (isset($params['cancel']))
 	$this->Redirect($id, 'addedit_comp', $returnid, $this->GetEditParms($params,'playerstab'));
-
-if (!$this->CheckAccess('admod'))
-{
-	$newparms = $this->GetEditParms($params,'playerstab',$this->PrettyMessage('lackpermission',FALSE));
-	$this->Redirect($id, 'addedit_comp', $returnid, $newparms);
-}
 
 $fn = $id.'csvfile';
 if (isset($_FILES) && isset($_FILES[$fn]))
