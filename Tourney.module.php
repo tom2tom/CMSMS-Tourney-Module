@@ -283,7 +283,6 @@ EOS;
 		$this->CreateParameter('alias','',$this->Lang('params_tmt_alias'),FALSE);
 		$this->CreateParameter('view','chart',$this->Lang('params_view_type'));
 		$this->CreateParameter('cssfile','',$this->Lang('params_chart_css'));
-		$this->CreateParameter('tweetauth','',$this->Lang('params_tweet_auth'));
 	}
 
 	function GetActiveTab(&$params)
