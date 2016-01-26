@@ -133,7 +133,7 @@ switch ($oldversion)
  case '0.2':
  case '0.2.1':
  case '0.2.2':
- 	$fp = cms_join_path(dirname(__FILE__),'action.twtauth.php');
+ 	$fp = cms_join_path(dirname(__FILE__),'lib','class.Calendar.php');
  	if(is_file($fp))
 		unlink($fp);
  	$fp = cms_join_path(dirname(__FILE__),'lib','OAuth.php');
@@ -146,6 +146,9 @@ switch ($oldversion)
  	if(is_file($fp))
 		unlink($fp);
  	$fp = cms_join_path(dirname(__FILE__),'templates','tweet_auth.tpl');
+ 	if(is_file($fp))
+		unlink($fp);
+ 	$fp = cms_join_path(dirname(__FILE__),'action.twtauth.php');
  	if(is_file($fp))
 		unlink($fp);
 
