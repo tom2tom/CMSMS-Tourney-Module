@@ -95,7 +95,8 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 	}
 
 	$pref = cms_db_prefix();
-	$sql = 'SELECT bracket_id,type FROM '.$pref.'module_tmt_brackets WHERE bracket_id=? OR alias=? OR name=?';
+	$sql = 'SELECT bracket_id,type,timezone,playgap,playgaptype FROM '.$pref.
+		'module_tmt_brackets WHERE bracket_id=? OR alias=? OR name=?';
 
 	$brackets = array();
 	$fails = array();
@@ -305,45 +306,116 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 		unset($matches);
 	}
 
+	$msg = '';
 	if($parked)
 	{
-		$sql = 'SELECT teamA,teamM,playwhen FROM '.$pref.'module_tmt_matches WHERE match_id=?';
-		$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET teamA=?,teamB=?,playwhen=?score=?,status=? WHERE match_id=?';
-		$sql3 = 'INSERT INTO '.$pref.'module_tmt_matches () VALUES ()';
+		//faster lookups
+		$looks = array();
+		foreach($brackets as $row)
+			$looks[$row['bracket_id']] = $row;
+		$funcs = new tmtSchedule();
+		$added = 0;
+		$sql = 'SELECT teamA,teamB,playwhen FROM '.$pref.'module_tmt_matches WHERE match_id=?';
+		$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET teamA=?,teamB=?,playwhen=?,score=?,status=? WHERE match_id=?';
+		$sql3 = 'INSERT INTO '.$pref.'module_tmt_matches (match_id,bracket_id,teamA,teamB,playwhen,status) VALUES (?,?,?,?,?,?)';
+
 		foreach($parked as $bid=>$matches)
 		{
+			$tz = new DateTimeZone($looks[$bid]['timezone']);
 			$mids = array();
 			foreach($matches as $i=>$mdata)
 				$mids[$i] = $mdata[$namecols[1]];
+			//assist match-succession
 			array_multisort($mids,SORT_ASC,SORT_NUMERIC,$matches);
 			foreach($matches as $mdata)
 			{
-				$row = $db->GetRow($sql,array($mdata[$namecols[1]]));
+				$mid = $mdata[$namecols[1]];
+				$ta = $mdata[$namecols[2]];
+				$tb = $mdata[$namecols[3]];
+				$row = $db->GetRow($sql,array($mid));
 				if($row)
 				{
-$this->Crash1();
-					$ta = $TODO; //which one of $mdata[$namecols[2]] or $mdata[$namecols[3]]
-					$tb = $TODO; //other one
-					$ended = $TODO; //absolute time from $mdata[$namecols[6]] or that rel to $row['playwhen'] or ...?
-					$stat = $TODO; //$mdata[$namecols[4]] or maybe flipped
-					$db->Execute($sql2,array($ta,$tb,$ended,$mdata[$namecols[5]],$stat,$mdata[$namecols[1]]));
+					if(($row['teamA'] == 0 && $row['teamB'] == $ta) || $row['teamA'] == $tb)
+					{
+						$t = $ta;
+						$ta = $tb;
+						$tb = $ta;
+						switch($mdata[$namecols[4]])
+						{
+						 case Tourney::WONA:
+							$stat = Tourney::WONB;
+							break;
+						 case Tourney::WONB:
+							$stat = Tourney::WONB;
+							break;
+						 case Tourney::FORFA:
+							$stat = Tourney::FORFB;
+						 case Tourney::FORFB:
+							$stat = Tourney::FORFA;
+						 default:
+							$stat = $mdata[$namecols[4]];
+						}
+					}
+					else
+						$stat = $mdata[$namecols[4]];
+
+					$dt = new DateTime('1900-1-1',$tz);
+					if($mdata[$namecols[6]])
+					{
+						$tok = strtok($mdata[$namecols[6]],'-/\\: ');
+						if(is_numeric($tok) && $tok > 1900)
+							$dt->modify($mdata[$namecols[6]]);
+						elseif($row['playwhen'])
+						{
+							$dt->modify($row['playwhen']);
+							$dt->setTime(0,0,0);
+							$t = explode(':',$mdata[$namecols[6]]);
+							$as = $t[0]*3600;
+							if(!empty($t[1]))
+								$as += $t[1]*60;
+							$dt->modify('+'.$as.' seconds');
+						}
+						else
+							$dt->modify('now');
+					}
+					elseif($row['playwhen'])
+					{
+						$t = $funcs->GapSeconds($looks[$bid]['playgaptype'],$looks[$bid]['playgap']);
+						$dt->modify($row['playhen']);
+						$dt->modify('+'.$t.'seconds');
+					}
+					else
+						$dt = new DateTime('now',$tz);
+					$ended = $dt->format('Y-m-d H:i').':00';
+					$db->Execute($sql2,array($ta,$tb,$ended,$mdata[$namecols[5]],$stat,$mid));
 				}
 				else
 				{
-//TODO insert data for un-scheduled match
-$this->Crash2();
-					$db->Execute($sql3,array());
+					//un-scheduled match ?! should never happen
+					$dt = new DateTime('now',$tz);
+					$ended = $dt->format('Y-m-d H:i').':00';
+					$db->Execute($sql3,array($mid,$bid,$ta,$tb,$ended,$stat));
+				//TODO update value in module_tmt_matches_seq if needed
 				}
-//TODO setup successor matches competitors
+				//setup successor matches c.f. action.save_comp::case 'matches'
+				$funcs->ConformNewResults($bid,$looks[$bid]['type'],$mid,$stat);
 			}
+			$added += count($mids);
 		}
+		$msg .= $this->Lang('imports_done',$added);
 	}
 
 	if($fails)
 	{
-//TODO warn
+		$mids = array();
+		foreach($fails  as $mdata)
+			$mids[] = $mdata[$namecols[1]];
+		if($msg)
+			$msg .= '<br />';
+		$nums = implode(',',$mids);
+		$msg .= $this->Lang('imports_skipped',count($fails),$nums);
 	}
-	$newparms = $this->GetEditParms($params,'resultstab');
+	$newparms = $this->GetEditParms($params,'resultstab',$msg);
 	$this->Redirect($id, 'addedit_comp', $returnid, $newparms);
 }
 
