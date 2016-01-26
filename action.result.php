@@ -249,10 +249,10 @@ if ($mdata)
 		'matches' => $matches,
 		'titleresult' => $this->Lang('title_result'),
 		'titlescore' => $this->Lang('score'),
-		'title_when' => $this->Lang('title_when'),
-		'title_sender' => $this->Lang('title_sender'),
+		'titlewhen' => $this->Lang('title_when'),
+		'titlesender' => $this->Lang('title_sender'),
 		'inputsender' => $this->CreateInputText($id,'sender','',15,30),
-		'title_comment' => $this->Lang('title_comment'),
+		'titlecomment' => $this->Lang('title_comment'),
 		'inputcomment' => $this->CreateTextArea(FALSE,$id,'','comment','shortarea','','','',50,5)
 	);
 	$ob = cms_utils::get_module('Captcha');
@@ -260,7 +260,7 @@ if ($mdata)
 	{
 		$tplvars += array(
 			'captcha' => $ob->getCaptcha(),
-			'title_captcha' => $this->Lang('title_captcha'),
+			'titlecaptcha' => $this->Lang('title_captcha'),
 			'inputcaptcha' => $this->CreateInputText($id,'captcha','',5,10)
 		);
 	}
