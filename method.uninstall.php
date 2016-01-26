@@ -74,8 +74,12 @@ $sql = $dict->DropTableSQL($pref.'module_tmt_matches');
 $dict->ExecuteSQLArray($sql);
 $sql = $dict->DropTableSQL($pref.'module_tmt_groups');
 $dict->ExecuteSQLArray($sql);
+//tweet-table is redundant, but keep these for a while ...
 $sql = $dict->DropIndexSQL('idx_tweetid', $pref.'module_tmt_tweet');
 $dict->ExecuteSQLArray($sql);
+$sql = $dict->DropTableSQL($pref.'module_tmt_tweet');
+$dict->ExecuteSQLArray($sql);
+
 $sql = $dict->DropTableSQL($pref.'module_tmt_history');
 $dict->ExecuteSQLArray($sql);
 
