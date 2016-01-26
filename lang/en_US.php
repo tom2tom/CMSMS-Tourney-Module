@@ -56,7 +56,7 @@ $lang['cancelled_email']='Your match that was to start at %s has been cancelled'
 $lang['changes']='Changelog';
 $lang['changes_tip']='show log of changes to match results';
 $lang['chart']='Chart';
-//in the following, text between >> and << is converted into a link, do not translate that sequence
+//in the following, text between >> and << is converted into a link, do NOT omit those brackets
 $lang['chart_noshow']='This browser can\'t display the tournament chart. You can get the chart from >>here<<, and review it using some other application.';
 $lang['chooseone']='Choose one';
 $lang['clone']='Clone';
@@ -125,7 +125,7 @@ $lang['err_template']='Display-template error';
 $lang['err_text']='Invalid SMS content';
 $lang['err_token']='failed to save token';
 $lang['err_upgrade']='Module upgrade aborted, error when attempting to %s';
-$lang['err_value']='Invalid parameter value'; 
+$lang['err_value']='Invalid parameter value';
 $lang['export']='Export';
 $lang['export_tip']='export data for selected competitors to .csv file';
 $lang['exportsel_tip']='export selected tournaments';
@@ -190,6 +190,8 @@ $lang['history']='History';
 $lang['history_tip']='show completed matches';
 
 $lang['import']='Import';
+$lang['imports_done']='%d result(s) imported';
+$lang['imports_skipped']='%d result(s) (%s) ignored';
 $lang['importresult_tip']='import results data from selected .csv file';
 $lang['importteam_tip']='import competitors data from selected .csv file';
 $lang['inactive']='inactive';
@@ -252,7 +254,6 @@ $lang['organisers']='the organisers';
 
 $lang['params_chart_css']='Name of uploaded .css file with chart-styling details.';
 $lang['params_tmt_alias']='Tournament alias.';
-$lang['params_tweet_auth']='Show only a twitter-account authorisation button.';
 $lang['params_view_type']='Tournament display type: \'chart\' or \'list\'.';
 $lang['perm_admin']='Modify Tournament-module Settings';
 $lang['perm_mod']='Modify Tournament Brackets';
@@ -293,7 +294,7 @@ $lang['sel_players']='selected players'; //inclusion in typed delete-confirm str
 $lang['sel_teams']='selected teams'; //inclusion in typed delete-confirm string
 $lang['select_one']='Select One';
 $lang['sentok']='Messages successfully sent';
-//shortform daynames - must be Sunday first, comma-separated, no whitespace 
+//shortform daynames - must be Sunday first, comma-separated, no whitespace
 $lang['shortdays']='Sun,Mon,Tue,Wed,Thu,Fri,Sat';
 //shortform monthnames - must be January first, comma-separated, no whitespace
 $lang['shortmonths']='Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec';
@@ -526,7 +527,7 @@ Any P or T can be<br />
 &#8226; a single value<br />
 &#8226; a bracket-enclosed and comma-separated sequence of values (in any order)<br />
 &#8226; a '..' separated range of sequential values<br />
-For dates, month and day, or just day, are optional. Times are 24-hour, minutes are optional, 
+For dates, month and day, or just day, are optional. Times are 24-hour, minutes are optional,
 the minute-separator must be ':'. In some contexts, expressing a time like H:00 may
 be needed to discriminate between hours-of-day and days-of-month. Non-ranged times
 each represent one hour. Other numeric values may be < 0, meaning count backwards.<br />
@@ -560,7 +561,7 @@ $lang['help_resultimport']=<<< EOS
 Any actual comma in a field should be represented by '&amp;#44;'.
 Each line in the file (except the header line, discussed below) represents one match.</p>
 <h4>Header Line</h4>
-<p>The first line of the file names the fields in the file. They must be 
+<p>The first line of the file names the fields in the file. They must be
 'Bracket','Match','CompetitorA','CompetitorB','Result','Score', and 'Finished' (any order, no quotes, not translated).
 <h4>Other Lines</h4>
 <p>The data in each line must conform to the header columns, of course. Any line may be empty.</p>
