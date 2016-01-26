@@ -148,6 +148,9 @@ switch ($oldversion)
  	$fp = cms_join_path(dirname(__FILE__),'templates','tweet_auth.tpl');
  	if(is_file($fp))
 		unlink($fp);
+
+	$sql = $dict->DropIndexSQL('idx_tweetid', $pref.'module_tmt_tweet');
+	$dict->ExecuteSQLArray($sql);
 	$sql = $dict->DropTableSQL($pref.'module_tmt_tweet');
 	$dict->ExecuteSQLArray($sql);
 

@@ -44,8 +44,6 @@ class tmtDelete
 			if ($file)
 				unlink($file);
 
-			$sql = 'DELETE FROM '.$pref.'module_tmt_tweet WHERE bracket_id=?';
-			$db->Execute($sql,array($bid));
 			$sql = 'DELETE FROM '.$pref.'module_tmt_people WHERE id IN
 			 (SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=?)';
 			$db->Execute($sql,array($bid));

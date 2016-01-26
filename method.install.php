@@ -125,21 +125,6 @@ $sql = 'INSERT INTO '.$pref.'module_tmt_groups (group_id,name,displayorder) VALU
 $db->Execute($sql,array($this->Lang('groupdefault')));
 
 $flds = "
-	bracket_id I NOTNULL DEFAULT 0,
-	handle C(24),
-	pubtoken C(64),
-	privtoken C(80)
-";
-$sql = $dict->CreateTableSQL($pref.'module_tmt_tweet', $flds, $taboptarray);
-$dict->ExecuteSQLArray($sql);
-//no sequence for this table (multiple-0's allowed)
-$sql = $dict->CreateIndexSQL('idx_tweetid', $pref.'module_tmt_tweet', 'bracket_id');
-$dict->ExecuteSQLArray($sql);
-//table always needs content
-$sql = 'INSERT INTO'.$pref.'module_tmt_tweet (bracket_id,handle) VALUES (0,\'firstrow\')';
-$db->Execute($sql);
-
-$flds = "
 	history_id I KEY,
 	bracket_id I,
 	changer C(128),
