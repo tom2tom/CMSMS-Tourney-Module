@@ -131,7 +131,7 @@ if (!empty($params['send']))
 						$when = $mdata['playwhen']; //default to scheduled start time
 						$finished = $this->Lang('missing');
 					}
-					$body[] = $this->Lang('titlewhen').' '.$finished;
+					$body[] = $this->Lang('title_when').' '.$finished;
 					$body[] = '';
 				}
 				if ($params['comment'])
@@ -200,7 +200,7 @@ if ($bdata['description'])
 	$desc = $bdata['description'].'<br /><br />';
 else
 	$desc = '';
-$desc .= $this->Lang('titlescored');
+$desc .= $this->Lang('title_scored');
 $tplvars['description'] = $desc;
 
 //script accumulators
@@ -249,10 +249,10 @@ if ($mdata)
 		'matches' => $matches,
 		'titleresult' => $this->Lang('title_result'),
 		'titlescore' => $this->Lang('score'),
-		'titlewhen' => $this->Lang('titlewhen'),
-		'titlesender' => $this->Lang('titlesender'),
+		'title_when' => $this->Lang('title_when'),
+		'title_sender' => $this->Lang('title_sender'),
 		'inputsender' => $this->CreateInputText($id,'sender','',15,30),
-		'titlecomment' => $this->Lang('titlecomment'),
+		'title_comment' => $this->Lang('title_comment'),
 		'inputcomment' => $this->CreateTextArea(FALSE,$id,'','comment','shortarea','','','',50,5)
 	);
 	$ob = cms_utils::get_module('Captcha');
@@ -260,7 +260,7 @@ if ($mdata)
 	{
 		$tplvars += array(
 			'captcha' => $ob->getCaptcha(),
-			'titlecaptcha' => $this->Lang('titlecaptcha'),
+			'title_captcha' => $this->Lang('title_captcha'),
 			'inputcaptcha' => $this->CreateInputText($id,'captcha','',5,10)
 		);
 	}

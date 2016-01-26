@@ -536,7 +536,7 @@ EOS;
 				$mod->Lang('title_feu_eds'),
 				($pmod) ?
 				$mod->CreateInputDropdown($id,'tmt_feu_editgroup',array(
-					$mod->Lang('no_groups')=>'none',
+					$mod->Lang('no_feuedit')=>'none',
 					$mod->Lang('all_groups')=>'any')+$grpnames,'',$data->feu_editgroup) : $data->feu_editgroup,
 				$mod->Lang('help_login')
 			);
