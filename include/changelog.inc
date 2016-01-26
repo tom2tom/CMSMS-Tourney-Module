@@ -8,7 +8,6 @@
   <li>Grouping of brackets for contemporary resource,player management</li>
   <li>Work with SMSG module if available, for notification by SMS</li>
   <li>Work with FrontEndUsers module if available, for unmediated recording of match results</li>
-  <li>Auto-scheduling of matches still TODO</li>
  </ul>
 </li>
 <li>Version 0.2.2 - 20 April 2015
@@ -19,8 +18,10 @@
 <li>Version 0.3 - 2 February 2016
  <ul>
   <li>Support CMSMS 2+</li>
-  <li>Include templates in im/exported bracket data</li>
+  <li>Support bulk-import of match results in .csv file</li>
+  <li>Include templates in [im|ex]ported bracket data</li>
   <li>Use Notifier module for messages</li>
+  <li>Auto-scheduling of matches still TODO</li>
  </ul>
 </li>
 </ul>
