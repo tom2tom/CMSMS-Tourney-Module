@@ -440,7 +440,7 @@ EOS;
 			$mod->Lang('help_owner')
 		);
 		$main[] = array(
-			$mod->Lang('title_contact'),
+			$mod->Lang('title_contact2'),
 			($pmod) ?
 			$mod->CreateInputText($id,'tmt_contact',$data->contact,50) : $data->contact,
 			$mod->Lang('help_contact')
@@ -1323,6 +1323,7 @@ EOS;
 					$one->teamB = $mod->TeamName($mdata['teamB']);
 				}
 
+				//TODO add tip(s) about checking availability, if relevant
 				if($pmod)
 				{
 					$tmp = $mod->CreateInputText($id,'mat_playwhen[]',$mdata['playwhen'],20,48);
