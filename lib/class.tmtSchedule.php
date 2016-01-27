@@ -337,13 +337,44 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 	}
 
 	/**
+	GroupTeams:
+	Identify teams equivalent to @teamA or @teamB in grouped brackets
+	@mod: reference to module object
+	@bdata: reference to array of parameters for the 'target' bracket
+	@teamA: team identifier
+	@teamB: ditto
+	Returns: array with at least @teamA and @teamB
+	*/
+	private function GroupTeams(&$mod,&$bdata,$teamA,$teamB)
+	{
+		if($bdata['groupid'] == 0) //ungrouped
+			return array($teamA,$teamB);
+		$sigA = $mod->TeamName($teamA); //'signature' for matching TODO may rely on team-members recorded in same order
+		$sigB = $mod->TeamName($teamB);
+		$allteams = array();
+		$db = cmsms()->GetDb();
+		$pref = cms_db_prefix();
+		$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id IN (
+SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
+)';
+		$data = $db->GetCol($sql,array($bdata['groupid']));
+		foreach($data as $tid)
+		{
+			$tid = (int)$tid;
+			$sig = $mod->TeamName($tid);
+			if($sig == $sigA || $sig == $sigB)
+				$allteams[] = $tid;
+		}
+		return $allteams;
+	}
+	
+	/**
 	ScheduleMatches:
 	@mod: reference to module object
 	@bracket_id: the bracket identifier
 	Setup dates/times for matches whose participants are known.
 	The matches table is updated accordingly.
-	Returns: FALSE upon error or nothing to process or
-	 no startdate or timezone for the bracket
+	Returns: FALSE upon error or nothing to process or no startdate or timezone for the bracket
 	*/
 	function ScheduleMatches(&$mod,$bracket_id)
 	{
@@ -370,7 +401,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$at = self::GetNextSlot($cal,$bdata,$stamp,FALSE); //find 1st slot
 		if($at == FALSE)
 			return FALSE;
-		
+
 		//matches in DESC order so next foreach overwrites newer ones in $allteams array
 		//CHECKME also get SOFT matches before now?
 		$sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'.
@@ -380,16 +411,21 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			return FALSE;
 		$tz = new DateTimeZone($bdata['timezone']);
 		$playorder = array();
-		$allteams = array(); 
-		$sql1 = 'SELECT MAX(playwhen) AS last FROM '.$pref.'module_tmt_matches WHERE (teamA=? OR teamA=?) AND flags=0';
-		$sql2 = 'SELECT MAX(playwhen) AS last FROM '.$pref.'module_tmt_matches WHERE (teamB=? OR teamB=?) AND flags=0';
+		$allteams = array();
+		//CHECKME does MAX() work for date-time values?
+		$sql = 'SELECT MAX(playwhen) AS latest FROM '.$pref.'module_tmt_matches WHERE %s IN (%s) AND flags=0';
 		foreach($mdata as $mid=>$mteams)
 		{
-			$t = $db->GetOne($sql1,array($mteams['teamA'],$mteams['teamB']));
+			$allteams = self::GroupTeams($mod,$bdata,$mteams['teamA'],$mteams['teamB']);
+			$tdata = implode(',',$allteams);
+			$sql1 = sprintf($sql,'teamA',$tdata);
+			$t = $db->GetOne($sql1);
 			$dt = ($t != null) ? new DateTime($t,$tz) : $sdt;
 			$playorder[$mteams['teamA']] = $dt->getTimestamp();
 			$allteams[$mteams['teamA']] = $mid;
-			$t = $db->GetOne($sql2,array($mteams['teamA'],$mteams['teamB']));
+
+			$sql1 = sprintf($sql,'teamB',$tdata);
+			$t = $db->GetOne($sql1);
 			$dt = ($t != null) ? new DateTime($t,$tz) : $sdt;
 			$playorder[$mteams['teamB']] = $dt->getTimestamp();
 			$allteams[$mteams['teamB']] = $mid;
@@ -407,6 +443,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?,status=? WHERE match_id=?';
 		foreach($playorder as $tid=>$last)
 		{
+//TODO support player-availability 'SELECT available FROM '.$pref'.'module_tmt_people WHERE ...'
 			if($last <= $threshold)
 			{
 				$mid = $allteams[$tid];
