@@ -90,23 +90,16 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 		}
 		if($namecols)
 		{
-			$mo = max($namecols);
-			if ($mo > 0)
-			{
-				if (($num-$mo-1)%2) //want even no. of player-fields
-					$bad = TRUE;
-			}
-			else //$mo == 0
-			{
-				if($num%2 == 0)
-					$bad = TRUE;
-			}
+			$mo = count($namecols); //also: index of 1st player-field after last optional field
+			if(($num-$mo) % 3)
+				$bad = TRUE;
 		}
 		else
 		{
-			$mo = -1;
-			if($num%2 == 1)
+			if($num % 3)
 				$bad = TRUE;
+			else
+				$mo = 0; //index of 1st player-field
 		}
 	}
 	if ($bad)
@@ -115,14 +108,27 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 		$this->Redirect($id, 'addedit_comp', $returnid, $newparms);
 	}
 
-	$mo++; //after last optional field, now index of 1st player-field
-
 	$pref = cms_db_prefix();
 	$sql = 'SELECT MAX(displayorder) FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2';
 	$teamorder = intval($db->GetOne($sql,array($params['bracket_id']))) + 1;
 	//store imported data with added-flags set
-	$sql = 'INSERT INTO '.$pref.'module_tmt_teams VALUES (?,?,?,?,?,?,1)';
-	$sql2 = 'INSERT INTO '.$pref.'module_tmt_people VALUES (?,?,?,?,1)';
+	$sql = 'INSERT INTO '.$pref.'module_tmt_teams (
+team_id,
+bracket_id,
+name,
+seeding,
+contactall,
+displayorder,
+flags
+) VALUES (?,?,?,?,?,?,1)';
+	$sql2 = 'INSERT INTO '.$pref.'module_tmt_people (
+id,
+name,
+contact,
+available,
+displayorder,
+flags
+) VALUES (?,?,?,?,?,1)';
 	$added = array();
 	while(!feof($handle))
 	{
@@ -149,13 +155,15 @@ if (isset($_FILES) && isset($_FILES[$fn]))
 			if ($num > $mo)
 			{
 				$order = 1;
-				for ($i=$mo; $i<$num; $i+=2)
+				for ($i=$mo; $i<$num; $i+=3)
 				{
-					$name = ($imports[$i]) ? $imports[$i] : null;
-					$contact = ($imports[$i+1]) ? $imports[$i+1] : null;
+					$name = trim($imports[$i]);
+					$contact = trim($imports[$i+1]);
 					if ($name || $contact)
 					{
-						$args = array($addid,$name,$contact,$order);
+						$avail = trim($imports[$i+2]);
+						if(!$avail) $avail = null;
+						$args = array($addid,$name,$contact,$avail,$order);
 						$db->Execute($sql2,$args);
 						$order++;
 					}

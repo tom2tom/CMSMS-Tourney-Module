@@ -85,6 +85,7 @@ $flds = "
 	id I,
 	name C(64),
 	contact C(80),
+	available C(128),
 	displayorder I(1),
 	flags I(1) DEFAULT 0
 ";

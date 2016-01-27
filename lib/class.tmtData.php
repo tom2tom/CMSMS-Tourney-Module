@@ -698,7 +698,14 @@ class tmtData
 			else
 			{
 				$rs->Close();
-				$sql = 'INSERT INTO '.$pref.'module_tmt_people VALUES (?,null,null,1,0)';
+				$sql = 'INSERT INTO '.$pref.'module_tmt_people (
+id,
+name,
+contact,
+available,
+displayorder,
+flags
+) VALUES (?,null,null,null,1,0)';
 				$db->Execute($sql,array($tid));
 				$flags = 1; //added-flag set instead
 				$displayorder = 1;

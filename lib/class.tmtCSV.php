@@ -46,7 +46,7 @@ class tmtCSV
 			if($count > 1)
 				$ret[] = '#Tellall';
 			for($i = 1; $i <= $count; $i++)
-				array_push($ret,'Player'.$i,'Contact'.$i);
+				array_push($ret,'Player'.$i,'Contact'.$i,'Available'.$i);
 			return $ret;
 		}
 		return array();
@@ -129,7 +129,7 @@ class tmtCSV
 
 		$sql = 'SELECT name,seeding,contactall FROM '.$pref.'module_tmt_teams WHERE team_id=?';
 		if($members === FALSE)
-			$sql2 = 'SELECT	name,contact FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
+			$sql2 = 'SELECT name,contact,available FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
 		//data line(s)
 		foreach($vals as $thisval)
 		{
@@ -150,7 +150,8 @@ class tmtCSV
 			//doesn't matter if no of recorded people != expected teamsize
 			foreach($members as $pers)
 				$outstr .= $sep.str_replace($sep,$r,trim($pers['name']))
-				.$sep.str_replace($sep,$r,trim($pers['contact']));
+				.$sep.str_replace($sep,$r,trim($pers['contact']))
+				.$sep.str_replace($sep,$r,trim($pers['available']));
 			$outstr .= PHP_EOL;
 			if($fp)
 			{

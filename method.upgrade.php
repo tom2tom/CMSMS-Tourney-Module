@@ -157,6 +157,12 @@ switch ($oldversion)
 	$sql = $dict->DropTableSQL($pref.'module_tmt_tweet');
 	$dict->ExecuteSQLArray($sql);
 
+	$flds = "
+available C(128)
+";
+	$sql = $dict->AddColumnSQL($pref.'module_tmt_people',$flds);
+	$dict->ExecuteSQLArray($sql,FALSE);
+
 //	$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
 
 }

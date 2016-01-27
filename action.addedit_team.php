@@ -47,6 +47,7 @@ if(!function_exists('OrderTeamData'))
 			$k = $before-1;
 		$rows[$indx]['name']=$params['plr_name'][$k];
 		$rows[$indx]['contact']=$params['plr_contact'][$k];
+		$rows[$indx]['available']=$params['plr_available'][$k];
 		$indx++;
 	}
 	return $rows;
@@ -64,7 +65,7 @@ if(!$this->CheckAccess('admod'))
 {
 	$newparms = $this->GetEditParms($params,'playerstab');
 	if(!isset($params['cancel']))
-		$newparms['tmt_message'] = $this->PrettyMessage('lackpermission',FALSE);
+		$newparms['tmt_message'] = $this->PrettyMessage('lackpermission',false);
 	$this->Redirect($id,'addedit_comp',$returnid,$newparms);
 }
 
@@ -78,23 +79,27 @@ if(isset($params['submit']))
 	 	$tid = (int)$params['team_id'];
 	$teamflags = 0;
 	$saver = 1;
- 	$sql = 'UPDATE '.$pref.'module_tmt_people SET name=?,contact=?,displayorder=?,flags=? WHERE id=? AND displayorder=? AND flags!=2';
+ 	$sql = 'UPDATE '.$pref.'module_tmt_people SET name=?,contact=?,available=?,displayorder=?,flags=? WHERE id=? AND displayorder=? AND flags!=2';
 	foreach($params['plr_order'] as $indx=>$order)
 	{
-		$name = $params['plr_name'][$indx] ? trim($params['plr_name'][$indx]):NULL;
-		$contact = $params['plr_contact'][$indx] ? trim($params['plr_contact'][$indx]):NULL;
+		$name = trim($params['plr_name'][$indx]);
+		if(!$name) $name = null;
+		$contact = trim($params['plr_contact'][$indx]);
+		if(!$contact) $contact = null;
+		$avail = trim($params['plr_available'][$indx]);
+		if(!$avail) $avail = null;
 		$flags = (int)$params['plr_flags'][$indx];
 		if($flags)
 			$teamflags = 3; //any non-0 member-flag signals team has been altered
 		//1st set new orders < 0 to prevent overwrites
-		$db->Execute($sql,array($name,$contact,-$saver,$flags,$tid,$params['plr_order'][$indx]));
+		$db->Execute($sql,array($name,$contact,$avail,-$saver,$flags,$tid,$params['plr_order'][$indx]));
 		$saver++;
 	}
 	//now we can set real orders
  	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=-displayorder WHERE id=? AND displayorder<0';
 	$db->Execute($sql,array($tid));
-	$name = !empty($params['tem_name'])?trim($params['tem_name']):NULL;
-	$seed = ($params['tem_seed'])?(int)$params['tem_seed']:NULL;
+	$name = !empty($params['tem_name'])?trim($params['tem_name']):null;
+	$seed = ($params['tem_seed'])?(int)$params['tem_seed']:null;
 	$tell = $params['tem_tellall']?1:0;
 	$order = $params['tem_order']?(int)$params['tem_order']:1000; //blank goes last
  	if(!empty($params['newteam_id']))
@@ -309,19 +314,28 @@ $tplvars['showtip'] = $iconinfo;
 //table column-headings
 $tplvars['nametext'] = $this->Lang('title_player');
 $tplvars['contacttext'] = $this->Lang('title_contact');
+$tplvars['availtext'] = $this->Lang('title_avail');
 if($pmod)
 	$tplvars['movetext'] = $this->Lang('title_move');
 
 switch($op)
 {
  case 1://no players yet in a newly-added team
-	$sql = 'INSERT INTO '.$pref.'module_tmt_people VALUES (?,null,null,1,1)';//new-member flag
+	$sql = 'INSERT INTO '.$pref.'module_tmt_people (
+id,
+name,
+contact,
+available,
+displayorder,
+flags
+) VALUES (?,null,null,null,1,1)';//new-member flag
 	$db->Execute($sql,array($newtid));
 	$rows = array();
 	$rows[] = array(
 	 'id'=>$newtid,
 	 'name'=>'',
 	 'contact'=>'',
+	 'available'=>'',
 	 'displayorder'=>1,
 	 'flags'=>1
 	);
@@ -336,6 +350,7 @@ switch($op)
 		 'id'=>$thistid,
 		 'name'=>'',
 		 'contact'=>'',
+		 'available'=>'',
 		 'displayorder'=>1,
 		 'flags'=>1
 		);
@@ -352,6 +367,7 @@ switch($op)
 			 'id'=>$thistid,
 			 'name'=>$params['plr_name'][$indx],
 			 'contact'=>$params['plr_contact'][$indx],
+			 'available'=>$params['plr_available'][$indx],
 			 'displayorder'=>$order,
 			 'flags'=>$params['plr_flags'][$indx]
 			);
@@ -361,12 +377,20 @@ switch($op)
 	else
 		$next = 1;
 
-	$sql = 'INSERT INTO '.$pref.'module_tmt_people VALUES (?,null,null,?,1)';//new-member flag
+	$sql = 'INSERT INTO '.$pref.'module_tmt_people (
+id,
+name,
+contact,
+available,
+displayorder,
+flags
+) VALUES (?,null,null,null,?,1)';//new-member flag
 	$db->Execute($sql,array($thistid,$next));
 	$rows[] = array(
 	 'id'=>$thistid,
 	 'name'=>'',
 	 'contact'=>'',
+	 'available'=>'',
 	 'displayorder'=>$next,
 	 'flags'=>1
 	);
@@ -387,6 +411,7 @@ switch($op)
 		{
 			$rows[$indx]['name'] = $params['plr_name'][$key];
 			$rows[$indx]['contact'] = $params['plr_contact'][$key];
+			$rows[$indx]['available'] = $params['plr_available'][$key];
 			$rows[$indx]['displayorder'] = $order;
 			$rows[$indx]['flags'] = $params['plr_flags'][$key];
 			$indx++;
@@ -458,6 +483,7 @@ switch($op)
 		{
 			$rows[$indx]['name'] = $params['plr_name'][$key];
 			$rows[$indx]['contact'] = $params['plr_contact'][$key];
+			$rows[$indx]['available'] = $params['plr_available'][$key];
 			$indx++;
 		}
 	}
@@ -471,7 +497,8 @@ switch($op)
 		$indx = array_search($id,$params['plr_order']);
 		$rows[] = array(
 		 'name'=>$params['plr_name'][$indx],
-		 'contact'=>$params['plr_contact'][$indx]);
+		 'contact'=>$params['plr_contact'][$indx],
+		 'available'=>$params['plr_available'][$indx]);
 	}
 	$funcs = new tmtCSV();
 	$funcs->TeamsToCSV($this,$bracket_id,$thistid,$rows);
@@ -509,9 +536,10 @@ if($rows)
 		$one->rowclass = $rowclass;
 		if($pmod)
 		{
-			$tmp = $this->CreateInputText($id,'plr_name[]',$row['name'],25,64);
+			$tmp = $this->CreateInputText($id,'plr_name[]',$row['name'],20,64);
 			$one->input_name = preg_replace($finds,$repls,$tmp);
-			$one->input_contact = $this->CreateInputText($id,'plr_contact[]',$row['contact'],30,80);
+			$one->input_contact = $this->CreateInputText($id,'plr_contact[]',$row['contact'],25,80);
+			$one->input_available = $this->CreateInputText($id,'plr_available[]',$row['available'],35,128);
 			$ord = ($row['displayorder']) ? (int)$row['displayorder'] : $newo++;
 			//need input-objects that look like page-links here, to get all form parameters upon their activation
 			if($indx > 1)
@@ -534,6 +562,7 @@ if($rows)
 		{
 			$one->input_name = $row['name'];
 			$one->input_contact = $row['contact'];
+			$one->input_available = ($row['available']) ? $row['available'] : $this->Lang('unrestricted');
 		}
 		$one->selected = $this->CreateInputCheckbox($id,'psel[]',$row['displayorder'],-1);
 		$players[] = $one;
@@ -572,6 +601,7 @@ else
 	$pc = 0;
 
 $tplvars['pc'] = $pc;
+$tplvars['availhelp'] = $this->Lang('or_fmt',$this->Lang('help_editors'),'<br />'.$this->Lang('help_available'));
 
 if($pc > 1)
 {

@@ -118,7 +118,14 @@ class tmtClone
 					}
 					unset($modteam);
 					$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2';
-					$sql2 = 'INSERT INTO '.$pref.'module_tmt_people VALUES (?,?,?,?,?)';
+					$sql2 = 'INSERT INTO '.$pref.'module_tmt_people (
+id,
+name,
+contact,
+available,
+displayorder,
+flags
+) VALUES (?,?,?,?,?,?)';
 					foreach($swaps as &$modteam)
 					{
 						$people = $db->GetAll($sql,array($modteam[0]));
