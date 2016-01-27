@@ -1,5 +1,5 @@
 .dndhelp { display:none; } /* changed at runtime if js is available */
-img.tipper { display:none; } /* ditto */
+img.tipper { margin-left:10px; display:none; } /* ditto */
 .leftward {margin-left:0 !important }
 fieldset.settings { padding:0 5px; max-width:50em; }
 fieldset.settings legend { padding:0 5px; }
