@@ -337,6 +337,7 @@ $lang['title_against']='Text for separating opponents';
 $lang['title_alias']='Alias name';
 $lang['title_atformat']='Format of displayed date & time';
 $lang['title_auth']='Authorise tournament-related tweets from a specific twitter account';
+$lang['title_avail']='Available';
 $lang['title_available']='Match scheduling conditions';
 $lang['title_bracket_double']='Double Elimination Tournament';
 $lang['title_bracket_round']='Round-Robin Tournament';
@@ -350,8 +351,8 @@ $lang['title_changer']='Changer';
 $lang['title_changewhen']='When';
 $lang['title_chttemplate']='Front-end chart display template';
 $lang['title_comment']='Comment';
-$lang['title_contact']='Contact details for responsible person';
 $lang['title_contact']='Contact details';
+$lang['title_contact2']='Contact details for responsible person';
 $lang['title_cssfile']='File containing style-parameters';
 $lang['title_cssfile2']='File containing style-parameters for %s tournament';
 $lang['title_date_format']='Date format';
@@ -437,6 +438,7 @@ $lang['tournament']='Tournament';
 $lang['tpl_mailresult']='Please send the match result to %s'; //email %s replaced by template code
 $lang['tpl_tweetresult']='Send result to %s'; //tweet/SMS %s replaced by template code
 
+$lang['unrestricted']='No restriction';
 $lang['up']='Move up';
 $lang['update']='Update';
 $lang['update_tip']='save data for selected rows';
@@ -497,13 +499,16 @@ $lang['event_help_OnTourneyMatchChange']='<p>Event triggered before a match reco
 </ul>';
 */
 
-$lang['help_logic']='Javascript/jquery to be executed before submitting a match result.<br />
-This code is embedded in a js function, and must return false if validation fails';
-$lang['help_locale']='
-A "locale" is an identifier which can be used to get language-specific terms. Examples are "en_US" and "cs_CZ.UTF-8" and "zh_Hant_TW".
+$lang['help_logic']=<<<EOS
+Javascript/jquery to be executed before submitting a match result.<br />
+This code is embedded in a js function, and must return false if validation fails.
+EOS;
+$lang['help_locale']=<<<EOS
+A 'locale' is an identifier which can be used to get language-specific terms.
+Examples are 'en_US' and 'cs_CZ.UTF-8' and 'zh_Hant_TW'.
 Refer to <a href="https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html">this reference</a> for more details.
-Blank means use default.';
-
+Blank means use default.
+EOS;
 $lang['help_seednum']=<<< EOS
 Optional number, 1 .. whatever or -1 .. -whatever.
 When determining first-match opponents, competitors assigned a seed < 0
@@ -590,18 +595,19 @@ Each line in the file (except the header line, discussed below) represents one t
 <h4>Header Line</h4>
 <p>The first line of the file names the fields in the file. First, there may be up to three
 optional fields, named '#Teamname' and/or '#Seeded' and/or '#Tellall' (no quotes, any order).
-Further fieldnames, if they exist, can have any names but must be in pairs - the first of each
-to hold a player name, the second to hold contact information for that player.
-There may be any number of such pairs. For example:<br />
+Further fieldnames, if they exist, can have any names but must be in trio's -
+the first of each to hold a player name, the second to hold contact information for that player,
+the third may either hold an availabilty descriptor for that player, or be empty if there is no constraint.
+There may be any number of such trios. For example:<br />
 <code>#Seeded,Player,Contact</code> or<br />
-<code>#Seeded,#Teamname,#Tellall,Captain,Contact1,Player2,Contact2</code></p>
+<code>#Seeded,#Teamname,#Tellall,Captain,Contact1,Avail1,Player2,Contact2,Avail2</code></p>
 <h4>Other Lines</h4>
 <p>The data in each line must conform to the header columns, of course. Any field, or entire line, may be empty.
 The tellall field will be treated as TRUE if it contains something other than '0' or 'no' or 'NO' (no quotes, untranslated).</p>
 <h3>Problems</h3>
 <p>The import process will fail if:<ul>
 <li>the first one, two or three '#'-prefixed field names are are not as expected</li>
-<li>the number of player-specific fields is an odd number</li>
+<li>the number of player-specific fields is not a multiple of 3</li>
 <li>there are fewer fields in any line of data than there are fieldnames in the header line</li>
 </ul></p>
 <h3>You Decide What to Keep</h3>
