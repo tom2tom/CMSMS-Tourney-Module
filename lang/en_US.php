@@ -536,6 +536,8 @@ For dates, month and day, or just day, are optional. Times are 24-hour, minutes 
 the minute-separator must be ':'. In some contexts, expressing a time like H:00 may
 be needed to discriminate between hours-of-day and days-of-month. Non-ranged times
 each represent one hour. Other numeric values may be < 0, meaning count backwards.<br />
+Any P may be prefaced by 'not' or 'except' to specify a period to be excluded from
+the period(s) otherwise covered by other period-descriptors.<br />
 Examples:<br />
 &#8226; 2000 or 2000..2005 or 2000-6 or 2000-10..2001-3 or 2000-9-1 or 2000-10-1..2000-12-31<br />
 &#8226; January or November..December<br />
