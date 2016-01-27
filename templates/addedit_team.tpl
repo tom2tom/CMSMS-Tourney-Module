@@ -24,7 +24,7 @@
 		<td>{$entry->input_contact}</td>
 		<td>{$entry->input_available}</td>
 {if $canmod}{if $pc > 1}<td class="updown">{$entry->downlink}{$entry->uplink}</td>{/if}
-		<td class="plr_delete">{$entry->deletelink}</td>{/if}
+{if $pc > 1}	<td class="plr_delete">{$entry->deletelink}{else}<td>{/if}</td>{/if}
 		<td class="checkbox">{$entry->selected}{$entry->hidden}</td>
 	  </tr>
  {/foreach}
