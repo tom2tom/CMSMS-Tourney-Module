@@ -1,7 +1,7 @@
 <?php
 /*
 This file is a class for CMS Made Simple (TM).
-Copyright(C) 2014-2016 Tom Phane <tpgww@onepost.net>
+Copyright (C) 2014-2016 Tom Phane <tpgww@onepost.net>
 
 This file is free software; you can redistribute it and/or modify it under
 the terms of the GNU Affero General Public License as published by the
@@ -89,12 +89,16 @@ Week descriptors
  week(s)-of-named-month: 2(week(March)) or or 1..3(week(July,August))
    or (-2,-1)(week(April..July))
 Day descriptors
+ day(s)-of-specific-month(s): 1(June) or -2(June..August) or (15,18,-1)(January,July)
+	 or 2(Wednesday(June)) OR (1,-1)(Saturday(June..August))
  day(s)-of-any-month: 1 or -2 or (15,18,-1) or 1..10 or 2..-1 or -3..-1 or
     1(Sunday) or -1(Wednesday..Friday) or 1..3(Friday,Saturday)
  day(s)-of-specific-week(s): Sunday(2(week)) or
    (Saturday,Wednesday)(-3..-1(week(July))) or
-   Monday..Friday((-2,-1)(week(April..July)))
+   Monday..Friday((-2,-1)(week(April..July))) or
  day(s)-of-any-week: Monday or (Monday,Wednesday,Friday) or Wednesday..Friday
+ 
+ 
  specific day(s): 2000-9-1 or 2000-10-1..2000-12-31
 Time descriptors
  9 or 2:30 or (9,12,15:15) or 12..23 or 6..15:30 or sunrise..16 or 9..sunset-3:30
@@ -122,6 +126,7 @@ class IntervalParser
 		 9 day(s) of specific year(s) Wed((1,-1)(week(June(2015..2018))))
 		10 day(s) of specific week(s)  Wed(2(week))
  OR 10 day(s) of specific month(s) 1(Aug) OR Wed((1,2)(week(June)))
+ OR 10 day(s) of specific month(s) 2(Wed(June)) OR (1,-1)(Sat(June..August))
 		11 specfic day/date(s) 2010-6-6 OR 1(Aug(2015..2020))
 	'P' => FALSE or PERIOD = structure of arrays and strings representing
 		period-values and/or period-value-ranges (i.e. not series), all ordered by
