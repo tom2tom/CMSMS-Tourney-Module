@@ -13,8 +13,6 @@ WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details. If you don't have a copy
 of that license, read it online at: www.gnu.org/licenses/licenses.html#AGPL
-
-Class: IntervalParser
 */
 /**
 Interval Language
@@ -40,7 +38,7 @@ PERIOD and/or TIME may be
  December..February).
 
 Ordinary numeric sequences and ranges are supported, and for such ranges, Y must
-be greater than X, and X and/or Y may be negative.
+be greater than X, and X, or X and Y, may be negative.
 
 Any value, bracketed-sequence or range may itelf be bracketed and preceded by a
 qualifier, being a single value, or scope-expander of any of the above types.
@@ -59,8 +57,12 @@ TODO Any period-descriptor may be prefaced by (translated, TODO any case) 'not'
 or 'except' to specify a period to be excluded from the days otherwise covered
 by other period-descriptors.
 
-TODO Any period-descriptor may be prefaced by (translated, TODO any case) 'each'
-or 'every' N, to represent fixed-interval repetition such as 'every 2nd Wednesday'
+TODO Any period-descriptor may be qualifed by (translated, TODO any case) 'each'
+or 'every' N, to represent fixed-interval repetition such as 'every 2nd Wednesday'.
+And in turn must qualify (PS..PE) where PS and PE are period-descriptors repsectively
+representing the 1st of the repeats, and the maximum for the last of the repeats
+(which may actually be before PE if that's how the repetition turns out)
+e.g. 'each 2(Wednesday(2000-1..2000-3-15))'
 
 A value which is a time is expected to be formatted as [h]h[:[m]m] i.e. 24-hour
 format, leading '0' optional, minutes optional but if present, the separator is
@@ -97,8 +99,6 @@ Day descriptors
    (Saturday,Wednesday)(-3..-1(week(July))) or
    Monday..Friday((-2,-1)(week(April..July))) or
  day(s)-of-any-week: Monday or (Monday,Wednesday,Friday) or Wednesday..Friday
- 
- 
  specific day(s): 2000-9-1 or 2000-10-1..2000-12-31
 Time descriptors
  9 or 2:30 or (9,12,15:15) or 12..23 or 6..15:30 or sunrise..16 or 9..sunset-3:30
@@ -107,6 +107,8 @@ Time descriptors
 class IntervalParser
 {
 	protected $mod; //reference to current module-object
+	protected $pi = NULL;	//PeriodInterpreter class object, populated on demand
+	protected $ti = NULL;	//TimeInterpreter class object, populated on demand
 	/*
 	$conds will be array of parsed descriptors, or FALSE
 
@@ -120,13 +122,13 @@ class IntervalParser
 		 4 day(s) of any week Sun..Wed
  OR  4 day(s) of any month 1,10,-2
 		 5 specific year(s) 2020,2015
-		 6 month(s) of specific year(s) Jan(2010..2020) OR 2015-1
-		 7 week(s) of specific year(s) 1(week(Aug..Dec(2020)))
-		 8 week(s) of specific month(s) 1(week(August,September))
+		 6 month(s) of specific year(s) Jan(2010..2020) OR 2015-1 OR each 3 month(2000-1..2002-12)
+		 7 week(s) of specific year(s) 1(week(Aug..Dec(2020))) OR each 4 week(2000..2001)
+		 8 week(s) of specific month(s) 1(week(August,September)) OR each 2 week(2000-1..2000-12)
 		 9 day(s) of specific year(s) Wed((1,-1)(week(June(2015..2018))))
-		10 day(s) of specific week(s)  Wed(2(week))
- OR 10 day(s) of specific month(s) 1(Aug) OR Wed((1,2)(week(June)))
- OR 10 day(s) of specific month(s) 2(Wed(June)) OR (1,-1)(Sat(June..August))
+		10 day(s) of specific week(s)  Wed(2(week)) OR (Wed..Fri)(each 2(week))
+ OR 10 day(s) of specific month(s) 1(Aug) OR Wed((1,2)(week(June))) OR each 2 day(2000-1..2000-2)
+ 			OR 2(Wed(June)) OR (1,-1)(Sat(June..August))
 		11 specfic day/date(s) 2010-6-6 OR 1(Aug(2015..2020))
 	'P' => FALSE or PERIOD = structure of arrays and strings representing
 		period-values and/or period-value-ranges (i.e. not series), all ordered by
@@ -140,6 +142,13 @@ class IntervalParser
 		converted to midnight-relative seconds, and any overlaps 'coalesced'.
 		Sun-related values must of course be interpreted for each specific day
 		evaluated.
+	'S' => resource-local date which is the earliest for (currently) interpreted data in ['A']
+	'E' => resource-local date which is the latest for (currently) interpreted data in ['A']
+	'A' => array of arrays, each with a pair of members:
+		[0] = 4-digit year, maybe with -ve sign indicating this is data for a
+			'except/not' interval
+		[1] = array of 0-based day-of-year indices for the year in [0] and within
+			the bounds of ['S'] to ['E'] inclusive
 
 	Descriptor-string parsing works LTR. Maybe sometime RTL languages will also
 	be supported ?!
