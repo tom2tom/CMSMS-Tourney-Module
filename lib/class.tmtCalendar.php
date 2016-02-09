@@ -15,68 +15,6 @@ class tmtCalendar extends IntervalParser
 		parent::__construct($mod);
 	}
 
-	//No checks here for valid parameters - assumed done before
-	//$start is bracket-local timestamp
-	private function _GetSunData(&$bdata,$start)
-	{
-		$daystamp = floor($start/84600)*84600; //midnight
-		$lat = $bdata['latitude']; //maybe 0.0
-		$long = $bdata['longitude']; //ditto
-		$zone = $bdata['timezone'];
-		if(!$zone)
-			$zone = $this->mod->GetPreference('time_zone','Europe/London'); //TODO valid pref?
-
-		return array (
-		 'day'=>$daystamp,
-		 'lat'=>$lat,
-		 'long'=>$long,
-		 'zone'=>$zone
-		);
-	}
-
-	//Get no. in {0.0..24.0} representing the actual or notional slot-length
-	//to assist interpretation of ambiguous hour-of-day or day-of-month values
-	private function _GetSlotHours(&$bdata)
-	{
-		if($bdata['placegap'])
-		{
-			switch($bdata['placegaptype'])
-			{
-				case 1: //minute
-					return MIN($bdata['placegap']/60,24.0);
-				case 2: //hour
-					return MIN((float)$bdata['placegap'],24.0);
-				case 3: //>= day
-				case 4:
-				case 5:
-				case 6:
-					return 24.0;
-				default:
-					break;
-			}
-		}
-		//TODO if $bdata['startdate'] to $bdata['enddate'] short/< N days 
-		// assume nominated values are hours, return appropriate value
-		return 0.0;
-	}
-
-	private function _timecheck(&$times,$sameday)
-	{
-		foreach($times as &$range)
-		{
-			//TODO interpet any sun-related times
-			$s = ($sameday) ? MAX($range[0],$tstart) : $range[0];
-			//TODO support roll-over to contiguous day(s) & time(s)
-			if($range[1] >= $s+$length)
-			{
-				unset($range);
-				return $s;
-			}
-		}
-		unset($range);
-		return FALSE;
-	}
-
 	/**
 	MonthNames:
 
@@ -192,8 +130,8 @@ class tmtCalendar extends IntervalParser
 		if($this->conds == FALSE)
 			return FALSE;
 /*
-		$sunstuff = self::_GetSunData($bdata,$start);
-		$maxhours = self::_GetSlotHours($bdata);
+		$sunstuff = TimeInterpreter::GetSunData($bdata,$start);
+		$maxhours = TimeInterpreter::GetIntervalHours($bdata);
 		$dstart = floor($start/86400);
 		$dend = $dstart + $laterdays;
 		$tstart = $start - $dstart;
@@ -226,19 +164,28 @@ class tmtCalendar extends IntervalParser
 		if($this->conds == FALSE)
 			return FALSE;
 /*
-		$sunstuff = self::_GetSunData($bdata,$start);
-		$maxhours = self::_GetSlotHours($bdata);
-		$dstart = floor($start/86400);
-		$dend = $dstart + $laterdays;
-		$tstart = $start - $dstart;
+		TODO use bdata['sametime'] & grouped-resources actually-unused during each
+		candidate slot
+
+		$sunstuff = TimeInterpreter::GetSunData($bdata,$start);
+		$maxhours = TimeInterpreter::GetIntervalHours($bdata);
+
+		$tz = new DateTimeZone($bdata['timezone']);
+		$dt = new DateTime('@'.$start,$tz); //NB PHP ignores $tz
+		$dt->setTimezone($tz); //so we fix it
+		$dt->setTime(0,0,0);
+		$dstart = day of $dt
+		$dend = $dstart + $laterdays + 1;
+
 		foreach($this->conds as &$cond)
+		$tstart = $start - $dstart;
 		{
-			$times = $cond[2];
+			$times = $cond['T']; //???
 			if(!$times)
-				$times = array(0=>array(0,86399)); //whole day's worth of seconds
-			if($cond[1] == FALSE) //time(s) on any day
+				$times = array(0=>array(0,86399)); //whole day's worth of seconds TODO DST allowance
+			if($cond['P'] == FALSE) //using time(s) on any day
 			{
-				$X = self::_timecheck($times,TRUE);
+				$X = TimeInterpreter::timecheck($times,TRUE);
 				if($X !== FALSE)
 				{
 					uset($cond);
@@ -246,7 +193,7 @@ class tmtCalendar extends IntervalParser
 				}
 				if($laterdays > 0)
 				{
-					$X = self::_timecheck($times,FALSE);
+					$X = TimeInterpreter::timecheck($times,FALSE);
 					if($X !== FALSE)
 					{
 						uset($cond);
@@ -261,7 +208,7 @@ class tmtCalendar extends IntervalParser
 				    get day-index
 						if IN $dstart to $dend inclusive
 							$sameday = (day-index == $dstart);
-							$X = self::_timecheck($times,$sameday);
+							$X = TimeInterpreter::timecheck($times,$sameday);
 							if($X !== FALSE)
 							{
 								uset($cond);
