@@ -14,10 +14,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details. If you don't have a copy
 of that license, read it online at: www.gnu.org/licenses/licenses.html#AGPL
 */
-class DateInterpreter
+class PeriodInterpreter
 {
 	/* *
 	MonthWeekDays:
+	Get array of each instance of a specific weekday @dow in a specific month
 	@year: numeric year e.g. 2000
 	@month: numeric month 1..12 in @year
 	@dmax: 1-based index of last day in @month
@@ -44,45 +45,8 @@ class DateInterpreter
 	}
 
 	/* *
-	MonthDay:
-	@year: numeric year e.g. 2000
-	@month: numeric month 1..12 in @year
-	@dmax: 1-based index of last day in @month
-	@count: index of wanted day-of-month -5..-1,1..5
-	@dow: index of wanted day-of-week, 0 (for Sunday) .. 6 (for Saturday) c.f. date('w'...)
-	Returns: integer, a day-of-year in @year, or -1 upon error
-	*/
-	private function MonthDay($year,$month,$dmax,$count,$dow)
-	{
-		//first day in $year/$month as: 0 = Sunday .. 6 = Saturday
-		$st = gmmktime(0,0,1,$month,1,$year);
-		$firstdow = (int)date('w',$st);
-		//offset to 1st instance of the wanted day
-		$d = $dow - $firstdow;
-		if($d < 0)
-			$d += 7;
-		if($count < 0)
-		{
-			$cmax = (int)(($dmax - $d)/7); //no. of wanted days in the month
-			$count += 1 + $cmax;
-			if($count < 0 || $count > $cmax)
-				return -1;
-		}
-		if($count > 0)
-		{
-			$d += ($count -1) * 7;
-			if($d >= $dmax)
-				return -1;
-		}
-		else
-			return -1;
-		//first day in $year/$month as day-of-year
-		$base = (int)date('z',$st);
-		return $d + $base;
-	}
-
-	/* *
 	WeeksDays:
+	Get array of each instance of a specific weekday @dow in specified week(s) in a specific month
 	@year: numeric year e.g. 2000
 	@month: numeric month 1..12 in @year
 	@week: array if numeric week(s) -5..-1,1..5 in @year AND @month
@@ -121,6 +85,129 @@ class DateInterpreter
 	}
 
 	/* *
+	MonthDay:
+	Get 'counted' instance of a specific weekday @dow in a specific month
+	@year: numeric year e.g. 2000
+	@month: numeric month 1..12 in @year
+	@dmax: 1-based index of last day in @month
+	@count: index of wanted day-of-month -5..-1,1..5
+	@dow: index of wanted day-of-week, 0 (for Sunday) .. 6 (for Saturday) c.f. date('w'...)
+	Returns: integer, a day-of-year in @year, or -1 upon error
+	*/
+	private function MonthDay($year,$month,$dmax,$count,$dow)
+	{
+		//first day in $year/$month as: 0 = Sunday .. 6 = Saturday
+		$st = gmmktime(0,0,1,$month,1,$year);
+		$firstdow = (int)date('w',$st);
+		//offset to 1st instance of the wanted day
+		$d = $dow - $firstdow;
+		if($d < 0)
+			$d += 7;
+		if($count < 0)
+		{
+			$cmax = (int)(($dmax - $d)/7); //no. of wanted days in the month
+			$count += 1 + $cmax;
+			if($count < 0 || $count > $cmax)
+				return -1;
+		}
+		if($count > 0)
+		{
+			$d += ($count -1) * 7;
+			if($d >= $dmax)
+				return -1;
+		}
+		else
+			return -1;
+		//first day in $year/$month as day-of-year
+		$base = (int)date('z',$st);
+		return $d + $base;
+	}
+
+	/* *
+	SuccessiveDays:
+	Get each n'th-day in a specified range
+	@interval: integer no. of days between successive reportst, >= 1
+	@styear: numeric year e.g. 2000
+	@stmonth: numeric month 1..12 in @styear
+	@stday: identfier in @styear/@stmonth e.g. 1,-1,1D1,-2D6 TODO support e.g. D4(2(W))
+	@ndyear: numeric year e.g. 2000 or FALSE to use @styear
+	@ndmonth: numeric month 1..12 in @ndyear or FALSE to use @stmonth
+	@ndday: identfier in @ndyear/@ndmonth e.g. 1,-1,1D1,-2D6 TODO support e.g. D4(2(W)) or FALSE to use last day-of-month
+	Returns: array, or FALSE upon error. Each array member is array with 2 members:
+	 [0] the year (a validated, 4-digit integer)
+	 [1] array of integers, each a 0-based day-of-year in the year
+	*/
+	private function SuccessiveDays($interval,$styear,$stmonth,$stday,$ndyear=FALSE,$ndmonth=FALSE,$ndday=FALSE)
+	{
+		if($ndyear == FALSE)
+			$ndyear = $styear;
+		if($ndmonth == FALSE)
+			$ndmonth = $stmonth;
+		if($stday < 0)
+		{
+			$st = gmmktime(0,0,0,$stmonth,1,$styear);
+			$stday += 1 + date('t',$st);
+		}
+		elseif(($p = strpos($stday,'D')) !== FALSE)
+		{
+			//TODO support e.g. D4(2(W))
+			$st = gmmktime(0,0,0,$stmonth,1,$styear);
+			$dmax = date('t',$st);
+			$c = ($p > 0) ? (int)substr($stday,0,$p) : 1;
+			if($c == 0) $c = 1;
+			$dow = (int)substr($stday,$p+1) - 1; //D1 >> 0 etc
+			$t2 = self::MonthDay($styear,$stmonth,$dmax,$c,$dow);
+			$stday = ($t2 >= 0) ? $t2 : 1; //default to start
+		}
+		if($ndday == FALSE)
+		{
+			$st = gmmktime(0,0,0,$ndmonth,1,$ndyear); //days in month
+			$ndday = (int)date('t',$st);
+		}
+		elseif($ndday < 0)
+		{
+			$st = gmmktime(0,0,0,$ndmonth,1,$ndyear);
+			$ndday  += 1 + date('t',$st);
+		}
+		elseif(($p = strpos($ndday,'D')) !== FALSE)
+		{
+			//TODO support e.g. D4(2(W))
+			$st = gmmktime(0,0,0,$ndmonth,1,$ndyear);
+			$dmax = (int)date('t',$st);
+			$c = ($p > 0) ? (int)substr($ndday,0,$p) : 1;
+			if($c == 0) $c = 1;
+			$dow = (int)substr($ndday,$p+1) - 1; //D1 >> 0 etc
+			$t2 = self::MonthDay($ndyear,$ndmonth,$dmax,$c,$dow);
+			$ndday = ($t2 >= 0) ? $t2 : $dmax; //default to end
+		}
+		//DateTime::diff, DateInterval need PHP 5.3+ ATM we allow 5.2
+		$st = gmmktime(0,0,0,$stmonth,$stday,$styear);
+		$stdt = new DateTime('@'.$st); //zone irrelevant
+		$st = gmmktime(0,0,0,$ndmonth,$ndday,$ndyear);
+		$nddt = new DateTime('@'.$st);
+		$diff = ($interval == 1) ? '+1 day':'+'.$interval.' days';
+		$yn = FALSE;
+		$doy = FALSE;
+		$ret = array();
+		while($stdt <= $nddt)
+		{
+			$yt = (int)$stdt->format('Y');
+			if($yt != $yn)
+			{
+				if($doy)
+					$ret[] = array($yn,$doy);
+				$yn = $yt;
+				$doy = array();
+			}
+			$doy[] = (int)$stdt->format('z');
+			$stdt->modify($diff);
+		}
+		if($doy)
+			$ret[] = array($yn,$doy);
+		return $ret;
+	}
+
+	/* *
 	YearDays:
 	@year: year or array of them or ','-separated series of them
 	  Each year is 4-digit e.g. 2000 or 2-digit e.g. 00 or anything else that
@@ -134,9 +221,9 @@ class DateInterpreter
 	@day: optional tokenised day(s) identifier, string or array, default FALSE
 		String may be ','-separated series. Tokens numeric -31..-1,1..31 or with 'D' prefix i.e. D1..D7
 		FALSE means all days in @week (if any) AND @month AND @year
-	Returns: array of 2-member arrays, or FALSE upon error. In each member,
-	 1st array member is the year (a validated, 4-digit integer),
-	 2nd member is array of integers, each a 0-based day-of-year index in the year.
+	Returns: array, or FALSE upon error. Each array member is array with 2 members:
+	 [0] the year (a validated, 4-digit integer)
+	 [1] array of integers, each a 0-based day-of-year in the year
 	*/
 	private function YearDays($year,$month=FALSE,$week=FALSE,$day=FALSE)
 	{
@@ -379,10 +466,13 @@ class DateInterpreter
 	}
 
 	/*
-	This is used for testing only
-	$dformat may include many (not all) character(s) understood by PHP date()
-	If it includes 'z', the corresponding element of $dvalue must be 1-based
-	$dvalue date-time string consistent with $dformat
+	isodate_from_format:
+	Convert @dvalue to ISO format i.e. like Y-M-d H:i:s
+s	For testing, at least
+	@dformat: string which includes one or more of many (not all) format-characters
+	 understood by PHP date(). If it includes 'z', the corresponding element of
+	 @dvalue must be 1-based
+	@dvalue: date-time string consistent with @dformat
 	*/
 	private function isodate_from_format($dformat,$dvalue)
 	{
@@ -399,25 +489,35 @@ class DateInterpreter
 			$parts['tm_sec']);
 	}
 	/*
-	YearDays($year,$month=FALSE,$week=FALSE,$day=FALSE)
-	@year: year or array of them or ','-separated series of them
-	  Each year is 4-digit e.g. 2000 or 2-digit e.g. 00 or anything else that
-	  can be validly processed via date('Y')
-	@month: optional tokenised month(s) identifier, string or array, default FALSE
-		String may be ','-separated series. Tokens numeric 1..12 or with 'M' prefix i.e. M1..M12
-		FALSE means all months in @year
-	@week: optional tokenised weeks(s) identifier, string or array, default FALSE
-		String may be ','-separated series. Tokens numeric -5..-1,1..5 or with 'W' prefix i.e. W-5..W-1,W1..W5
-		FALSE means all DAYS in @month AND @year
-	@day: optional tokenised day(s) identifier, string or array, default FALSE
-		String may be ','-separated series. Tokens numeric -31..-1,1..31 or with 'D' prefix i.e. D1..D7
-		FALSE means all days in @week (if any) AND @month AND @year
+	args as as for YearDays($year,$month=FALSE,$week=FALSE,$day=FALSE)
 	*/
 	function tester($year,$month,$week,$day)
 	{
 		$ret = array();
-		$dt = new DateTime('1-1-2000',new DateTimeZone('UTC'));
+		$dt = new DateTime('1900-1-1',new DateTimeZone('UTC'));
 		$data = self::YearDays($year,$month,$week,$day);
+		foreach($data as $row)
+		{
+			$yr = $row[0];
+			$days = $row[1];
+			foreach($days as $doy)
+			{
+				$d = sprintf('%03d',$doy+1);	//downstream strptime() expects padded, 1-based, day-of-year
+				$newdate = self::isodate_from_format('Y z',$yr.' '.$d);
+				$dt->modify($newdate);
+				$ret[] = $dt->format('D j M Y');
+			}
+		}
+		return $ret;
+	}
+	/*
+	args as as for SuccessiveDays($interval,$styear,$stmonth,$stday,$ndyear=FALSE,$ndmonth=FALSE,$ndday=FALSE)
+	*/
+	function tester2($interval,$styear,$stmonth,$stday,$ndyear=FALSE,$ndmonth=FALSE,$ndday=FALSE)
+	{
+		$ret = array();
+		$dt = new DateTime('1900-1-1',new DateTimeZone('UTC'));
+		$data = self::SuccessiveDays($interval,$styear,$stmonth,$stday,$ndyear,$ndmonth,$ndday);
 		foreach($data as $row)
 		{
 			$yr = $row[0];
