@@ -171,8 +171,8 @@
 </div>
 {$form_end}
 
-{foreach from=$jsincs item=file}{$file}
-{/foreach}
+{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}
+{/foreach}{/if}
 <script type="text/javascript">
 //<![CDATA[
 {foreach from=$jsfuncs item=func}{$func}{/foreach}

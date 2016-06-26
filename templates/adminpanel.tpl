@@ -153,7 +153,7 @@
 </div>
 {/if}
 
-{if isset($jsincs)}{foreach from=$jsincs item=file}{$file}
+{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}
 {/foreach}{/if}
 {if isset($jsfuncs)}
 <script type="text/javascript">
