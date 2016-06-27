@@ -46,11 +46,11 @@ class tmtClone
 			$sdt = new DateTime ($bdata['startdate'],$tz);
 			$sstamp = $sdt->getTimestamp();
 			if ($stamp >= $sstamp)
-				$bdata['startdate'] = null;
+				$bdata['startdate'] = NULL;
 			$sdt = new DateTime ($bdata['enddate'],$tz);
 			$sstamp = $sdt->getTimestamp();
 			if ($stamp >= $sstamp)
-				$bdata['enddate'] = null;
+				$bdata['enddate'] = NULL;
 			if($bdata['chartcss'])
 			{
 				if ($updir)

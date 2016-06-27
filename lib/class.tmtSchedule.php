@@ -420,13 +420,13 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 			$tdata = implode(',',$allteams);
 			$sql1 = sprintf($sql,'teamA',$tdata);
 			$t = $db->GetOne($sql1);
-			$dt = ($t != null) ? new DateTime($t,$tz) : $sdt;
+			$dt = ($t != NULL) ? new DateTime($t,$tz) : $sdt;
 			$playorder[$mteams['teamA']] = $dt->getTimestamp();
 			$allteams[$mteams['teamA']] = $mid;
 
 			$sql1 = sprintf($sql,'teamB',$tdata);
 			$t = $db->GetOne($sql1);
-			$dt = ($t != null) ? new DateTime($t,$tz) : $sdt;
+			$dt = ($t != NULL) ? new DateTime($t,$tz) : $sdt;
 			$playorder[$mteams['teamB']] = $dt->getTimestamp();
 			$allteams[$mteams['teamB']] = $mid;
 		}
@@ -439,7 +439,7 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 			$threshold = $sstamp;
 		else
 			$threshold = $at - $diff;
-		$slotcount = $bdata['sametime']; //maybe null
+		$slotcount = $bdata['sametime']; //maybe NULL
 		$sql = 'UPDATE '.$pref.'module_tmt_matches SET playwhen=?,status=? WHERE match_id=?';
 		foreach($playorder as $tid=>$last)
 		{
@@ -724,7 +724,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			self::UpdateKOMatches($mod,$bracket_id);
 		}
 		else
-			$db->Execute($sql,array($id1,$bracket_id,null,$allteams[0],$allteams[1])); //one match,the final
+			$db->Execute($sql,array($id1,$bracket_id,NULL,$allteams[0],$allteams[1])); //one match,the final
 
 		return TRUE;
 	}
@@ -766,12 +766,12 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::ANON.' AND (N.teamA IS NULL OR N.t
 					$winner = -1; //propagate a bye
 					break;
 				default:
-					$winner = null; //do nothing
+					$winner = NULL; //do nothing
 					break;
 				}
 				$mid = (int)$mdata['match_id'];
 				if(!($winner == $mdata['nexttA'] || $winner == $mdata['nexttB']
-				   || $winner == -1 || $winner == null))
+				   || $winner == -1 || $winner == NULL))
 				{
 					self::SetTeam((int)$winner,(int)$mdata['nextm'],$mid,$db,$pref);
 					$more = TRUE;

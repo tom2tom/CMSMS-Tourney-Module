@@ -89,7 +89,7 @@ else
 		if (!empty($bdata['description']))
 			$tplvars['pagedesc'] = $bdata['description'];
 		else
-			$tplvars['pagedesc'] = null;
+			$tplvars['pagedesc'] = NULL;
 		$tplvars['items'] = $res;
 		$tplname = 'admin_list.tpl';
 	}

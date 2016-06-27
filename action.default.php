@@ -184,7 +184,7 @@ if(!empty($params['message']))
 $tplvars['hidden'] = $this->CreateInputHidden($id,'bracket_id',$bracket_id).$hidden;
 $tplvars['start_form'] = $this->CreateFormStart($id,'default',$returnid);
 $tplvars['end_form'] = $this->CreateFormEnd();
-$submit = null;
+$submit = NULL;
 if($bdata['contact'])
 {
 	//check for match(es) scheduled & unscored

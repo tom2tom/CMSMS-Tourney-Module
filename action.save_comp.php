@@ -312,7 +312,7 @@ if(isset($params['apply']) || isset($params['submit']))
 					list($pname,$pcontact) = $funcs->GetforFirstPlayer($tid);
 					$name = $row['name'];
 					if($name == FALSE || $name == $pname)
-						$name = null;
+						$name = NULL;
 					$db->Execute($sql,array($name,$row['seeding'],$row['contactall'],$order,$tid));
 					$order++;
 					$contact = $row['contact'];
@@ -549,8 +549,8 @@ elseif(isset($params['cancel']))
 		if($teams)
 		{
 			$sql = 'DELETE FROM '.$pref.'module_tmt_people WHERE id=?';
-			$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET teamA=null,playwhen=null,place=null,status=0,score=null WHERE bracket_id=? AND teamA=?';
-			$sql3 = 'UPDATE '.$pref.'module_tmt_matches SET teamB=null,playwhen=null,place=null,status=0,score=null WHERE bracket_id=? AND teamB=?';
+			$sql2 = 'UPDATE '.$pref.'module_tmt_matches SET teamA=NULL,playwhen=NULL,place=NULL,status=0,score=NULL WHERE bracket_id=? AND teamA=?';
+			$sql3 = 'UPDATE '.$pref.'module_tmt_matches SET teamB=NULL,playwhen=NULL,place=NULL,status=0,score=NULL WHERE bracket_id=? AND teamB=?';
 			foreach($teams as $tid)
 			{
 				$db->Execute($sql,array($tid));

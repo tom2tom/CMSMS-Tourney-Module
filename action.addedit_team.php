@@ -83,11 +83,11 @@ if(isset($params['submit']))
 	foreach($params['plr_order'] as $indx=>$order)
 	{
 		$name = trim($params['plr_name'][$indx]);
-		if(!$name) $name = null;
+		if(!$name) $name = NULL;
 		$contact = trim($params['plr_contact'][$indx]);
-		if(!$contact) $contact = null;
+		if(!$contact) $contact = NULL;
 		$avail = trim($params['plr_available'][$indx]);
-		if(!$avail) $avail = null;
+		if(!$avail) $avail = NULL;
 		$flags = (int)$params['plr_flags'][$indx];
 		if($flags)
 			$teamflags = 3; //any non-0 member-flag signals team has been altered
@@ -98,8 +98,8 @@ if(isset($params['submit']))
 	//now we can set real orders
  	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=-displayorder WHERE id=? AND displayorder<0';
 	$db->Execute($sql,array($tid));
-	$name = !empty($params['tem_name'])?trim($params['tem_name']):null;
-	$seed = ($params['tem_seed'])?(int)$params['tem_seed']:null;
+	$name = !empty($params['tem_name'])?trim($params['tem_name']):NULL;
+	$seed = ($params['tem_seed'])?(int)$params['tem_seed']:NULL;
 	$tell = $params['tem_tellall']?1:0;
 	$order = $params['tem_order']?(int)$params['tem_order']:1000; //blank goes last
  	if(!empty($params['newteam_id']))
@@ -328,7 +328,7 @@ contact,
 available,
 displayorder,
 flags
-) VALUES (?,null,null,null,1,1)';//new-member flag
+) VALUES (?,NULL,NULL,NULL,1,1)';//new-member flag
 	$db->Execute($sql,array($newtid));
 	$rows = array();
 	$rows[] = array(
@@ -384,7 +384,7 @@ contact,
 available,
 displayorder,
 flags
-) VALUES (?,null,null,null,?,1)';//new-member flag
+) VALUES (?,NULL,NULL,NULL,?,1)';//new-member flag
 	$db->Execute($sql,array($thistid,$next));
 	$rows[] = array(
 	 'id'=>$thistid,

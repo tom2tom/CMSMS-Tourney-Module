@@ -327,7 +327,7 @@ EOS;
 				self::ClearSpaces($val); //recurse
 			$done = 0;
 			$tmp = preg_replace('~^file:///[[:alnum:]]+:~','',$indx,10,$done); //$done-counter is for PHP5.1+ !
-			if ($tmp != null && $done == 1)
+			if ($tmp != NULL && $done == 1)
 			{
 				$array[$tmp] = $val;
 				unset($array[$indx]);
@@ -380,7 +380,7 @@ EOS;
 					$value = &$array;
 					foreach($path as $segment)
 						$value = &$value[$segment];
-					$v = (!empty($val['value'])) ? $val['value'] : null; //default value is null
+					$v = (!empty($val['value'])) ? $val['value'] : NULL; //default value is NULL
 					$value[$val['tag']] = $v;
 					if($val['type'] == 'complete' && $lvl > 1)
 						$opened[$lvl-1]++;

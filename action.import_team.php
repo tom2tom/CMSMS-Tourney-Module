@@ -142,8 +142,8 @@ flags
 //$imports is array, [0|1|2=>teamname][,0|1|2=>seeding][,0|1|2=>tellall][,3=>player1,4=>contact1][....] for as many players as there are
 			$addid = $db->GenID($pref.'module_tmt_teams_seq');
 			$args = array($addid, (int)$params['bracket_id']);
-			$args[] = (isset($namecols[0]) && $imports[$namecols[0]]) ? trim($imports[$namecols[0]]) : null;
-			$args[] = (isset($namecols[1]) && $imports[$namecols[1]]) ? (int)$imports[$namecols[1]] : null;
+			$args[] = (isset($namecols[0]) && $imports[$namecols[0]]) ? trim($imports[$namecols[0]]) : NULL;
+			$args[] = (isset($namecols[1]) && $imports[$namecols[1]]) ? (int)$imports[$namecols[1]] : NULL;
 			if (isset($namecols[2]) && $imports[$namecols[2]] &&
 				strtolower(trim($imports[$namecols[2]])) != 'no')
 					$val = 1;
@@ -162,7 +162,7 @@ flags
 					if ($name || $contact)
 					{
 						$avail = trim($imports[$i+2]);
-						if(!$avail) $avail = null;
+						if(!$avail) $avail = NULL;
 						$args = array($addid,$name,$contact,$avail,$order);
 						$db->Execute($sql2,$args);
 						$order++;

@@ -102,14 +102,14 @@ class tmtData
 			$data->teamsize = 1;
 		$data->sametime = self::GetIntegerFor($params['tmt_sametime']);
 		if ($data->sametime == 0)
-			$data->sametime = null;
+			$data->sametime = NULL;
 		if(isset ($params['tmt_calendarid'])) //relevant bookings module present
 			$data->calendarid = $params['tmt_calendarid'];
 		$tmp = $params['tmt_playgaptype'];
 		switch ($tmp)
 		{
 		 case 0: //none
-			$data->playgap = null;
+			$data->playgap = NULL;
 			break;
 		 case 2: //hours
 		 case 3: //days
@@ -153,7 +153,7 @@ class tmtData
 		switch ($tmp)
 		{
 		 case 0: //none
-			$data->placegap = null;
+			$data->placegap = NULL;
 			break;
 		 case 2: //hours
 		 case 3: //days
@@ -166,18 +166,18 @@ class tmtData
 		$data->placegaptype = $tmp;
 
 		if (empty($params['tmt_startdate']))
-			$data->startdate = null;
+			$data->startdate = NULL;
 		else
 		{
 			$dt = strtotime($params['tmt_startdate']);
-			$data->startdate = ($dt != FALSE) ? date('Y-m-d',$dt).' 00:00:00' : null;
+			$data->startdate = ($dt != FALSE) ? date('Y-m-d',$dt).' 00:00:00' : NULL;
 		}
 		if (empty($params['tmt_enddate']))
-			$data->enddate = null;
+			$data->enddate = NULL;
 		else
 		{
 			$dt = strtotime($params['tmt_enddate']);
-			$data->enddate = ($dt != FALSE) ? date('Y-m-d',$dt).' 23:59:59' : null;
+			$data->enddate = ($dt != FALSE) ? date('Y-m-d',$dt).' 23:59:59' : NULL;
 		}
 
 		$data->timezone = $params['tmt_timezone'];
@@ -300,9 +300,9 @@ class tmtData
 				$toall = $params['tem_contactall'][$indx];
 				$seed = $params['tem_seed'][$indx];
 
-				$name = ($name == FALSE) ? null : trim($name);
-				$contact = ($contact == FALSE) ? null : trim($contact);
-				$seed = ($seed == FALSE) ? null : intval($seed);
+				$name = ($name == FALSE) ? NULL : trim($name);
+				$contact = ($contact == FALSE) ? NULL : trim($contact);
+				$seed = ($seed == FALSE) ? NULL : intval($seed);
 
 				$items[$tid] = array('name'=>$name,'seeding'=>$seed,
 				 'contactall'=>$toall,'contact'=>$contact,
@@ -320,8 +320,8 @@ class tmtData
 				$on = self::GetFormattedDate($when);
 				$at = trim($params['mat_playwhere'][$indx]);
 
-				if ($on == FALSE) $on = null;
-				if ($at == FALSE) $at = null;
+				if ($on == FALSE) $on = NULL;
+				if ($at == FALSE) $at = NULL;
 
 				$id = $ids[$indx];
 				$items[$id] = array('playwhen'=>$on,'place'=>$at,
@@ -338,7 +338,7 @@ class tmtData
 			foreach ($params['res_playwhen'] as $indx=>$when)
 			{
 				$on = self::GetFormattedDate($when);
-				if ($on == FALSE) $on = null;
+				if ($on == FALSE) $on = NULL;
 
 				$id = $ids[$indx];
 				$items[$id] = array(
@@ -594,14 +594,14 @@ class tmtData
 								if (!$m) //match not recorded already
 								{
 									$fakes[$k--] = array (
-//									 'nextm' => null,
-//									 'nextlm' => null,
+//									 'nextm' => NULL,
+//									 'nextlm' => NULL,
 									 'teamA' => $tidA,
 									 'teamB' => $tidB,
-									 'playwhen' => null,
-									 'place' => null,
+									 'playwhen' => NULL,
+									 'place' => NULL,
 									 'status' => 0,
-									 'score' => null
+									 'score' => NULL
 									);
 								}
 							}
@@ -705,7 +705,7 @@ contact,
 available,
 displayorder,
 flags
-) VALUES (?,null,null,null,1,0)';
+) VALUES (?,NULL,NULL,NULL,1,0)';
 				$db->Execute($sql,array($tid));
 				$flags = 1; //added-flag set instead
 				$displayorder = 1;
