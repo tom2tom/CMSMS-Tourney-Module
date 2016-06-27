@@ -310,7 +310,6 @@ if($groups)
 	if($pmod)
 	{
 		$mc = 0;
-		$previd	= -10;
 		$iconup = $theme->DisplayImage('icons/system/arrow-u.gif',$this->Lang('up'),'','','systemicon');
 		$icondn = $theme->DisplayImage('icons/system/arrow-d.gif',$this->Lang('down'),'','','systemicon');
 		$icondel = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon delgrplink'); //extra class for confirm-dialog usage
@@ -342,7 +341,7 @@ if($groups)
 			else
 				$one->uplink = '';
 			$mc++;
-			$previd = $gid;
+			$previd = $gid; //i.e. always set before use
 			if ($gid > 0) //preserve the default group
 				$one->deletelink = $this->CreateLink($id,'delete_group','',
 					$icondel,array('group_id'=>$gid)); //$(.delgrplink) modalconfirm
@@ -439,7 +438,10 @@ function dropresponse(data,status)
   $('#page_tabs').prepend('<p style="font-weight:bold;color:red;">{$this->Lang('err_ajax')}!</p><br />');
  }
 }
-$(document).ready(function(){
+EOS;
+			$jsloads[] = <<< EOS
+ $('.updown').hide();
+ $('.dndhelp').css('display','block');
  $('#groups').addClass('table_drag').tableDnD({
 	dragClass: 'row1hover',
 	onDrop: function(table, droprows) {
@@ -476,8 +478,6 @@ $(document).ready(function(){
 		var to = now.indexOf('hover');
 		$(this).attr('class', now.substring(0,to));
  });
- $('.updown').hide();
- $('.dndhelp').css('display','block');
  $('.delgrplink').modalconfirm({
   overlayID: 'confirm',
   preShow: function(tg,\$d){
@@ -503,7 +503,6 @@ $(document).ready(function(){
    para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_groups'))}';
   }
  });
-});
 EOS;
 			$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
 			$tplvars['dndhelp'] = $this->Lang('help_dnd');
@@ -645,8 +644,7 @@ else
 
 if($jsloads)
 {
-	$jsfuncs[] = '
-$(document).ready(function() {
+	$jsfuncs[] = '$(document).ready(function() {
 ';
 	$jsfuncs = array_merge($jsfuncs,$jsloads);
 	$jsfuncs[] = '});
