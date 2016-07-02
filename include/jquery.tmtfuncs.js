@@ -4,7 +4,7 @@ $(document).ready(function() {
  var elem = $('p.pageinput:first');
  var color = $(elem).css('color');
  var size = $(elem).css('font-size');
- $('.fakeicon').css({'color':color,'font-size':size});
+ $('.fakelink').css({'color':color,'font-size':size});
  $('p img.tipper').click(function(){
   $(this).parent().nextAll('p.help:first').slideToggle();
  });

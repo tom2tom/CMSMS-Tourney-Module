@@ -767,6 +767,8 @@ Europe/Vilnius'
 			$ret = '';
 		if ($link && $text)
 		{
+			if ($ret)
+				$ret .= ' ';
 			$ret .='<input type="submit" value="'.$text.'" name="'.$id.$name.'" class="fakelink"';
 			if ($extra)
 				$ret .= ' '.$extra;
