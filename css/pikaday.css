@@ -123,7 +123,7 @@ http://nicolasgallagher.com/micro-clearfix-hack/
     border: 0;
     padding: 0;
     width: 20px;
-//    height: 20px;
+/*    height: 20px; */
     /* hide text using text-indent trick, using width value (it's enough) */
     text-indent: 20px;
     white-space: nowrap;
@@ -186,7 +186,7 @@ table.table_sort table.pika-table td, .pika-table td {
 table.table_sort table.pika-table th, .pika-table th {
     color: #999;
     background-color:#dcdcdc;
-//    line-height: 2em;
+/*    line-height: 2em; */
     height: 2em;
     font-weight: bold;
     text-align: center;
