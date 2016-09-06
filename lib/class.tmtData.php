@@ -125,7 +125,7 @@ class tmtData
 			$data->available = NULL;
 		else
 		{
-			$cal = new WhenRules($mod);
+			$cal = new tmtWhenRules($mod);
 			$clean = $cal->CheckDescriptor($tmp,$data->locale);
 			unset($cal);
 			if($clean)

@@ -386,7 +386,7 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 			return FALSE;
 		if(empty($bdata['startdate']) || empty($bdata['timezone']))
 			return FALSE;
-		$cal = new WhenRules($mod);
+		$cal = new tmtWhenRules($mod);
 		if(!$cal->ParseDescriptor($bdata['available']/*,$bdata['locale']*/))
 			return FALSE;
 		$tz = new DateTimeZone($bdata['timezone']);
@@ -508,7 +508,7 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 
 	/**
 	GetNextSlot:
-	@cal: reference to WhenRules-class object including parsed availability-conditions
+	@cal: reference to tmtWhenRules-class object including parsed availability-conditions
 	@bdata: reference to array of bracket data
 	@stamp: timestamp expressed for bracket timezone
 	@withgap: optional, whether to append bracket's placegap to @stamp, default FALSE
