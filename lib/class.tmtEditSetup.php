@@ -106,6 +106,43 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		}
 	}
 
+	/**
+	IntervalNames:
+	Get one, or array of, translated time-interval-name(s).
+	If @cap is TRUE, this uses ucfirst() which expects PHP locale value to be correspond to the translation of names
+	@mod: reference to current module-object
+	@which: index 0 (for 'none'), 1 (for 'minute') .. 6 (for 'year'), or array of
+		such indices consistent with TimeIntervals() + 1
+	@plural: optional, whether to get plural form of the interval name(s), default FALSE
+	@cap: optional, whether to capitalise the first character of the name(s), default FALSE
+	*/
+	function IntervalNames(&$mod, $which, $plural=FALSE, $cap=FALSE)
+	{
+		$k = ($plural) ? 'multiperiods' : 'periods';
+		$all = explode(',',$mod->Lang($k));
+		array_unshift($all,$mod->Lang('none'));
+		$c = count($all);
+
+		if (!is_array($which)) {
+			if ($which >= 0 && $which < $c) {
+				if ($cap)
+					return mb_convert_case($all[$which],MB_CASE_TITLE); //TODO CHECK encoding string
+				else
+					return $all[$which];
+			}
+			return '';
+		}
+		$ret = array();
+		foreach ($which as $period) {
+			if ($period >= 0 && $period < $c) {
+				$ret[$period] = ($cap) ?
+					mb_convert_case($all[$period],MB_CASE_TITLE):
+					$all[$period];
+			}
+		}
+		return $ret;
+	}
+
 	function Setup(&$mod,&$tplvars,&$data,$id,$returnid,$activetab='',$message='')
 	{
 		$gCms = cmsms();
@@ -806,9 +843,7 @@ EOS;
 			$mod->Lang('help_same_time'),
 		);
 
-		$cal = new tmtCalendar($mod);
-		$opts = $cal->IntervalNames(array(0,1,2,3,4),TRUE); //plural choices up to weeks
-		unset($cal);
+		$opts = $this->IntervalNames($mod,array(0,1,2,3,4),TRUE); //choose from plural names up to weeks
 		if($pmod)
 			$opts = array_flip($opts); //selector needs other form of array
 
