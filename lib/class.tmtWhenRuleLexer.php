@@ -1,11 +1,10 @@
 <?php
-#----------------------------------------------------------------------
-# Module: Booker - a resource booking module
-# Library file: WhenRuleLexer
-# Uses CMSMS-specific string-translation method
-#----------------------------------------------------------------------
-# See file Booker.module.php for full details of copyright, licence, etc.
-#----------------------------------------------------------------------
+/*
+This file is part of CMS Made Simple module: Tourney.
+Copyright (C) 2014-2016 Tom Phane <tpgww@onepost.net>
+Refer to licence and other details at the top of file Tourney.module.php
+More info at http://dev.cmsmadesimple.org/projects/tourney
+*
 /**
 Repetition Language
 
@@ -95,9 +94,8 @@ Day descriptors
 Time descriptors
  9 or 2:30 or (9,12,15:15) or 12..23 or 6..15:30 or sunrise..16 or 9..sunset-3:30
 */
-namespace Booker;
 
-class WhenRuleLexer
+class tmtWhenRuleLexer
 {
 	protected $mod; //reference to current module-object
 	/*

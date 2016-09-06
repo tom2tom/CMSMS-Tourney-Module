@@ -1,20 +1,11 @@
 <?php
 /*
-This file is a class for CMS Made Simple (TM).
+This file is part of CMS Made Simple module: Tourney.
 Copyright (C) 2014-2016 Tom Phane <tpgww@onepost.net>
-
-This file is free software; you can redistribute it and/or modify it under
-the terms of the GNU Affero General Public License as published by the
-Free Software Foundation; either version 3 of the License, or (at your option)
-any later version.
-
-This file is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details. If you don't have a copy
-of that license, read it online at: www.gnu.org/licenses/licenses.html#AGPL
+Refer to licence and other details at the top of file Tourney.module.php
+More info at http://dev.cmsmadesimple.org/projects/tourney
 */
-class PeriodInterpreter
+class tmtPeriodInterpreter
 {
 	/*
 	BlockYears:
@@ -75,6 +66,7 @@ class PeriodInterpreter
 		$years = self::BlockYears($bs, $be, $dtw, FALSE);
 		$dtw->setTime(0,0,0);
 		$dte = clone $dtw;
+		$inc = new \DateInterval('P1D');
 		$ret = array();
 		$yn = reset($years);
 
@@ -82,16 +74,14 @@ class PeriodInterpreter
 			$ye = end($years);
 			while ($yn < $ye) {
 				$doy = array();
-				$t = ($yn+1).'-1-1';
-				$dte->modify($t);
+				$dte->setDate($yn+1,1,1);
 				while ($dtw < $dte) {
 					$doy[] = $dtw->getTimestamp();
-					$dtw->modify('+1 day');
+					$dtw->add($inc);
 				}
 				if ($doy) {
 					$ret[$yn] = $doy;
 				}
-				$dtw = $dte;
 				$yn++;
 			}
 		}
@@ -99,7 +89,7 @@ class PeriodInterpreter
 		$dte->setTimestamp($be-1);
 		while ($dtw <= $dte) {
 			$doy[] = $dtw->getTimestamp();
-			$dtw->modify('+1 day');
+			$dtw->add($inc);
 		}
 		if ($doy)
 			$ret[$yn] = $doy;
@@ -167,9 +157,10 @@ class PeriodInterpreter
 		$dte->modify($parts[1]);
 		if ($dtw < $dte) {
 			$ret = array();
+			$inc = new \DateInterval('P1D');
 			while ($dtw <= $dte) {
 				$ret[] = $dtw->format('Y-n-j');
-				$dtw->modify('+1 day');
+				$dtw->add($inc);
 			}
 			return $ret;
 		}
@@ -817,6 +808,7 @@ if ($years[0] == '*') { //DEBUG
 
 		$dtw->setTime(0,0,0);
 		$dte = clone $dtw;
+		$inc = new \DateInterval('P1D');
 		$ret = array();
 		$yn = reset($years);
 
@@ -833,7 +825,7 @@ if ($years[0] == '*') { //DEBUG
 							$doy[] = $st;
 						}
 					}
-					$dtw->modify('+1 day');
+					$dtw->add($inc);
 				}
 				if ($doy) {
 					$ret[$yn] = $doy;
@@ -851,7 +843,7 @@ if ($years[0] == '*') { //DEBUG
 					$doy[] = $st;
 				}
 			}
-			$dtw->modify('+1 day');
+			$dtw->add($inc);
 		}
 		if ($doy)
 			$ret[$yn] = $doy;
@@ -902,7 +894,7 @@ if ($years[0] == '*') { //DEBUG
 			foreach ($offs as $d) {
 				$dtw->modify($yn.'-1-1 +'.$d.' days');
 				if (!$merge || $dtw->format('j') == 1)
-					$doy[] = $dt->getTimestamp();
+					$doy[] = $dtw->getTimestamp();
 			}
 			if ($doy)
 				$ret[$yn] = $doy;
@@ -955,7 +947,7 @@ if ($years[0] == '*') { //DEBUG
 			foreach ($offs as $d) {
 				$dtw->modify($yn.'-1-1 +'.$d.' days');
 				if (!$merge || $dtw->format('w') == 0)
-					$doy[] = $dt->getTimestamp();
+					$doy[] = $dtw->getTimestamp();
 			}
 			if ($doy)
 				$ret[$yn] = $doy;
@@ -1003,7 +995,7 @@ if ($years[0] == '*') { //DEBUG
 			$doy = array();
 			foreach ($offs as $d) {
 				$dtw->modify($yn.'-1-1 +'.$d.' days');
-				$doy[] = $dt->getTimestamp();
+				$doy[] = $dtw->getTimestamp();
 			}
 			if ($doy)
 				$ret[$yn] = $doy;
