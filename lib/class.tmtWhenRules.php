@@ -5,8 +5,7 @@ Copyright (C) 2014-2016 Tom Phane <tpgww@onepost.net>
 Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
-
-class tmtWhenRules extends WhenRuleLexer
+class tmtWhenRules extends tmtWhenRuleLexer
 {
 	public function __construct(&$mod)
 	{
@@ -86,7 +85,7 @@ class tmtWhenRules extends WhenRuleLexer
 			}
 		}
 
-		$funcs = new PeriodInterpreter();
+		$funcs = new tmtPeriodInterpreter();
 		if (!is_array($cond['P'])) {
 			$cond['P'] = array($cond['P']);
 		}
@@ -124,6 +123,7 @@ class tmtWhenRules extends WhenRuleLexer
 				}
 
 				if ($parsed) {
+					$inc = new \DateInterval('P1D');
 					foreach ($parsed as $doy) {
 						foreach ($doy as $daystart) {
 							if ($sunny) {
@@ -137,7 +137,7 @@ class tmtWhenRules extends WhenRuleLexer
 							} else {
 								$starts[] = $daystart;
 								$dtw->setTimestamp($daystart);
-								$dtw->modify('+1 day');
+								$dtw->add($inc);
 								$ends[] = $dtw->getTimestamp()-1;
 							}
 						}
@@ -153,11 +153,12 @@ class tmtWhenRules extends WhenRuleLexer
 				 case 7: //months(s) in specific year(s) in $bs..$be-1
 					$parsed = $funcs->SpecificMonths($descriptor,$bs,$be,$dtw,TRUE);
 					if ($parsed) {
+						$inc = new \DateInterval('P1M');
 						foreach ($parsed as $som) {
 							foreach ($som as $st) {
 								$starts[] = $st;
 								$dtw->setTimestamp($st);
-								$dtw->modify('+1 month');
+								$dtw->add($inc);
 								$st = $dtw->getTimestamp();
 								if ($st < $be) {
 									$ends[] = $st-1;
@@ -175,11 +176,12 @@ class tmtWhenRules extends WhenRuleLexer
 				 case 9: //week(s) in specific [month(s) and] year(s) in $bs..$be-1
 					$parsed = $funcs->SpecificWeeks($descriptor,$bs,$be,$dtw,TRUE);
 					if ($parsed) {
+						$inc = new \DateInterval('P7D');
 						foreach ($parsed as $sow) {
 							foreach ($sow as $st) {
 								$starts[] = $st;
 								$dtw->setTimestamp($st);
-								$dtw->modify('+7 days');
+								$dtw->add($inc);
 								$st = $dtw->getTimestamp();
 								if ($st < $be) {
 									$ends[] = $st-1;
