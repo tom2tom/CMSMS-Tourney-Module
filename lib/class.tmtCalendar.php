@@ -8,7 +8,7 @@ More info at http://dev.cmsmadesimple.org/projects/tourney
 Class: tmtCalendar
 */
 
-class tmtCalendar extends RepeatLexer
+class tmtCalendar extends WhenRuleLexer
 {
 	function __construct(&$mod)
 	{
@@ -145,7 +145,7 @@ class tmtCalendar extends RepeatLexer
 	}
 
 	/**
-	SlotStart:
+	NextSlotStart:
 
 	Get start-time (timestamp) matching constraints specified in relevant fields in
 	@bdata, and	starting no sooner than @start, or ASAP within @later days after
