@@ -1,13 +1,12 @@
 <?php
-#----------------------------------------------------------------------
-# Module: Booker - a resource booking module
-# Library file: WhenRules
-#----------------------------------------------------------------------
-# See file Booker.module.php for full details of copyright, licence, etc.
-#----------------------------------------------------------------------
-namespace Booker;
+/*
+This file is part of CMS Made Simple module: Tourney.
+Copyright (C) 2014-2016 Tom Phane <tpgww@onepost.net>
+Refer to licence and other details at the top of file Tourney.module.php
+More info at http://dev.cmsmadesimple.org/projects/tourney
+*/
 
-class WhenRules extends WhenRuleLexer
+class tmtWhenRules extends WhenRuleLexer
 {
 	public function __construct(&$mod)
 	{
@@ -414,35 +413,34 @@ class WhenRules extends WhenRuleLexer
 
 	/**
 	TimeParms:
-	Get @idata-derived parameters for context-specific time calcs
-	No checks here for valid parameters in @idata - assumed done before
-	@idata: reference to array of data (possibly inherited) for a resource or group
+	Get @bdata-derived parameters for context-specific time calcs
+	No checks here for valid parameters in @bdata - assumed done before
+	@bdata: reference to array of data for a bracket
 	Returns: array of parameters: latitude, longitude, zone etc
 	*/
-	public function TimeParms(&$idata)
+	public function TimeParms(&$bdata)
 	{
 	 	$num = 1;
 		$type = 'hour';
-		if ($idata['slottype']) {
-		 	$num = (int)$idata['slotcount'];
-			$utils = new Utils();
-			$periods = $utils->TimeIntervals();
-			$t = (int)$idata['slottype'];
+		if ($bdata['playgaptype']) {
+		 	$num = (int)$bdata['playgap'];
+			$t = (int)$bdata['playgaptype'];
 			if ($t > 2)
 				$t = 2; //max interval-type in this context is day
+			$periods = array('minute','hour','day');
 			$type = $periods[$t];
 		}
 
-		$zone = $idata['timezone'];
+		$zone = $bdata['timezone'];
 		if (!$zone)
-			$zone = $this->mod->GetPreference('pref_timezone','UTC');
+			$zone = $this->mod->GetPreference('time_zone','UTC');
 
 		return array (
 		 'count'=>$num, //part default slot length, for DateTime modification
 		 'type'=>$type, //other part
 		 'sunny'=>FALSE, //whether sun-related calcs are needed
-		 'lat'=>(float)$idata['latitude'], //maybe 0.0
-		 'long'=>(float)$idata['longitude'], //ditto
+		 'lat'=>(float)$bdata['latitude'], //maybe 0.0
+		 'long'=>(float)$bdata['longitude'], //ditto
 		 'zone'=>$zone
 		);
 	}
