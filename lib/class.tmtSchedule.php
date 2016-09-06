@@ -386,8 +386,8 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 			return FALSE;
 		if(empty($bdata['startdate']) || empty($bdata['timezone']))
 			return FALSE;
-		$cal = new tmtCalendar($mod);
-		if(!$cal->ParseCondition($bdata['available'],$bdata['locale']))
+		$cal = new WhenRules($mod);
+		if(!$cal->ParseDescriptor($bdata['available']/*,$bdata['locale']*/))
 			return FALSE;
 		$tz = new DateTimeZone($bdata['timezone']);
 		$sdt = new DateTime($bdata['startdate'],$tz);
@@ -508,7 +508,7 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 
 	/**
 	GetNextSlot:
-	@cal: reference to tmtCalendar object including parsed availability-conditions
+	@cal: reference to WhenRules-class object including parsed availability-conditions
 	@bdata: reference to array of bracket data
 	@stamp: timestamp expressed for bracket timezone
 	@withgap: optional, whether to append bracket's placegap to @stamp, default FALSE
@@ -522,12 +522,18 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 			//TODO find relevant resource, its last end-time, gap from then
 			$stamp += self::GapSeconds($bdata['placegaptype'],$bdata['placegap']);
 		}
+		$dts = new DateTime('@'.$stamp,NULL);
+		$dte = clone $dts;
+		if($later < 1)
+			$later = 1;
+		$dte->modify('+'.$later.' days');
+		$timeparms = $cal->TimeParms($bdata);
 		$slotlen = self::GapSeconds($bdata['playgaptype'],$bdata['playgap']);
 
-		$at = $cal->NextSlotStart($bdata,$stamp,$slotlen,$later);
-		if($at)
-			$at = floor($at/60)*60; //ensure 0 sec
-		return $at;
+		$at = $cal->NextInterval($bdata['available'],$dts,$dte,$timeparms,$slotlen);
+		if ($at)
+			return floor($at[0]/60)*60; //ensure 0 sec
+		return 0;
 	}
 
 	/**
@@ -746,7 +752,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::ANON.' AND (N.teamA IS NULL OR N.t
 		$so = ' ORDER BY M.match_id';
 		$done = FALSE;
 		$skips = array();
-		$updates = $db->GetAll($sql1.$so,array($bracket_id));
+		$updates = $db->GetArray($sql1.$so,array($bracket_id));
 		while($updates)
 		{
 			$more = FALSE;
@@ -788,7 +794,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::ANON.' AND (N.teamA IS NULL OR N.t
 			{
 				$done = TRUE;
 				$sql = $sql1.' AND M.match_id NOT IN ('.implode(',',$skips).')'.$so;
-				$updates = $db->GetAll($sql,array($bracket_id));
+				$updates = $db->GetArray($sql,array($bracket_id));
 			}
 			else
 				break;
@@ -1041,7 +1047,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::MRES.' AND (N.teamA IS NULL OR N.t
 		$so = ' ORDER BY M.match_id';
 		$done = FALSE;
 		$skips = array();
-		$updates = $db->GetAll($sql1.$so,array($bracket_id));
+		$updates = $db->GetArray($sql1.$so,array($bracket_id));
 		while($updates)
 		{
 			$more = FALSE;
@@ -1091,7 +1097,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::MRES.' AND (N.teamA IS NULL OR N.t
 			{
 				$done = TRUE;
 				$sql = $sql1.' AND M.match_id NOT IN ('.implode(',',$skips).')'.$so;
-				$updates = $db->GetAll($sql,array($bracket_id));
+				$updates = $db->GetArray($sql,array($bracket_id));
 			}
 			else
 				break;
@@ -1129,7 +1135,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::MRES.' AND (N.teamA IS NULL OR N.t
 		unset($allteams);
 
 		$sql = 'SELECT * FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
-		$stored = $db->GetAll($sql,array($bracket_id));
+		$stored = $db->GetArray($sql,array($bracket_id));
 		if($stored)
 		{
 			foreach($stored as &$mdata)
