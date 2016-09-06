@@ -660,7 +660,7 @@ before the account is used.</p>
 <p>For the latter, you can create, and at least temporarily enable, a page with tag like<pre>{cms_module module='Tourney' alias='sample_comp' tweetauth=1}</pre>or just<br />{cms_module module='Tourney' tweetauth=1}</pre><br /><br />and refer the account holder there.</p>
 <h3>Requirements</h3>
 <ul>
-<li>PHP 5.2+</li>
+<li>PHP 5.3.6+</li>
 </ul>
 <h3>Support</h3>
 <p>This module is provided as-is. Please read the text of the license for the full disclaimer.</p>
