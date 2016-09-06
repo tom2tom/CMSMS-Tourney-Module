@@ -11,7 +11,7 @@ if(!function_exists('OrderTeamMembers'))
  {
 	$pref = cms_db_prefix();
 	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
-	$rows = $db->GetAll($sql,array($tid));
+	$rows = $db->GetArray($sql,array($tid));
 	if($rows)
 	{
 		//to avoid overwrites,in the first pass stored orders are < 0,-1-based
@@ -342,7 +342,7 @@ flags
 	break;
  case 2://starting a new edit-session
 	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
-	$rows = $db->GetAll($sql,array($thistid));
+	$rows = $db->GetArray($sql,array($thistid));
 	if($rows == FALSE) //should never happen
 	{
 		$rows = array();
@@ -505,7 +505,7 @@ flags
 	return;
  default:
 	$sql = 'SELECT * FROM '.$pref.'module_tmt_people WHERE id=? AND flags!=2 ORDER BY displayorder';
-	$rows = $db->GetAll($sql,array($thistid));
+	$rows = $db->GetArray($sql,array($thistid));
 	break;
 }
 

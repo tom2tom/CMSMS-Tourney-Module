@@ -15,7 +15,7 @@ if (isset($params['close']))
 $tplvars = array();
 $pref = cms_db_prefix();
 $sql = 'SELECT * FROM '.$pref.'module_tmt_history WHERE bracket_id=? ORDER BY changewhen DESC';
-$data = $db->GetAll($sql,array($params['bracket_id']));
+$data = $db->GetArray($sql,array($params['bracket_id']));
 if ($data)
 {
 	$changes = array();
