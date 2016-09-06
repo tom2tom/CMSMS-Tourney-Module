@@ -62,7 +62,7 @@ $tplvars['start_items_tab'] = $this->StartTab('itmdata');
 $tplvars['end_tab'] = $this->EndTab();
 
 $tplvars['title_name'] = $this->Lang('title_name');
-$tplvars['title_tag'] = ($pdev) ? $this->Lang('title_tag'):null;
+$tplvars['title_tag'] = ($pdev) ? $this->Lang('title_tag'):NULL;
 $tplvars['title_group'] = $this->Lang('title_group');
 $tplvars['title_status'] = $this->Lang('title_status');
 
@@ -83,7 +83,7 @@ if($selgrp)
 else
 	$ungrouped = $this->Lang('groupdefault');
 $pref = cms_db_prefix();
-$rows = $db->GetAll('SELECT bracket_id,groupid,name,alias FROM '.$pref.'module_tmt_brackets ORDER BY name');
+$rows = $db->GetArray('SELECT bracket_id,groupid,name,alias FROM '.$pref.'module_tmt_brackets ORDER BY name');
 if ($rows)
 {
 	$sql1 = 'SELECT COUNT(1) as num FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
@@ -624,7 +624,7 @@ if ($padm)
 	$jsloads[] =<<<EOS
  $('#{$id}tmt_passwd').inputCloak({
   type:'see4',
-  symbol:'\u2022'
+  symbol:'\u25CF'
  });
 
 EOS;
