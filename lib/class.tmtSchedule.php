@@ -386,8 +386,8 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 			return FALSE;
 		if(empty($bdata['startdate']) || empty($bdata['timezone']))
 			return FALSE;
-		$cal = new tmtWhenRules($mod);
-		if(!$cal->ParseDescriptor($bdata['available']/*,$bdata['locale']*/))
+		$funcs = new tmtWhenRules($mod);
+		if(!$funcs->ParseDescriptor($bdata['available']/*,$bdata['locale']*/))
 			return FALSE;
 		$tz = new DateTimeZone($bdata['timezone']);
 		$sdt = new DateTime($bdata['startdate'],$tz);
@@ -398,8 +398,8 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
  		if($stamp < $sstamp)
 			$stamp = $sstamp;
 
-		$at = self::GetNextSlot($cal,$bdata,$stamp,FALSE); //find 1st slot
-		if($at == FALSE)
+		$at = self::GetNextSlot($funcs,$bdata,$stamp,FALSE); //find 1st slot
+		if(!$at)
 			return FALSE;
 
 		//matches in DESC order so next foreach overwrites newer ones in $allteams array
@@ -456,7 +456,7 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 					{
 						if(--$slotcount == 0)
 						{
-							$at = self::GetNextSlot($cal,$bdata,$at,TRUE);
+							$at = self::GetNextSlot($funcs,$bdata,$at,TRUE);
 							if($at == FALSE)
 								return FALSE;
 							$save = strftime('%F %R',$at);
@@ -508,14 +508,14 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 
 	/**
 	GetNextSlot:
-	@cal: reference to tmtWhenRules-class object including parsed availability-conditions
+	@funcs: reference to tmtWhenRules-class object including parsed availability-conditions
 	@bdata: reference to array of bracket data
 	@stamp: timestamp expressed for bracket timezone
 	@withgap: optional, whether to append bracket's placegap to @stamp, default FALSE
 	@later: optional, no. of days-ahead to scan for the slot, default 14
 	Returns: timestamp or 0
 	*/
-	private function GetNextSlot(&$cal,&$bdata,$stamp,$withgap=FALSE,$later=14)
+	private function GetNextSlot(&$funcs,&$bdata,$stamp,$withgap=FALSE,$later=14)
 	{
 		if($withgap)
 		{
@@ -527,11 +527,11 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 		if($later < 1)
 			$later = 1;
 		$dte->modify('+'.$later.' days');
-		$timeparms = $cal->TimeParms($bdata);
+		$timeparms = $funcs->TimeParms($bdata);
 		$slotlen = self::GapSeconds($bdata['playgaptype'],$bdata['playgap']);
 
-		$at = $cal->NextInterval($bdata['available'],$dts,$dte,$timeparms,$slotlen);
-		if ($at)
+		$at = $funcs->NextInterval($bdata['available'],$dts,$dte,$timeparms,$slotlen);
+		if($at)
 			return floor($at[0]/60)*60; //ensure 0 sec
 		return 0;
 	}
