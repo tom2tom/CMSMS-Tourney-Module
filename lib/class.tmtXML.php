@@ -73,11 +73,11 @@ class tmtXML
 
 		foreach($bracket_id as $thisid)
 		{
-			$teams = $db->GetAll($sql,array($thisid));
+			$teams = $db->GetArray($sql,array($thisid));
 			if($teams)
 			{
-				$people = $db->GetAll($sql2,array($thisid));
-				$matches = $db->GetAll($sql3,array($thisid));
+				$people = $db->GetArray($sql2,array($thisid));
+				$matches = $db->GetArray($sql3,array($thisid));
 			}
 			else
 			{

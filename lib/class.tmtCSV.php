@@ -146,7 +146,7 @@ class tmtCSV
 					$outstr .= $sep.'no';
 			}
 			if($members === FALSE)
-				$members = $db->GetAll($sql2,array($thisval));
+				$members = $db->GetArray($sql2,array($thisval));
 			//doesn't matter if no of recorded people != expected teamsize
 			foreach($members as $pers)
 				$outstr .= $sep.str_replace($sep,$r,trim($pers['name']))

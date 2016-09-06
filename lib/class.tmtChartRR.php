@@ -99,7 +99,7 @@ class tmtChartRR extends tmtChartBase
 .$pref.'module_tmt_teams T2 ON M.teamB = T2.team_id
 WHERE M.bracket_id=? AND T1.flags!=2 AND T2.flags!=2
 ORDER BY T1.displayorder';
-		$matches = $db->GetAll($sql,array($bdata['bracket_id']));
+		$matches = $db->GetArray($sql,array($bdata['bracket_id']));
 		foreach($matches as &$mdata)
 		{
 			$OA = (int)$mdata['tAorder'];

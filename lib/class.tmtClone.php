@@ -99,7 +99,7 @@ class tmtClone
 			if($withteams)
 			{
 				$sql = 'SELECT * FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2';
-				$teams = $db->GetAll($sql,array($sid));
+				$teams = $db->GetArray($sql,array($sid));
 				if ($teams)
 				{
 					$swaps = array();
@@ -128,7 +128,7 @@ flags
 ) VALUES (?,?,?,?,?,?)';
 					foreach($swaps as &$modteam)
 					{
-						$people = $db->GetAll($sql,array($modteam[0]));
+						$people = $db->GetArray($sql,array($modteam[0]));
 						if ($people)
 						{
 							foreach ($people as &$person)
