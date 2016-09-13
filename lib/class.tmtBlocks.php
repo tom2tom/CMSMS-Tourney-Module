@@ -390,9 +390,9 @@ class tmtBlocks
 	//Interpret $dtrule into stamp-block(s) covering $st..$nd-1
 	private function BlocksforCalendarRule(&$mod, $st, $nd, $descriptor, $idata)
 	{
-		$funcs = new WhenRules($mod);
+		$funcs = new tmtWhenRules($mod);
 		if ($funcs->ParseDescriptor($descriptor)) {
-			$dts = new \DateTime('@'.$st,new \DateTimeZone('UTC'));
+			$dts = new DateTime('@'.$st,NULL);
 			$dte = clone $dts;
 			$dte->setTimestamp($nd);
 			$timeparms = $funcs->TimeParms($idata);

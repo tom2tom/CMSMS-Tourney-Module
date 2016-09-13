@@ -27,7 +27,7 @@ class tmtWhenRules extends tmtWhenRuleLexer
 	*/
 	private function PeriodBlocks($cond, $bs, $be, $dtw, &$timeparms, &$starts, &$ends)
 	{
-		$funcs = new PeriodInterpreter();
+		$funcs = new tmtPeriodInterpreter();
 
 		$sunny = FALSE;
 		if ($cond['T']) {
@@ -120,7 +120,7 @@ class tmtWhenRules extends tmtWhenRuleLexer
 			}
 
 			if ($parsed) {
-				$inc = new \DateInterval('P1D');
+				$inc = new DateInterval('P1D');
 				foreach ($parsed as $doy) {
 					foreach ($doy as $daystart) {
 						if ($sunny) {
@@ -150,7 +150,7 @@ class tmtWhenRules extends tmtWhenRuleLexer
 			 case 7: //months(s) in specific year(s) in $bs..$be-1
 				$parsed = $funcs->SpecificMonths($cond['P'],$bs,$be,$dtw,TRUE);
 				if ($parsed) {
-					$inc = new \DateInterval('P1M');
+					$inc = new DateInterval('P1M');
 					foreach ($parsed as $som) {
 						foreach ($som as $st) {
 							$starts[] = $st;
@@ -173,7 +173,7 @@ class tmtWhenRules extends tmtWhenRuleLexer
 			 case 9: //week(s) in specific [month(s) and] year(s) in $bs..$be-1
 				$parsed = $funcs->SpecificWeeks($cond['P'],$bs,$be,$dtw,TRUE);
 				if ($parsed) {
-					$inc = new \DateInterval('P7D');
+					$inc = new DateInterval('P7D');
 					foreach ($parsed as $sow) {
 						foreach ($sow as $st) {
 							$starts[] = $st;
@@ -348,8 +348,8 @@ class tmtWhenRules extends tmtWhenRuleLexer
 			 default:
 				$at = $dtw->format('Y-m-d');
 				try {
-					$tz = new \DateTimeZone($timeparms['zone']);
-					$dt = new \DateTime($at,$tz);
+					$tz = new DateTimeZone($timeparms['zone']);
+					$dt = new DateTime($at,$tz);
 					$offs = $dt->format('Z')/3600; //DST-specific
 				} catch (Exception $e) {
 					$offs = 0;

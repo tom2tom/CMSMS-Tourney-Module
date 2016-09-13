@@ -66,7 +66,7 @@ class tmtPeriodInterpreter
 		$years = self::BlockYears($bs,$be,$dtw,FALSE);
 		$dtw->setTime(0,0,0);
 		$dte = clone $dtw;
-		$inc = new \DateInterval('P1D');
+		$inc = new DateInterval('P1D');
 		$ret = array();
 		$yn = reset($years);
 
@@ -135,7 +135,7 @@ class tmtPeriodInterpreter
 	private function ToMonthsRange($elmt)
 	{
 		$parts = explode('..',$elmt);
-		$dtw = new \DateTime('@0',NULL);
+		$dtw = new DateTime('@0',NULL);
 		$dtw->modify($parts[0].'-1 0:0:0');
 		$dte = clone $dtw;
 		$dte->modify($parts[1].'-1 0:0:0');
@@ -158,13 +158,13 @@ class tmtPeriodInterpreter
 	private function ToDatesRange($elmt)
 	{
 		$parts = explode('..',$elmt);
-		$dtw = new \DateTime('@0',NULL);
+		$dtw = new DateTime('@0',NULL);
 		$dtw->modify($parts[0]);
 		$dte = clone $dtw;
 		$dte->modify($parts[1]);
 		if ($dtw < $dte) {
 			$ret = array();
-			$inc = new \DateInterval('P1D');
+			$inc = new DateInterval('P1D');
 			while ($dtw <= $dte) {
 				$ret[] = $dtw->format('Y-n-j');
 				$dtw->add($inc);
@@ -777,7 +777,7 @@ if ($years[0] == '*') { //DEBUG
 	private function YearWeeks($year, $dtw=NULL)
 	{
 		if (!$dtw)
-			$dtw = new \DateTime('@0',NULL);
+			$dtw = new DateTime('@0',NULL);
 		$dtw->setDate($year,1,1);
 		$d = $dtw->format('w');
 		$dtw->setDate($year,12,31);
@@ -788,7 +788,7 @@ if ($years[0] == '*') { //DEBUG
 	private function MonthWeeks($year, $month, $dtw=NULL)
 	{
 		if (!$dtw)
-			$dtw = new \DateTime('@0',NULL);
+			$dtw = new DateTime('@0',NULL);
 		$dtw->setDate($year,$month,1);
 		$d = $dtw->format('w');
 		$e = $dtw->format('t');
@@ -822,7 +822,7 @@ if ($years[0] == '*') { //DEBUG
 
 		$dtw->setTime(0,0,0);
 		$dte = clone $dtw;
-		$inc = new \DateInterval('P1D');
+		$inc = new DateInterval('P1D');
 		$ret = array();
 		$yn = reset($years);
 
