@@ -63,7 +63,7 @@ class tmtPeriodInterpreter
 	*/
 	public function BlockDays($bs, $be, $dtw)
 	{
-		$years = self::BlockYears($bs, $be, $dtw, FALSE);
+		$years = self::BlockYears($bs,$be,$dtw,FALSE);
 		$dtw->setTime(0,0,0);
 		$dte = clone $dtw;
 		$inc = new \DateInterval('P1D');
@@ -115,7 +115,14 @@ class tmtPeriodInterpreter
 				$e = substr($e,1);
 		}
 		if ($s < $e) {
-			return range($s,$e);
+			$ret = range($s,$e);
+			if ($prefix == 'D') {
+				foreach ($ret as &$s) {
+					$s = 'D'.$s;
+				}
+				unset ($s);
+			}
+			return $ret;
 		}
 		return array($s); //should never happen
 	}
@@ -276,6 +283,7 @@ class tmtPeriodInterpreter
 	   or may be like (P,Q,R) i.e. bracketed
 	 or W,X[,Y...] where any/all may be S..E
 	 or single S..E
+	 or array of elements already parsed from a string like the above
 	Returns: array with members 'years','months','weeks','days' and maybe 'dates'
 	Each value is either an array of numbers or strings, or a single string.
 	'days' may have members like 'D3' or 'EE2D3' or may be '*' (all),
@@ -284,27 +292,33 @@ class tmtPeriodInterpreter
 //	private
 	public function InterpretDescriptor($descriptor)
 	{
-		if (strpos($descriptor,'(') !== FALSE) {
-			$descriptor = str_replace(array('!',')','(('),array('','','('),$descriptor); //omit element-closers
-			$parts = array_reverse(explode('(',$descriptor)); //prefer deeper-nested elements
-			if ($descriptor[0] == '(')
-				array_pop($parts); //empty last-member
+		if (is_array($descriptor)) {
+			$parts = array_reverse($descriptor);
 			$lastkey = count($parts) - 1; //last key for comparison
-		} elseif (strpos($descriptor,',') !== FALSE) {
-			$parts = explode(',',$descriptor);
-			$lastkey = -1; //no last-index match
-		} elseif (strpos($descriptor,'..') !== FALSE) {
-			if (preg_match('/([DWMY])/',$descriptor,$matches)) {
-				$prefix = $matches[1];
-			} else {
-				$prefix = FALSE;
-			}
-			$parts = self::ToNumbersRange(ltrim($descriptor,'!'),$prefix);
-			$lastkey = -1;
 		} else {
-			$parts = array(ltrim($descriptor,'!'));
-			$lastkey = -1;
+			if (strpos($descriptor,'(') !== FALSE) {
+				$descriptor = str_replace(array('!',')','(('),array('','','('),$descriptor); //omit element-closers
+				$parts = array_reverse(explode('(',$descriptor)); //prefer deeper-nested elements
+				if ($descriptor[0] == '(')
+					array_pop($parts); //empty last-member
+				$lastkey = count($parts) - 1; //last key for comparison
+			} elseif (strpos($descriptor,',') !== FALSE) {
+				$parts = explode(',',$descriptor);
+				$lastkey = -1; //no last-index match
+			} elseif (strpos($descriptor,'..') !== FALSE) {
+				if (preg_match('/([DWMY])/',$descriptor,$matches)) {
+					$prefix = $matches[1];
+				} else {
+					$prefix = FALSE;
+				}
+				$parts = self::ToNumbersRange(ltrim($descriptor,'!'),$prefix);
+				$lastkey = -1;
+			} else {
+				$parts = array(ltrim($descriptor,'!'));
+				$lastkey = -1;
+			}
 		}
+
 		$ic = count($parts);
 		$dc = 0;
 		$found = array('years'=>'*','months'=>'*','weeks'=>'*','days'=>'*'); //no 'dates'
@@ -783,8 +797,8 @@ if ($years[0] == '*') { //DEBUG
 
 	/**
 	SpecificYears:
-	@descriptor: string including 4-digit year, or sequence of those, or
-		','-separated series of any of the former
+	@descriptor: array of parsed element(s) or string including 4-digit year,
+		or sequence of those, or ','-separated series of any of the former
 	@bs: timestamp for start of block
 	@be: timestamp for 1-past-end of block
 	@dtw: modifiable DateTime object
@@ -819,9 +833,9 @@ if ($years[0] == '*') { //DEBUG
 				$t = ($yn+1).'-1-1';
 				$dte->modify($t);
 				while ($dtw < $dte) {
-					$st = $dtw->getTimestamp();
-					if ($st >= $bs && $st < $be) {
-						if (!$merge || $dtw->format('z') == 0) {
+					if (!$merge || $dtw->format('z') == 0) {
+						$st = $dtw->getTimestamp();
+						if ($st >= $bs && $st < $be) {
 							$doy[] = $st;
 						}
 					}
@@ -837,14 +851,15 @@ if ($years[0] == '*') { //DEBUG
 		$doy = array();
 		$dte->setTimestamp($be-1);
 		while ($dtw <= $dte) {
-			$st = $dtw->getTimestamp();
-			if ($st >= $bs && $st < $be) {
-				if (!$merge || $dtw->format('z') == 0) {
+			if (!$merge || $dtw->format('z') == 0) {
+				$st = $dtw->getTimestamp();
+				if ($st >= $bs && $st < $be) {
 					$doy[] = $st;
 				}
 			}
 			$dtw->add($inc);
 		}
+		//TODO last one if merging
 		if ($doy)
 			$ret[$yn] = $doy;
 
@@ -853,8 +868,8 @@ if ($years[0] == '*') { //DEBUG
 
 	/**
 	SpecificMonths:
-	@descriptor: string including token M1..M12, or sequence(s) of those,
-		or ','-separated series of any of the former
+	@descriptor: array of parsed element(s) or string including token M1..M12,
+		or sequence(s) of those, or ','-separated series of any of the former
 	@bs: timestamp for start of block
 	@be: timestamp for 1-past-end of block
 	@dtw: modifiable DateTime object
@@ -894,8 +909,12 @@ if ($years[0] == '*') { //DEBUG
 			foreach ($offs as $d) {
 				$dtw->modify($yn.'-1-1 +'.$d.' days');
 				if (!$merge || $dtw->format('j') == 1)
-					$doy[] = $dtw->getTimestamp();
+					$st = $dtw->getTimestamp();
+					if ($st >= $bs && $st < $be) {
+						$doy[] = $st;
+				}
 			}
+			//TODO last one if merging
 			if ($doy)
 				$ret[$yn] = $doy;
 		}
@@ -904,8 +923,8 @@ if ($years[0] == '*') { //DEBUG
 
 	/**
 	SpecificWeeks:
-	@descriptor: string including token W1..W5 or W-5..W-1, or sequence of those,
-		or ','-separated series of any of the former
+	@descriptor: array of parsed element(s) or string including token W1..W5 or W-5..W-1,
+		or sequence of those, or ','-separated series of any of the former
 	@bs: timestamp for start of block
 	@be: timestamp for 1-past-end of block
 	@dtw: modifiable DateTime object
@@ -947,8 +966,12 @@ if ($years[0] == '*') { //DEBUG
 			foreach ($offs as $d) {
 				$dtw->modify($yn.'-1-1 +'.$d.' days');
 				if (!$merge || $dtw->format('w') == 0)
-					$doy[] = $dtw->getTimestamp();
+					$st = $dtw->getTimestamp();
+					if ($st >= $bs && $st < $be) {
+						$doy[] = $st;
+				}
 			}
+			//TODO last one if merging
 			if ($doy)
 				$ret[$yn] = $doy;
 		}
@@ -957,8 +980,8 @@ if ($years[0] == '*') { //DEBUG
 
 	/**
 	SpecificDays:
-	@descriptor: string including token D1..D7, or number 1..31 or -31..-1, or
-		a sequence of those, or ','-separated series of any of the former
+	@descriptor: array of parsed element(s) or string including token D1..D7,
+		or number 1..31 or -31..-1, or a sequence of those, or ','-separated series of any of the former
 	@bs: timestamp for start of block
 	@be: timestamp for 1-past-end of block
 	@dtw: modifiable DateTime object
@@ -995,7 +1018,9 @@ if ($years[0] == '*') { //DEBUG
 			$doy = array();
 			foreach ($offs as $d) {
 				$dtw->modify($yn.'-1-1 +'.$d.' days');
-				$doy[] = $dtw->getTimestamp();
+				$st = $dtw->getTimestamp();
+				if ($st >= $bs && $st < $be)
+					$doy[] = $st;
 			}
 			if ($doy)
 				$ret[$yn] = $doy;
@@ -1005,8 +1030,8 @@ if ($years[0] == '*') { //DEBUG
 
 	/**
 	SpecificDates:
-	@descriptor: ISO-format date, or array like ['ISOstart','.','ISOend']
-		representing a sequence
+	@descriptor: array of parsed element(s) or ISO-format date,
+		or array like ['ISOstart','.','ISOend'] representing a sequence
 	@bs: timestamp for start of block
 	@be: timestamp for 1-past-end of block
 	@dtw: modifiable DateTime object
