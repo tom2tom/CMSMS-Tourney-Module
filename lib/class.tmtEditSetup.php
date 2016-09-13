@@ -780,7 +780,7 @@ EOS;
 			$jsincs[] = <<<EOS
 <script type="text/javascript" src="{$baseurl}/include/moment.min.js"></script>
 <script type="text/javascript" src="{$baseurl}/include/pikaday.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.pikaday.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/pikaday.jquery.min.js"></script>
 EOS;
 			$nextm = $mod->Lang('nextm');
 			$prevm = $mod->Lang('prevm');
@@ -793,7 +793,7 @@ EOS;
 			$sdnames = "'".str_replace(",","','",$t)."'";
 			$jsloads[] = <<< EOS
  $('.pickdate').each(function() {
-   $(this).Pikaday({
+   $(this).pikaday({
     container: this.parentNode,
     format: 'YYYY-MM-DD',
     i18n: {
@@ -1459,7 +1459,7 @@ EOS;
 				//embedded vars here were defined for start/end-date calendars
 				$jsloads[] = <<< EOS
  $('.mat_playwhen').each(function() {
-   $(this).Pikaday({
+   $(this).pikaday({
     container: this.parentNode,
     format: 'YYYY-MM-DD HH:mm',
     i18n: {
@@ -1748,7 +1748,7 @@ EOS;
 					//embedded vars here were defined for start/end-date calendars
 					$jsloads[] = <<< EOS
  $('.res_playwhen').each(function() {
-   $(this).Pikaday({
+   $(this).pikaday({
     container: this.parentNode,
     format: 'YYYY-MM-DD HH:mm',
     i18n: {
