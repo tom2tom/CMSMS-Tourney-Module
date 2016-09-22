@@ -213,6 +213,7 @@ $lang['match_added']='Match %d result added';
 $lang['match_data']='all match data'; //inclusion in typed delete-confirm string
 $lang['matches']='matches';
 $lang['matchnum']='Match %d';
+$lang['meridiem'] = 'AM,PM'; //upper-case, comma-separated, ante-first
 $lang['missing']='not provided';
 
 $lang['name_2ndlast_match']='Semi Final';
