@@ -778,24 +778,45 @@ EOS;
 		{
 			//for popup calendars
 			$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/moment.min.js"></script>
 <script type="text/javascript" src="{$baseurl}/include/pikaday.min.js"></script>
 <script type="text/javascript" src="{$baseurl}/include/pikaday.jquery.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/php-date-formatter.min.js"></script>
 EOS;
 			$nextm = $mod->Lang('nextm');
 			$prevm = $mod->Lang('prevm');
 			//js wants quoted period-names
 			$t = $mod->Lang('longmonths');
 			$mnames = "'".str_replace(",","','",$t)."'";
+			$t = $mod->Lang('shortmonths');
+			$smnames = "'".str_replace(",","','",$t)."'";
 			$t = $mod->Lang('longdays');
 			$dnames = "'".str_replace(",","','",$t)."'";
 			$t = $mod->Lang('shortdays');
 			$sdnames = "'".str_replace(",","','",$t)."'";
+			$t = $this->Lang('meridiem');
+			$meridiem = "'".str_replace(",","','",$t)."'";
 			$jsloads[] = <<< EOS
+ var fmt = new DateFormatter({
+  longDays: [{$dnames}],
+  shortDays: [{$sdnames}],
+  longMonths: [{$mnames}],
+  shortMonths: [{$smnames}],
+  meridiem: [{$meridiem}],
+  ordinal: function (number) {
+   var n = number % 10, suffixes = {1:'st', 2:'nd', 3:'rd'};
+   return Math.floor(number % 100 / 10) === 1 || !suffixes[n] ? 'th' : suffixes[n];
+  }
+ });
  $('.pickdate').each(function() {
    $(this).pikaday({
     container: this.parentNode,
-    format: 'YYYY-MM-DD',
+    format: 'Y-m-d',
+    reformat: function(target,f) {
+     return fmt.formatDate(target,f);
+    },
+    getdate: function(target,f) {
+     return fmt.parseDate(target,f);
+    },
     i18n: {
      previousMonth: '{$prevm}',
      nextMonth: '{$nextm}',
