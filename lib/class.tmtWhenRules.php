@@ -47,7 +47,9 @@ class tmtWhenRules extends tmtWhenRuleLexer
 				}
 			}
 			$timeparms['sunny'] = $sunny;
-			if (!$sunny) {
+			if ($sunny) {
+				$stimes = FALSE;
+			} else {
 				//no need for day-specific time(s), cache day-relative timestamps once
 				list($stimes,$etimes) = self::TimeBlocks($cond['T'],$bs,$dtw,$timeparms);
 			}
@@ -229,12 +231,13 @@ class tmtWhenRules extends tmtWhenRuleLexer
 		if ($timestr) {
 			$str = '';
 			$nums = explode(':',$timestr,3);
-			if (!empty($nums[0]) && $nums[0] != '00')
+			if (!empty($nums[0]) && is_numeric($nums[0]) && $nums[0] != '00')
 				$str .= $nums[0].' hours';
-			if (!empty($nums[1]) && $nums[1] != '00')
+			if (!empty($nums[1]) && is_numeric($nums[1]) && $nums[1] != '00') {
 				if ($str)
 					$str .= ' ';
 				$str .= $nums[1].' minutes';
+			}
 			if ($str) {
 				if (!($str[0] == '+' || $str[0] == '-'))
 					$str = '+'.$str;
@@ -266,8 +269,8 @@ class tmtWhenRules extends tmtWhenRuleLexer
 				$timedata = substr($timedata,1);
 			}
 			self::RelTime($dtw,$timedata);
-			$t = '+'.$timedata['count'].' '.$timedata['type'];
-			if ($timedata['count'] > 1)
+			$t = '+'.$timeparms['count'].' '.$timeparms['type'];
+			if ($timeparms['count'] > 1)
 				$t .= 's'; //pluralise
 			$dtw->modify($t);
 			$dtw->modify('-1 second');
