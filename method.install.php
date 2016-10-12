@@ -13,111 +13,111 @@ $taboptarray = array('mysql' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_g
 $dict = NewDataDictionary($db);
 $pref = cms_db_prefix();
 
-$flds = "
-	bracket_id I KEY,
-	groupid I(2) DEFAULT 0,
-	type I(1) DEFAULT ".Tourney::KOTYPE.",
-	name C(128),
-	alias C(24),
-	description X,
-	owner C(64),
-	contact C(80),
-	locale C(12),
-	twtfrom C(18),
-	smsfrom C(18),
-	smsprefix C(6),
-	smspattern C(32),
-	feu_editgroup C(48),
-	seedtype I(1),
-	fixtype I(1) DEFAULT 0,
-	teamsize I(1) DEFAULT 1,
-	sametime I(1) DEFAULT 0,
-	playgap N(6.2),
-	playgaptype I(1) DEFAULT 2,
-	available C(256),
-	calendarid C(24),
-	latitude N(8.3),
-	longitude N(8.3),
-	placegap N(6.2),
-	placegaptype I(1) DEFAULT 2,
-	startdate ".CMS_ADODB_DT.",
-	enddate ".CMS_ADODB_DT.",
-	html I(1) DEFAULT 0,
-	timezone C(32),
-	logic X,
-	cantie I(1) DEFAULT 0,
-	chartbuild I(1) DEFAULT 0,
-	chartcss C(128),
-	atformat C(16),
-	final C(48),
-	semi C(48),
-	quarter C(48),
-	eighth C(48),
-	roundname C(48),
-	versus C(48),
-	bye C(48),
-	defeated C(48),
-	tied C(48),
-	forfeit C(48),
-	nomatch C(48)
-";
+$flds = '
+bracket_id I(8) KEY,
+groupid I(2) DEFAULT 0,
+type I(1) DEFAULT '.Tourney::KOTYPE.',
+name C(128),
+alias C(24),
+description X,
+owner C(64),
+contact C(80),
+locale C(12),
+twtfrom C(18),
+smsfrom C(18),
+smsprefix C(6),
+smspattern C(32),
+feu_editgroup C(48),
+seedtype I(1),
+fixtype I(1) DEFAULT 0,
+teamsize I(1) DEFAULT 1,
+sametime I(1) DEFAULT 0,
+playgap N(6.2),
+playgaptype I(1) DEFAULT 2,
+available C(256),
+calendarid C(24),
+latitude N(8.3),
+longitude N(8.3),
+placegap N(6.2),
+placegaptype I(1) DEFAULT 2,
+startdate '.CMS_ADODB_DT.',
+enddate '.CMS_ADODB_DT.',
+html I(1) DEFAULT 0,
+timezone C(32),
+logic X,
+cantie I(1) DEFAULT 0,
+chartbuild I(1) DEFAULT 0,
+chartcss C(128),
+atformat C(16),
+final C(48),
+semi C(48),
+quarter C(48),
+eighth C(48),
+roundname C(48),
+versus C(48),
+bye C(48),
+defeated C(48),
+tied C(48),
+forfeit C(48),
+nomatch C(48)
+';
 
 $sql = $dict->CreateTableSQL($pref.'module_tmt_brackets', $flds, $taboptarray);
 $dict->ExecuteSQLArray($sql);
 $db->CreateSequence($pref.'module_tmt_brackets_seq');
 
 //flags field to be used for undo-processing: 1=>added, 2=>deleted, 3=>changed
-$flds = "
-	team_id I KEY,
-	bracket_id I,
-	name C(64),
-	seeding I(2),
-	contactall I(1) DEFAULT 0,
-	displayorder I(1),
-	flags I(1) DEFAULT 0
-";
+$flds = '
+team_id I(8) KEY,
+bracket_id I(8),
+name C(64),
+seeding I(2),
+contactall I(1) DEFAULT 0,
+displayorder I(1),
+flags I(1) DEFAULT 0
+';
 $sql = $dict->CreateTableSQL($pref.'module_tmt_teams', $flds, $taboptarray);
 $dict->ExecuteSQLArray($sql);
 $db->CreateSequence($pref.'module_tmt_teams_seq');
 
 //flags field to be used for undo-processing: 1=>added, 2=>deleted, 3=>changed
-$flds = "
-	id I,
-	name C(64),
-	contact C(80),
-	available C(128),
-	displayorder I(1),
-	flags I(1) DEFAULT 0
-";
+$flds = '
+id I(8),
+name C(64),
+contact C(80),
+available C(128),
+displayorder I(1),
+flags I(1) DEFAULT 0
+';
 $sql = $dict->CreateTableSQL($pref.'module_tmt_people', $flds, $taboptarray);
 $dict->ExecuteSQLArray($sql);
 //no sequence for this table, but an index instead
 $sql = $dict->CreateIndexSQL('idx_people', $pref.'module_tmt_people', 'id');
 $dict->ExecuteSQLArray($sql);
 
-$flds = "
-	match_id I KEY,
-	bracket_id I,
-	nextm I,
-	nextlm I,
-	teamA I,
-	teamB I,
-	playwhen ".CMS_ADODB_DT.",
-	place C(64),
-	score C(64),
-	status I(1) DEFAULT 0,
-	flags I(1) DEFAULT 0
-";
+$flds = '
+match_id I(8) KEY,
+bracket_id I(8),
+nextm I(8),
+nextlm I(8),
+teamA I(8),
+teamB I(8),
+playwhen '.CMS_ADODB_DT.',
+place C(64),
+score C(64),
+status I(1) DEFAULT 0,
+flags I(1) DEFAULT 0
+';
 $sql = $dict->CreateTableSQL($pref.'module_tmt_matches', $flds, $taboptarray);
 $dict->ExecuteSQLArray($sql);
 $db->CreateSequence($pref.'module_tmt_matches_seq');
 
-$fields = "
+$fields = '
 	group_id I(2) KEY,
 	name C(128),
 	displayorder I(2),
 	flags I(1) DEFAULT 1
-";
+';
 $sqlarray = $dict->CreateTableSQL($pref.'module_tmt_groups', $fields, $taboptarray);
 $dict->ExecuteSQLArray($sqlarray);
 $db->CreateSequence($pref.'module_tmt_groups_seq');
@@ -125,15 +125,15 @@ $db->CreateSequence($pref.'module_tmt_groups_seq');
 $sql = 'INSERT INTO '.$pref.'module_tmt_groups (group_id,name,displayorder) VALUES (0,?,1)';
 $db->Execute($sql,array($this->Lang('groupdefault')));
 
-$flds = "
-	history_id I KEY,
-	bracket_id I,
-	changer C(128),
-	changewhen ".CMS_ADODB_DT.",
-	olddata C(128),
-	newdata C(128),
-	comment X
-";
+$flds = '
+history_id I(8) KEY,
+bracket_id I(8),
+changer C(128),
+changewhen '.CMS_ADODB_DT.',
+olddata C(128),
+newdata C(128),
+comment X
+';
 $sql = $dict->CreateTableSQL($pref.'module_tmt_history', $flds, $taboptarray);
 $dict->ExecuteSQLArray($sql);
 $db->CreateSequence($pref.'module_tmt_history_seq');
