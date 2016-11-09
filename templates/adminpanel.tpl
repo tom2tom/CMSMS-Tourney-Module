@@ -21,7 +21,7 @@
   <th class="pageicon"></th>
 {/if}
   <th class="pageicon"></th>
-  <th class="checkbox" style="width:20px;">{$selectall_items}</th>
+  <th class="checkbox">{$selectall_items}</th>
  </tr></thead>
  <tbody>
 {foreach from=$comps item=entry} {cycle values='row1,row2' name='c1' assign='rowclass'}
@@ -79,7 +79,7 @@
    <th class="updown">{$title_move}</th>
    <th class="pageicon"></th>
 {/if}
-   <th class="checkbox" style="width:20px;">{$selectall_groups}</th>
+   <th class="checkbox">{$selectall_groups}</th>
   </tr></thead>
   <tbody>
  {foreach from=$groups item=entry} {cycle values='row1,row2' name='c2' assign='rowclass'}
