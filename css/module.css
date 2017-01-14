@@ -5,80 +5,80 @@ fieldset.settings { padding:0 5px; max-width:50em; }
 fieldset.settings legend { padding:0 5px; }
 
 table.leftside {
-	margin-left: 0;
-	padding: 3px;
-	border-spacing: 0;
-	border-collapse: collapse;
-	width: auto;
+ margin-left:0;
+ padding:3px;
+ border-spacing:0;
+ border-collapse:collapse;
+ width:auto;
 }
 
 table.table_sort thead tr th
 {
-	margin: 0 20px;
-	padding: 5px 5px 5px 10px;
-	color: #000;
- 	background: #E5B400; /*gold*/
-	text-align: left;
-	cursor: default;
+ margin:0 20px;
+ padding:5px 5px 5px 10px;
+ color:#000;
+ background:#E5B400; /*gold*/
+ text-align:left;
+ cursor:default;
 }
 table.table_sort thead tr th.ord, table.table_sort thead tr th.\{sss\:false\}
 {
-	margin-left: 0;
-	padding-left: 2px;
+ margin-left:0;
+ padding-left:2px;
 }
 table.table_sort thead tr th.checkbox
 {
-	margin-left: 20px;
-	padding-left: 10px;
+ margin-left:20px;
+ padding-left:10px;
 }
 
 table.table_sort thead tr .SortAble
 {
-	background-image: url(../images/bgdark.gif);
-	background-repeat: no-repeat;
-	background-position: center left;
-	cursor: pointer;
+ background-image:url(../images/bgdark.gif);
+ background-repeat:no-repeat;
+ background-position:center left;
+ cursor:pointer;
 }
 
 table.table_sort thead tr .SortUp
 {
-	background-image: url(../images/ascdark.gif);
-	background-repeat: no-repeat;
-	background-position: center left;
-	cursor: pointer;
+ background-image:url(../images/ascdark.gif);
+ background-repeat:no-repeat;
+ background-position:center left;
+ cursor:pointer;
 }
 
 table.table_sort thead tr .SortDown
 {
-	background-image: url(../images/descdark.gif);
-	background-repeat: no-repeat;
-	background-position: center left;
-	cursor: pointer;
+ background-image:url(../images/descdark.gif);
+ background-repeat:no-repeat;
+ background-position:center left;
+ cursor:pointer;
 }
 
 table.table_sort tbody td.row1s {
-	background-color: #E9E9E9;
+ background-color:#E9E9E9;
 }
 
 table.table_sort tbody td.row2s {
-	background: #D9D9D9;
+ background:#D9D9D9;
 }
 
 th
 {
- 	background:#AAA;
-	height:2.5em;
-	text-align:center;
-    cursor:default;
+ background:#AAA;
+ height:2.5em;
+ text-align:center;
+ cursor:default;
 }
 
-th.divider, td.divider { padding-left: 5px; border-left: 3px dotted #E5B400; }
+th.divider, td.divider { padding-left:5px; border-left:3px dotted #E5B400; }
 
 textarea.tallarea {
  font-family:auto;
  font-family:inherit;
  font-size:1.1em;
-// font-size:inherit;
+/* font-size:inherit; */
  line-height:1.2;
  width:50em;
  height:8em;
@@ -87,7 +87,7 @@ textarea.shortarea {
  font-family:auto;
  font-family:inherit;
  font-size:1.1em;
-// font-size:inherit;
+/* font-size:inherit; */
  line-height:1.2;
  width:50em;
  height:3em;
@@ -95,85 +95,150 @@ textarea.shortarea {
 
 textarea.cloaked
 {
-	font-family:auto;
-	font-family:inherit;
-	font-size:1.2em;
-//	font-size:inherit;
-	line-height:1.1;
-	width:40em;
-	height:2.4em;
+ font-family:auto;
+ font-family:inherit;
+ font-size:1.2em;
+/* font-size:inherit; */
+ line-height:1.1;
+ width:40em;
+ height:2.4em;
 }
 
 /* for making inputs look like links */
 input.fakeicon
 {
-	margin:0;
-	padding:0;
-	border:medium;
-	vertical-align:middle;
+ margin:0;
+ padding:0;
+ border:medium;
+ vertical-align:middle;
 }
 /* color and size will be conformed at runtime, if js is enabled */
 input.fakelink
 {
-	margin:0;
-	padding:0;
-	text-align:left;
-	text-decoration:underline;
-	font-size:1em;
-	color:#000;
-	background:url("");
+ margin:0;
+ padding:0;
+ text-align:left;
+ text-decoration:underline;
+ font-size:1em;
+ color:#000;
+ background:url("");
 }
 
 input.fakelink:hover
 {
-	text-decoration:none;
-	background:url("");
+ text-decoration:none;
+ background:url("");
 }
-/* for popup-modal confirmation */
-div.modal\-overlay
+
+/* popup modal dialog */
+#alertable
 {
-	display:none;
-	position:fixed;
-	top:0;
-	left:0;
-	height:100%;
-	width:100%;
-	z-index:1001;
-	background-color:rgba(0,0,0,.3); /*can be safely ignored*/
+ position:fixed;
+ z-index:9999;
+ top:38vh;
+ left:calc(50% - 150px);
+ width:300px;
+ background:white;
+ -moz-border-radius:4px;
+ -webkit-border-radius:4px;
+ border-radius:4px;
+ padding:20px;
+ margin:0 auto;
 }
-div.confirm\-container
+
+/* Overlay */
+#alertable\-overlay
 {
-	display:none;
-	position:absolute;
-	top:50%;
-	left:50%;
-	border:2px solid #FDEAD0;
-	-moz-border-radius:5px 5px 5px 5px;
-	-webkit-border-radius:5px 5px 5px 5px;
-	border-radius:5px 5px 5px 5px;
-	padding:10px 40px;
-	z-index:1002;
-	background:#FEF4E7 url(../images/warning.gif) no-repeat 5px 10px;
+ position:fixed;
+ z-index:9998;
+ top:0;
+ right:0;
+ bottom:0;
+ left:0;
+ background:rgba(0, 0, 0, .3);
 }
-input#mc_conf
+
+/* Message */
+#alertable\-message
 {
-	font-weight:bold;
-	color:#000;
-	background:#C4A636; /*:#66D166;*/
+ margin-bottom:20px;
+ font-weight:bold;
+ /* font-size:inherit; */
 }
-input#mc_conf:hover
+
+/* Prompt */
+#alertable\-prompt
 {
-	color:#FFF;
-	background:#00B200;
+ margin-bottom:20px;
 }
-input#mc_deny
+
+#alertable\-input
 {
-	font-weight:bold;
-	color:#000;
-	background:#C4A636;
+ width:100%;
+ border-radius:4px;
+ box-shadow:none;
+ border:solid 1px #ccc;
+ font-family:inherit;
+/* font-size:inherit; */
+ color:inherit;
+ padding:6px 12px;
+ display:block;
+ box-sizing:border-box;
+ margin-bottom:10px;
 }
-input#mc_deny:hover
+
+/* Button group */
+#alertable\-buttons
 {
-	color:#FFF;
-	background:#F00;
+ text-align:right;
+}
+
+/* OK button */
+#alertable\-ok
+{
+ background:#C4A636;
+ border:solid 1px #09d;
+ font-family:inherit;
+/* font-size:inherit; */
+ font-weight:bold;
+ color:#000;
+ -moz-border-radius:4px;
+ -webkit-border-radius:4px;
+ border-radius:4px;
+ padding:6px 12px;
+ margin-left:4px;
+ cursor:pointer;
+}
+
+#alertable\-ok:hover,
+#alertable\-ok:focus,
+#alertable\-ok:active
+{
+ color:#FFF;
+ background:#00B200;
+}
+
+/* Cancel button */
+#alertable\-cancel
+{
+ border:solid 1px #ddd;
+ background:#C4A636;
+ font-family:inherit;
+/* font-size:inherit; */
+ font-weight:bold;
+ color:#000;
+ -moz-border-radius:4px;
+ -webkit-border-radius:4px;
+ border-radius:4px;
+ padding:6px 12px;
+ margin-left:4px;
+ cursor:pointer;
+}
+
+#alertable\-cancel:hover,
+#alertable\-cancel:focus,
+#alertable\-cancel:active
+{
+ color:#FFF;
+ background:#F00;
 }
