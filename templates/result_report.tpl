@@ -27,8 +27,3 @@
 <br />
 {if isset($matches)}{$send}&nbsp;&nbsp;{/if}{$cancel}
 {$end_form}
-<script type="text/javascript">
-//<![CDATA[
-{foreach from=$jsfuncs item=func}{$func}{/foreach}
-//]]>
-</script>

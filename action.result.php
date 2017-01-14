@@ -206,6 +206,7 @@ $tplvars['description'] = $desc;
 //script accumulators
 $jsfuncs = array();
 $jsloads = array();
+//$jsincs = array();
 
 $sql = 'SELECT match_id,teamA,teamB FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status<'.
  Tourney::ANON.' AND teamA IS NOT NULL AND teamA!=-1 AND teamB IS NOT NULL AND teamB!=-1';
@@ -380,16 +381,13 @@ $tplvars['send'] =  $this->CreateInputSubmitDefault($id,'send',$this->Lang('subm
 //'cancel' action-name is used by other form(s)
 $tplvars['cancel'] =  $this->CreateInputSubmit($id,'nosend',$this->Lang('cancel'));
 
-if($jsloads)
-{
-	$jsfuncs[] = '
-$(function() {
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
-}
-$tplvars['jsfuncs'] =  $jsfuncs;
+$jsall = tmtUtils::MergeJS(FALSE,$jsfuncs,$jsloads);
+//unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 tmtTemplate::Process($this,'result_report.tpl',$tplvars);
-?>
+
+if ($jsall) {
+	echo $jsall;
+}
