@@ -573,27 +573,30 @@ if($rows)
 
 	if($pmod)
 	{
-		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.alertable.min.js"></script>';
 
 		$jsloads[] = <<< EOS
- teamtable.find('.plr_delete').children().modalconfirm({
-  overlayID: 'confirm',
-  preShow: function(tg,\$d){
-   var name = \$(tg).closest('tr').find('.plr_name').attr('value'),
+ teamtable.find('.plr_delete').children().click(function(ev) {
+  var tg = ev.target,
+    name = \$(this).closest('tr').find('.plr_name').attr('value'),
     msg;
-   if (name) {
-    if (name.search(' ') > -1){
-     name = '"'+name+'"';
-    }
-     msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name); 
-   } else {
-     msg = '{$this->Lang('confirm')}';
+  if (name) {
+   name = name.replace(/'/g, "\\'");
+   if (name.search(' ') > -1) {
+    name = '"'+name+'"';
    }
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = msg;
+   msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+  } else {
+    msg = '{$this->Lang('confirm')}';
   }
- });
-
+  $.alertable.confirm(msg,{
+   okName: '{$this->Lang('yes')}',
+   cancelName: '{$this->Lang('no')}'
+  }).then(function() {
+   $(tg).trigger('click.deferred');
+  });
+  return false;
+ )};
 EOS;
 	}
 }
@@ -763,27 +766,27 @@ EOS;
 
 if($pmod)
 {
-	//for popup confirmation
-	$tplvars['no'] = $this->Lang('no');
-	$tplvars['yes'] = $this->Lang('yes');
-
 	if($pc > 1)
 	{
 		$tplvars['dndhelp'] = $this->Lang('help_dnd');
 		$tplvars['delete'] = $this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
 			'title="'.$this->Lang('delete_tip').'"');
+		//for popup confirmation
 		$t = ($isteam) ? $this->Lang('sel_teams') : $this->Lang('sel_players');
 		$t = $this->Lang('confirm_delete',$t);
 		$jsloads[] = <<< EOS
- $('#{$id}delete').modalconfirm({
-  overlayID: 'confirm',
-  doCheck: player_selected,
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$t}';
+ $('#{$id}delete').click(function() {
+  if (player_selected()) {
+   var tg = this;
+   $.alertable.confirm('{$t}',{
+    okName: '{$this->Lang('yes')}',
+    cancelName: '{$this->Lang('no')}'
+   }).then(function() {
+    $(tg).trigger('click.deferred');
+   });
   }
+  return false;
  });
-
 EOS;
 	}
 	if($isteam || $pc == 0)
@@ -808,24 +811,27 @@ EOS;
 	{
 	 case 2:
 	 case 12: //maybe changed since export done
-		$test = 'null'; //TODO check for any change e.g. ajax
+		$test = '0'; //TODO check for any change e.g. ajax
 		break;
 	 default:
-		$test = 'null'; //ask
+		$test = '1'; //ask
 	  	break;
 	}
-	//onCheckFail: true; means submit form if no check needed
+	//submit form if no check needed
 	$jsloads[] = <<< EOS
- $('#{$id}cancel').modalconfirm({
-  overlayID: 'confirm',
-  doCheck: {$test},
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$this->Lang('allabandon')}';
-  },
-  onCheckFail: true
+ $('#{$id}cancel').click(function() {
+  if ({$test}) {
+   var tg = this;
+   $.alertable.confirm('{$this->Lang('allabandon')}',{
+    okName: '{$this->Lang('yes')}',
+    cancelName: '{$this->Lang('no')}'
+   }).then(function() {
+    $(tg).trigger('click.deferred');
+   });
+   return false;
+  }
+  return true;
  });
-
 EOS;
 }
 else
@@ -839,18 +845,17 @@ $tplvars['hidden'] = $hidden;
 
 $jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tmtfuncs.js"></script>';
 
-if($jsloads)
-{
-	$jsfuncs[] = '$(document).ready(function() {
- var teamtable = $(\'#team\');
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
+if($jsloads) {
+	array_unshift($jsfuncs, PHP_EOL.'var teamtable = $(\'#team\');'.PHP_EOL);
 }
-$tplvars['jsfuncs'] = $jsfuncs;
-$tplvars['jsincs'] = $jsincs;
+
+$jsall = tmtUtils::MergeJS($jsincs,$jsfuncs,$jsloads);
+unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 tmtTemplate::Process($this,'addedit_team.tpl',$tplvars);
 
-?>
+if ($jsall) {
+	echo $jsall;
+}
