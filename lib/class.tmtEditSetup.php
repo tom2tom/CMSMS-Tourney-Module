@@ -143,7 +143,8 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		return $ret;
 	}
 
-	function Setup(&$mod,&$tplvars,&$data,$id,$returnid,$activetab='',$message='')
+	function Setup(&$mod,&$tplvars,&$jsfuncs,&$jsloads,&$jsincs,&$data,
+		$id,$returnid,$activetab='',$message='')
 	{
 		$gCms = cmsms();
 		$config = $gCms->GetConfig();
@@ -486,7 +487,7 @@ EOS;
 		$ob = cms_utils::get_module('Notifier');
 		if($ob)
 		{
-			
+
 			$ob = new MessageSender();
 			$ob->Load();
 			$sms = ($ob->text != FALSE);
@@ -528,18 +529,17 @@ EOS;
 			if($pmod)
 			{
 				$jsloads[] = <<< EOS
- $('#{$id}connect').modalconfirm({
-  overlayID: 'confirm',
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$mod->Lang('allsaved')}';
-  },
-  onConfirm: function(tg,\$d){
+ $('#{$id}connect').click(function() {
+  var tg = this;
+  $.alertable.confirm('{$mod->Lang('allsaved')}',{
+   okName: '{$this->Lang('yes')}',
+   cancelName: '{$this->Lang('no')}'
+  }).then(function() {
    set_params(tg);
-   return true;
-  }
+   $(tg).trigger('click.deferred');
+  });
+  return false;
  });
-
 EOS;
 			}
 		}
@@ -1118,26 +1118,27 @@ EOS;
 EOS;
 				}
 				$jsloads[] = <<< EOS
- $('#tmt_players').find('.tem_delete').children().modalconfirm({
-  overlayID: 'confirm',
-  preShow: function(tg,\$d){
-   var name = \$(this).closest('tr').find('.tem_name').attr('value'),
+ $('#tmt_players').find('.tem_delete').children().click(function(ev) {
+  var tg = ev.target,
+    name = \$(this).closest('tr').find('.tem_name').attr('value'),
     msg;
-    if (name) {
-     if (name.search(' ') > -1) {
-      name = '"'+name+'"';
-     }
-     msg = '{$mod->Lang('confirm_delete','%s')}'.replace('%s',name);
-    } else {
-     msg = '{$mod->Lang('confirm')}';
-    }
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = msg;
-  },
-  onConfirm: function(tg,\$d){
-   set_params(tg);
-   return true;
+  if (name) {
+   name = name.replace(/'/g, "\\'");
+   if (name.search(' ') > -1) {
+    name = '"'+name+'"';
+   }
+   msg = '{$mod->Lang('confirm_delete','%s')}'.replace('%s',name);
+  } else {
+   msg = '{$mod->Lang('confirm')}';
   }
+  $.alertable.confirm(msg,{
+   okName: '{$this->Lang('yes')}',
+   cancelName: '{$this->Lang('no')}'
+  }).then(function() {
+    set_params(tg);
+    $(tg).trigger('click.deferred');
+  });
+  return false;
  });
 
 EOS;
@@ -1209,21 +1210,19 @@ EOS;
 					$t = ($isteam) ? $mod->Lang('sel_teams') : $mod->Lang('sel_players');
 					$t = $mod->Lang('confirm_delete',$t);
 					$jsloads[] = <<< EOS
- $('#{$id}delteams').modalconfirm({
-  overlayID: 'confirm',
-  doCheck: function(){
-   return (team_count() > 0);
-  },
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$t}';
-  },
-  onConfirm: function(tg,\$d){
-   set_params(tg);
-   return true;
+ $('#{$id}delteams').click(function() {
+  if (team_count() > 0) {
+   var tg = this;
+   $.alertable.confirm('{$t}',{
+    okName: '{$this->Lang('yes')}',
+    cancelName: '{$this->Lang('no')}'
+   }).then(function() {
+    set_params(tg);
+	$(tg).trigger('click.deferred');
+   });
   }
+  return false;
  });
-
 EOS;
 				}
 				else //finished
@@ -1535,36 +1534,34 @@ EOS;
 					$tplvars['reset'] = $mod->CreateInputSubmit($id,'reset',$mod->Lang('reset'),
 						'title="'.$mod->Lang('reset_tip').'"');
 					$jsloads[] = <<< EOS
- $('#{$id}reset').modalconfirm({
-  overlayID: 'confirm',
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}';
-  },
-  onConfirm: function(tg,\$d){
-   set_params(tg);
-   return true;
-  }
+ $('#{$id}reset').click(function() {
+  var tg = this;
+  $.alertable.confirm('{$mod->Lang('confirm_delete',$mod->Lang('match_data'))}',{
+   okName: '{$this->Lang('yes')}',
+   cancelName: '{$this->Lang('no')}'
+  }).then(function() {
+    set_params(tg);
+	$(tg).trigger('click.deferred');
+  });
+  return false;
  });
-
 EOS;
 				}
 			}
 
 			$jsloads[] = <<< EOS
- $('#{$id}notify,#{$id}abandon').modalconfirm({
-  overlayID: 'confirm',
-  doCheck: function(){
-   return (match_count() > 0);
-  },
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$mod->Lang('allsaved')}';
-  },
-  onConfirm: function(tg,\$d){
-   set_params(tg);
-   return true;
+ $('#{$id}notify,#{$id}abandon').click(function() {
+  if (match_count() > 0) {
+   var tg = this;
+   $.alertable.confirm('{$mod->Lang('allsaved')}',{
+    okName: '{$this->Lang('yes')}',
+    cancelName: '{$this->Lang('no')}'
+   }).then(function() {
+    set_params(tg);
+	$(tg).trigger('click.deferred');
+   });
   }
+  return false;
  });
 
 EOS;
@@ -1868,15 +1865,15 @@ EOS;
 		$tplvars['apply'] = $mod->CreateInputSubmit($id,'apply',$mod->Lang('apply'),
 			'title = "'.$mod->Lang('apply_tip').'" onclick="set_params(this);"');
 		//setup cancel-confirmation popup
-		if(!empty($data->added)) //allways check cancellation for new bracket
-			$test = 'null';
-		else //check if 'dirty' reported via ajax
-		{
+		if(!empty($data->added)) { //always check cancellation for new bracket
+			$test = '1';
+	    } else { //check if 'dirty' reported via ajax
 			$url = $mod->CreateLink($id,'check_data',NULL,NULL,array('bracket_id'=>$data->bracket_id),NULL,TRUE);
 			$offs = strpos($url,'?mact=');
 			$ajaxdata = str_replace('amp;','',substr($url,$offs+1));
-			$test = <<< EOS
-function(){
+			$test = 'check_data()';
+			$jfuncs[] = <<< EOS
+function check_data() {
 	 var check = false;
 	 $.ajax({
 		url: 'moduleinterface.php',
@@ -1897,26 +1894,25 @@ EOS;
 
 		$tplvars['cancel'] = $mod->CreateInputSubmit($id,'cancel',$mod->Lang('cancel'));
 		//for popup confirmation
-		$tplvars['no'] = $mod->Lang('no');
-		$tplvars['yes'] = $mod->Lang('yes');
-		//onCheckFail: true means onConfirm() if no check needed
 		$jsloads[] = <<< EOS
- $('#{$id}cancel').modalconfirm({
-  overlayID: 'confirm',
-  doCheck: {$test},
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$mod->Lang('allabandon')}';
-  },
-  onCheckFail: true,
-  onConfirm: function(tg,\$d){
-   set_action(tg);
-   return true;
+ $('#{$id}cancel').click(function() {
+  if ({$test}) {
+   var tg = this;
+   $.alertable.confirm('{$mod->Lang('allabandon')}',{
+    okName: '{$this->Lang('yes')}',
+    cancelName: '{$this->Lang('no')}'
+   }).then(function() {
+    set_action(tg);
+	$(tg).trigger('click.deferred');
+   });
+   return false;
+  } else {
+    set_action(this);
+    return true;
   }
  });
-
 EOS;
-		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.alertable.min.js"></script>';
 
 		//prevent immediate activation by textinput <Enter> press
 		$jsloads[] = <<< EOS

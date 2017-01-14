@@ -173,24 +173,34 @@ else
 		$message = $params['tmt_message'];
 }
 
-if ($data)
-{
+if ($data) {
 	if ($params['real_action'] == 'view')
 		$data->readonly = 1;
 	$tplvars = array();
+	//script accumulators populated downstream
+	$jsfuncs = NULL;
+	$jsloads = NULL;
+	$jsincs = NULL;
+
 	$funcs = new tmtEditSetup();
-	$funcs->Setup($this,$tplvars,$data,$id,$returnid,$tab,$message);
+	$funcs->Setup($this,$tplvars,$jsfuncs,$jsloads,$jsincs,$data,$id,$returnid,$tab,$message);
 	unset($funcs);
 	unset($data);
+
+	$jsall = tmtUtils::MergeJS($jsincs,$jsfuncs,$jsloads);
+	unset($jsincs);
+	unset($jsfuncs);
+	unset($jsloads);
+
 	tmtTemplate::Process($this,'addedit_comp.tpl',$tplvars);
-}
-else
-{
+
+	if ($jsall) {
+		echo $jsall;
+	}
+} else {
 	if (!empty($message))
 		$message .= '<br />/<br />'.$this->Lang('err_missing');
 	else
 		$message = $this->PrettyMessage('err_missing',FALSE);
 	$this->Redirect($id,'defaultadmin','',array('tmt_message'=>$message));
 }
-
-?>
