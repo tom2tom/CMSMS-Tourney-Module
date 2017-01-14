@@ -141,24 +141,3 @@
 {/if}
 
 {$tab_footers}
-
-{if $canmod}
-<div id="confirm" class="modal-overlay">
-<div class="confirm-container">
-<p style="text-align:center;font-weight:bold;"></p>
-<br />
-<p style="text-align:center;"><input id="mc_conf" class="cms_submit pop_btn" type="submit" value="{$yes}" />
-&nbsp;&nbsp;<input id="mc_deny" class="cms_submit pop_btn" type="submit" value="{$no}" /></p>
-</div>
-</div>
-{/if}
-
-{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}
-{/foreach}{/if}
-{if isset($jsfuncs)}
-<script type="text/javascript">
-//<![CDATA[
-{foreach from=$jsfuncs item=func}{$func}{/foreach}
-//]]>
-</script>
-{/if}

@@ -233,42 +233,47 @@ EOS;
 		$tplvars['deletebtn'] = $this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
 			'title="'.$this->Lang('deletesel_tip').'"'); //$(#$id.delete_item) modalconfirm
 		//for popup confirmation
-		$tplvars['no'] = $this->Lang('no');
-		$tplvars['yes'] = $this->Lang('yes');
-		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.modalconfirm.min.js"></script>';
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.alertable.min.js"></script>';
 		$jsloads[] = <<<EOS
- $('.delitmlink').modalconfirm({
-  overlayID: 'confirm',
-  preShow: function(tg,\$d){
-   var name = \$('td:first > a', $(tg).closest('tr')).text(),
-    msg;
-   if (name) {
-    if (name.search(' ') > -1){
-     name = '"'+name+'"';
-    }
-    msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
-   } else {
-    msg = '{$this->Lang('confirm')}';
+ $('.delitmlink').click(function(ev) {
+  var tg = ev.target,
+   name = \$('td:first > a', $(this).closest('tr')).text(),
+   msg;
+  if (name) {
+   name = name.replace(/'/g, "\\'");
+   if (name.search(' ') > -1){
+    name = '"'+name+'"';
    }
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = msg;
+   msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+  } else {
+   msg = '{$this->Lang('confirm')}';
   }
+  $.alertable.confirm(msg,{
+   okName: '{$this->Lang('yes')}',
+   cancelName: '{$this->Lang('no')}'
+  }).then(function() {
+   $(tg).trigger('click.deferred');
+  });
+  return false;
  });
- $('#{$id}delete_item').modalconfirm({
-  overlayID: 'confirm',
-  doCheck: confirm_selitm_count,
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_items'))}';
+ $('#{$id}delete_item').click(function() {
+  if (confirm_selitm_count()) {
+   var tg = this;
+   $.alertable.confirm('{$this->Lang('confirm_delete',$this->Lang('sel_items'))}',{
+    okName: '{$this->Lang('yes')}',
+    cancelName: '{$this->Lang('no')}'
+   }).then(function() {
+    $(tg).trigger('click.deferred');
+   });
   }
+  return false;
  });
- $('form input[type=text]').keypress(function(e){
-  if (e.which == 13){
+ $('form input[type=text]').keypress(function(ev){
+  if (ev.which == 13) {
    $('input[type=submit].default').focus();
    return false;
   }
  });
-
 EOS;
 	}
 }
@@ -478,30 +483,38 @@ EOS;
 		var to = now.indexOf('hover');
 		$(this).attr('class', now.substring(0,to));
  });
- $('.delgrplink').modalconfirm({
-  overlayID: 'confirm',
-  preShow: function(tg,\$d){
-   var name = \$('td > input:text', $(tg).closest('tr')).val(),
+ $('.delgrplink').click(function(ev) {
+  var tg = ev.target,
+    name = \$('td > input:text', $(this).closest('tr')).val(),
     msg;
-   if (name) {
-    if (name.search(' ') > -1){
-     name = '"'+name+'"';
-    }
-    msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
-   } else {
-    msg = '{$this->Lang('confirm')}';
+  if (name) {
+   name = name.replace(/'/g, "\\'");
+   if (name.search(' ') > -1){
+    name = '"'+name+'"';
    }
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = msg;
+   msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+  } else {
+   msg = '{$this->Lang('confirm')}';
   }
+  $.alertable.confirm(msg,{
+    okName: '{$this->Lang('yes')}',
+    cancelName: '{$this->Lang('no')}'
+   }).then(function() {
+    $(tg).trigger('click.deferred');
+   });
+  return false;
  });
- $('#{$id}delete_group').modalconfirm({
-  overlayID: 'confirm',
-  doCheck: confirm_selgrp_count,
-  preShow: function(tg,\$d){
-   var para = \$d.children('p:first')[0];
-   para.innerHTML = '{$this->Lang('confirm_delete',$this->Lang('sel_groups'))}';
+ $('#{$id}delete_group').click(function() {
+  if (confirm_selgrp_count()) {
+   var tg = this;
+   $.alertable.confirm('{$this->Lang('confirm_delete',$this->Lang('sel_groups'))}',{
+    okName: '{$this->Lang('yes')}',
+    cancelName: '{$this->Lang('no')}'
+   }).then(function() {
+    $(tg).trigger('click.deferred');
+   });
   }
+  return false;
  });
 EOS;
 			$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
@@ -642,17 +655,13 @@ else
 	$tplvars['canconfig'] = 0;
 }
 
-if($jsloads)
-{
-	$jsfuncs[] = '$(document).ready(function() {
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
-}
-$tplvars['jsfuncs'] = $jsfuncs;
-$tplvars['jsincs'] = $jsincs;
+$jsall = tmtUtils::MergeJS($jsincs,$jsfuncs,$jsloads);
+unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 tmtTemplate::Process($this,'adminpanel.tpl',$tplvars);
 
-?>
+if ($jsall) {
+	echo $jsall;
+}
