@@ -352,6 +352,7 @@ EOS;
 	$jsincs[] = <<<EOS
 <script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
 <script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.alertable.min.js"></script>
 EOS;
 
 	$jsfuncs[] = <<< EOS
@@ -1874,21 +1875,21 @@ EOS;
 			$test = 'check_data()';
 			$jfuncs[] = <<< EOS
 function check_data() {
-	 var check = false;
-	 $.ajax({
-		url: 'moduleinterface.php',
-		async: false,
-		type: 'POST',
-		data: '$ajaxdata',
-		dataType: 'text',
-		success: function(data,status) {
-			if(status=='success') check = (data=='1');
-		}
-	 }).fail(function() {
-		alert('{$mod->Lang('err_ajax')}');
-	 });
-	 return check;
-	}
+ var check = false;
+ $.ajax({
+   url: 'moduleinterface.php',
+   async: false,
+   type: 'POST',
+   data: '$ajaxdata',
+   dataType: 'text',
+   success: function(data,status) {
+	   if(status=='success') check = (data=='1');
+   }
+ }).fail(function() {
+  $.alertable.alert('{$mod->Lang('err_ajax')}');
+ });
+ return check;
+}
 EOS;
 		}
 
@@ -1912,8 +1913,6 @@ EOS;
   }
  });
 EOS;
-		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.alertable.min.js"></script>';
-
 		//prevent immediate activation by textinput <Enter> press
 		$jsloads[] = <<< EOS
  $('form input[type=text]').keypress(function(e){
