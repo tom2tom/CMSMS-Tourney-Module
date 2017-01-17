@@ -241,7 +241,6 @@ function dropresponse(data,status) {
   $('#page_tabs').prepend('<p style="font-weight:bold;color:red;">{$mod->Lang('err_ajax')}!</p><br />');
  }
 }
-
 EOS;
 			$onsort = <<< EOS
 function () {
@@ -347,7 +346,6 @@ EOS;
  $('.tem_name,.tem_seed,.mat_playwhen,.mat_playwhere,.res_playwhen').blur(function (ev) {
   \$(this).closest('table').trigger('update');
  });
-
 EOS;
 	$jsincs[] = <<<EOS
 <script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
@@ -378,7 +376,6 @@ function set_params(btn) {
  set_action(btn);
  set_tab();
 }
-
 EOS;
 
 		$this->MatchExists($data->bracket_id);
@@ -827,7 +824,6 @@ EOS;
     }
    });
  });
-
 EOS;
 		}
 		if(class_exists('Booker',FALSE))
@@ -1115,7 +1111,6 @@ EOS;
  });
  $('.updown').hide();
  $('.dndhelp').css('display','block');
-
 EOS;
 				}
 				$jsloads[] = <<< EOS
@@ -1141,7 +1136,6 @@ EOS;
   });
   return false;
  });
-
 EOS;
 			}
 		}
@@ -1174,7 +1168,6 @@ EOS;
 function select_all_teams(cb) {
  $('#tmt_players > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
 }
-
 EOS;
 				$tplvars['selteams'] = $mod->CreateInputCheckbox($id,'t',FALSE,-1,
 					'id="teamsel" onclick="select_all_teams(this);"');
@@ -1196,7 +1189,6 @@ function teams_selected(ev,btn) {
   return false;
  }
 }
-
 EOS;
 
 			if($pmod)
@@ -1214,7 +1206,7 @@ EOS;
  $('#{$id}delteams').click(function() {
   if (team_count() > 0) {
    var tg = this;
-   $.alertable.confirm('{$t}',{
+   $.alertable.confirm('$t',{
     okName: '{$this->Lang('yes')}',
     cancelName: '{$this->Lang('no')}'
    }).then(function() {
@@ -1492,7 +1484,6 @@ EOS;
     }
    });
  });
-
 EOS;
 			}
 
@@ -1502,7 +1493,6 @@ EOS;
 function select_all_matches(cb) {
  $('#tmt_matches > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
 }
-
 EOS;
 				$tplvars['selmatches'] = $mod->CreateInputCheckbox($id,'m',FALSE,-1,
 					'id="matchsel" onclick="select_all_matches(this);"');
@@ -1524,7 +1514,6 @@ function matches_selected(ev,btn) {
   return false;
  }
 }
-
 EOS;
 			if($pmod)
 			{
@@ -1564,7 +1553,6 @@ EOS;
   }
   return false;
  });
-
 EOS;
 
 			if($pmod && ($data->matches || !$this->any)) //not finished
@@ -1647,7 +1635,6 @@ function matches_view(btn) {
  var newmode = (btn.name=='{$id}actual')?'actual':'plan';
  $('#{$id}matchview').val(newmode);
 }
-
 EOS;
 		if($plan)
 		{
@@ -1779,7 +1766,6 @@ EOS;
     }
    });
  });
-
 EOS;
 				}
 				if(count($results) > 1)
@@ -1788,7 +1774,6 @@ EOS;
 function select_all_results(cb) {
  $('#tmt_results > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
 }
-
 EOS;
 					$tplvars['selresults'] = $mod->CreateInputCheckbox($id,'r',FALSE,-1,
 						'id="resultsel" onclick="select_all_results(this);"');
@@ -1814,7 +1799,6 @@ function results_selected(ev,btn) {
   return false;
  }
 }
-
 EOS;
 				$tplvars['update3'] = $mod->CreateInputSubmit($id,'update['.$id.'results]',$mod->Lang('update'),
 					'title="'.$mod->Lang('update_tip').'" onclick="return results_selected(event,this);"');
@@ -1846,7 +1830,6 @@ function results_view(btn) {
  var newmode = (btn.name=='{$id}future')?'future':'past';
  $('#{$id}resultview').val(newmode);
 }
-
 EOS;
 		if($future)
 			$tplvars['altrview'] = $mod->CreateInputSubmit($id,'past',$mod->Lang('history'),
@@ -1921,7 +1904,6 @@ EOS;
    return false;
   }
  });
-
 EOS;
 		$tplvars['hidden'] = $hidden;
 
