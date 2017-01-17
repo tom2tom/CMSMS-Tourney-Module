@@ -140,7 +140,7 @@ if ($rows)
 				$one->copylink = $this->CreateLink($id,'clone_comp','',
 					$iconclone,array('bracket_id'=>$thisid));
 				$one->deletelink = $this->CreateLink($id,'delete_comp','',
-					$icondel,array('bracket_id'=>$thisid)); //$(.delitmlink) modalconfirm
+					$icondel,array('bracket_id'=>$thisid)); //jQuery confirmation
 			}
 		}
 		else //no mod allowed
@@ -191,9 +191,8 @@ if ($comps)
 	);
 	if ($ic > 1)
 	{
-		$jsfuncs[] = <<< EOS
-function select_all_items(cb)
-{
+		$jsfuncs[] = <<<EOS
+function select_all_items(cb) {
  $('input[name="{$id}selitems[]"][type="checkbox"]').attr('checked',cb.checked);
 }
 EOS;
@@ -207,14 +206,12 @@ EOS;
 		'title="'.$this->Lang('printsel_tip').'" onclick="return confirm_selitm_count();"');
 	$tplvars['exportbtn'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
 		'title="'.$this->Lang('exportsel_tip').'" onclick="return confirm_selitm_count();"');
-	$jsfuncs[] = <<< EOS
-function selitm_count()
-{
+	$jsfuncs[] = <<<EOS
+function selitm_count() {
  var cb = $('input[name="{$id}selitems[]"]:checked');
  return cb.length;
 }
-function confirm_selitm_count()
-{
+function confirm_selitm_count() {
  return (selitm_count() > 0);
 }
 EOS;
@@ -231,7 +228,7 @@ EOS;
 		$tplvars['clonebtn'] = $this->CreateInputSubmit($id,'clone',$this->Lang('clone'),
 			'title="'.$this->Lang('clonesel_tip').'" onclick="return confirm_selitm_count();"');
 		$tplvars['deletebtn'] = $this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
-			'title="'.$this->Lang('deletesel_tip').'"'); //$(#$id.delete_item) modalconfirm
+			'title="'.$this->Lang('deletesel_tip').'"');  //jQuery confirmation
 		//for popup confirmation
 		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.alertable.min.js"></script>';
 		$jsloads[] = <<<EOS
@@ -268,7 +265,7 @@ EOS;
   }
   return false;
  });
- $('form input[type=text]').keypress(function(ev){
+ $('form input[type=text]').keypress(function(ev) {
   if (ev.which == 13) {
    $('input[type=submit].default').focus();
    return false;
@@ -349,7 +346,7 @@ if($groups)
 			$previd = $gid; //i.e. always set before use
 			if ($gid > 0) //preserve the default group
 				$one->deletelink = $this->CreateLink($id,'delete_group','',
-					$icondel,array('group_id'=>$gid)); //$(.delgrplink) modalconfirm
+					$icondel,array('group_id'=>$gid));  //jQuery confirmation
 			else
 				$one->deletelink = '';
 		}
@@ -373,7 +370,7 @@ if($groups)
 			if($selgrp)
 				$t = $this->CreateInputSubmit($id,'delete_group',
 					$this->Lang('delete'),
-					'title="'.$this->Lang('deleteselgrp').'"'); //$(#$id.delete_group) modalconfirm
+					'title="'.$this->Lang('deleteselgrp').'"');  //jQuery confirmation
 			else
 				$t = '';
 			$tplvars['deletebtn2'] = $t;
@@ -389,14 +386,12 @@ if($groups)
 			$tplvars['submitbtn2'] = $this->CreateInputSubmit($id,'update',
 				$this->Lang('update'),
 				'title="'.$this->Lang('updateselgrp').'" onclick="return confirm_selgrp_count();"');
-			$jsfuncs[] = <<< EOS
-function selgrp_count()
-{
+			$jsfuncs[] = <<<EOS
+function selgrp_count() {
  var cb = $('input[name="{$id}selgroups[]"]:checked');
  return cb.length;
 }
-function confirm_selgrp_count()
-{
+function confirm_selgrp_count() {
  return (selgrp_count() > 0);
 }
 EOS;
@@ -411,13 +406,11 @@ EOS;
 			$url = $this->CreateLink($id,'order_groups',NULL,NULL,array('neworders'=>''),NULL,TRUE);
 			$offs = strpos($url,'?mact=');
 			$ajfirst = str_replace('amp;','',substr($url,$offs+1));
-			$jsfuncs[] = <<< EOS
-function select_all_groups(cb)
-{
+			$jsfuncs[] = <<<EOS
+function select_all_groups(cb) {
  $('input[name="{$id}selgroups[]"][type="checkbox"]').attr('checked',cb.checked);
 }
-function ajaxData(droprow,dropcount)
-{
+function ajaxData(droprow,dropcount) {
  var orders = [];
  $(droprow.parentNode).find('tr td.ord').each(function(){
   orders[orders.length] = this.innerHTML;
@@ -425,8 +418,7 @@ function ajaxData(droprow,dropcount)
  var ajaxdata = '$ajfirst'+orders.join();
  return ajaxdata;
 }
-function dropresponse(data,status)
-{
+function dropresponse(data,status) {
  if(status == 'success' && data) {
   var i = 1;
   $('#groups').find('.ord').each(function(){\$(this).html(i++);});
@@ -435,86 +427,86 @@ function dropresponse(data,status)
   var evenclass = 'row2';
   i = true;
   $('#groups').trigger('update').find('tbody tr').each(function() {
-	name = i ? oddclass : evenclass;
-	\$(this).removeClass().addClass(name);
-	i = !i;
+   name = i ? oddclass : evenclass;
+   \$(this).removeClass().addClass(name);
+   i = !i;
   });
  } else {
   $('#page_tabs').prepend('<p style="font-weight:bold;color:red;">{$this->Lang('err_ajax')}!</p><br />');
  }
 }
 EOS;
-			$jsloads[] = <<< EOS
+			$jsloads[] = <<<EOS
  $('.updown').hide();
  $('.dndhelp').css('display','block');
  $('#groups').addClass('table_drag').tableDnD({
-	dragClass: 'row1hover',
-	onDrop: function(table, droprows) {
-		var odd = true;
-		var oddclass = 'row1';
-		var evenclass = 'row2';
-		var droprow = $(droprows)[0];
-		$(table).find('tbody tr').each(function() {
-			var name = odd ? oddclass : evenclass;
-			if (this === droprow) {
-				name = name+'hover';
-			}
-			$(this).removeClass().addClass(name);
-			odd = !odd;
-		});
-		if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {
-			var ajaxdata = ajaxData(droprow,droprows.length);
-			if (ajaxdata) {
-				$.ajax({
-				 url: 'moduleinterface.php',
-				 type: 'POST',
-				 data: ajaxdata,
-				 dataType: 'text',
-				 success: dropresponse
-				});
-			}
-		}
-	}
+  dragClass: 'row1hover',
+  onDrop: function(table, droprows) {
+   var odd = true;
+   var oddclass = 'row1';
+   var evenclass = 'row2';
+   var droprow = $(droprows)[0];
+   $(table).find('tbody tr').each(function() {
+    var name = odd ? oddclass : evenclass;
+    if (this === droprow) {
+     name = name+'hover';
+    }
+    $(this).removeClass().addClass(name);
+    odd = !odd;
+   });
+   if (typeof ajaxData !== 'undefined' && $.isFunction(ajaxData)) {
+    var ajaxdata = ajaxData(droprow,droprows.length);
+    if (ajaxdata) {
+     $.ajax({
+      url: 'moduleinterface.php',
+      type: 'POST',
+      data: ajaxdata,
+      dataType: 'text',
+      success: dropresponse
+     });
+    }
+   }
+  }
  }).find('tbody tr').removeAttr('onmouseover').removeAttr('onmouseout').mouseover(function() {
-		var now = $(this).attr('class');
-		$(this).attr('class', now+'hover');
+  var now = $(this).attr('class');
+  $(this).attr('class', now+'hover');
  }).mouseout(function() {
-		var now = $(this).attr('class');
-		var to = now.indexOf('hover');
-		$(this).attr('class', now.substring(0,to));
+  var now = $(this).attr('class');
+  var to = now.indexOf('hover');
+  $(this).attr('class', now.substring(0,to));
  });
  $('.delgrplink').click(function(ev) {
-  var tg = ev.target,
-    name = \$('td > input:text', $(this).closest('tr')).val(),
-    msg;
-  if (name) {
-   name = name.replace(/'/g, "\\'");
-   if (name.search(' ') > -1){
-    name = '"'+name+'"';
-   }
-   msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
-  } else {
-   msg = '{$this->Lang('confirm')}';
+ var tg = ev.target,
+  name = \$('td > input:text', $(this).closest('tr')).val(),
+  msg;
+ if (name) {
+  name = name.replace(/'/g, "\\'");
+  if (name.search(' ') > -1){
+  name = '"'+name+'"';
   }
-  $.alertable.confirm(msg,{
-    okName: '{$this->Lang('yes')}',
-    cancelName: '{$this->Lang('no')}'
-   }).then(function() {
-    $(tg).trigger('click.deferred');
-   });
-  return false;
+  msg = '{$this->Lang('confirm_delete','%s')}'.replace('%s',name);
+ } else {
+  msg = '{$this->Lang('confirm')}';
+ }
+ $.alertable.confirm(msg,{
+  okName: '{$this->Lang('yes')}',
+  cancelName: '{$this->Lang('no')}'
+  }).then(function() {
+  $(tg).trigger('click.deferred');
+  });
+ return false;
  });
  $('#{$id}delete_group').click(function() {
-  if (confirm_selgrp_count()) {
-   var tg = this;
-   $.alertable.confirm('{$this->Lang('confirm_delete',$this->Lang('sel_groups'))}',{
-    okName: '{$this->Lang('yes')}',
-    cancelName: '{$this->Lang('no')}'
-   }).then(function() {
-    $(tg).trigger('click.deferred');
-   });
-  }
-  return false;
+ if (confirm_selgrp_count()) {
+  var tg = this;
+  $.alertable.confirm('{$this->Lang('confirm_delete',$this->Lang('sel_groups'))}',{
+  okName: '{$this->Lang('yes')}',
+  cancelName: '{$this->Lang('no')}'
+  }).then(function() {
+  $(tg).trigger('click.deferred');
+  });
+ }
+ return false;
  });
 EOS;
 			$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
@@ -639,7 +631,6 @@ if ($padm)
   type:'see4',
   symbol:'\u25CF'
  });
-
 EOS;
 */
 
