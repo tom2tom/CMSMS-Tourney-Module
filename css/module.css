@@ -105,16 +105,14 @@ textarea.cloaked
 }
 
 /* for making inputs look like links */
-input.fakeicon
-{
+input.fakeicon {
  margin:0;
  padding:0;
  border:medium;
  vertical-align:middle;
 }
 /* color and size will be conformed at runtime, if js is enabled */
-input.fakelink
-{
+input.fakelink {
  margin:0;
  padding:0;
  text-align:left;
@@ -124,21 +122,32 @@ input.fakelink
  background:url("");
 }
 
-input.fakelink:hover
-{
+input.fakelink:hover {
  text-decoration:none;
  background:url("");
 }
 
 /* popup modal dialog */
-#alertable
-{
+/* Overlay */
+#alertable\-overlay {
+ position:fixed;
+ z-index:9998;
+ top:0;
+ right:0;
+ bottom:0;
+ left:0;
+ background:rgba(153, 153, 153, .5);
+}
+
+/* Form */
+#alertable {
  position:fixed;
  z-index:9999;
- top:38vh;
- left:calc(50% - 150px);
+ top:38vh; /* TODO */
+ left:calc(50% - 150px); /* TODO */
  width:300px;
- background:white;
+ background-color:#f2f2f2;
+ border:solid 3px #173617;
  -moz-border-radius:4px;
  -webkit-border-radius:4px;
  border-radius:4px;
@@ -146,38 +155,37 @@ input.fakelink:hover
  margin:0 auto;
 }
 
-/* Overlay */
-#alertable\-overlay
-{
+#alertable\-error {
  position:fixed;
- z-index:9998;
- top:0;
- right:0;
- bottom:0;
- left:0;
- background:rgba(0, 0, 0, .3);
+ z-index:9999;
+ top:38vh; /* TODO */
+ left:calc(50% - 150px); /* TODO */
+ width:300px;
+ background-color:#f9ebeb;
+ border:solid 3px #990000;
+ -moz-border-radius:4px;
+ -webkit-border-radius:4px;
+ border-radius:4px;
+ padding:20px;
+ margin:0 auto;
 }
 
 /* Message */
-#alertable\-message
-{
+#alertable\-message {
  margin-bottom:20px;
  font-weight:bold;
  /* font-size:inherit; */
 }
 
 /* Prompt */
-#alertable\-prompt
-{
+#alertable\-prompt {
  margin-bottom:20px;
 }
 
-#alertable\-input
-{
- width:100%;
- border-radius:4px;
+#alertable\-input {
+ width:95%;
  box-shadow:none;
- border:solid 1px #ccc;
+ border:solid 1px #003300;
  font-family:inherit;
 /* font-size:inherit; */
  color:inherit;
@@ -188,16 +196,14 @@ input.fakelink:hover
 }
 
 /* Button group */
-#alertable\-buttons
-{
- text-align:right;
+#alertable\-buttons {
+ text-align:center;
 }
 
 /* OK button */
-#alertable\-ok
-{
- background:#C4A636;
- border:solid 1px #09d;
+#alertable\-ok {
+ background-color:#ecbb00;
+ border:solid 1px #ecbb00;
  font-family:inherit;
 /* font-size:inherit; */
  font-weight:bold;
@@ -212,17 +218,15 @@ input.fakelink:hover
 
 #alertable\-ok:hover,
 #alertable\-ok:focus,
-#alertable\-ok:active
-{
- color:#FFF;
- background:#00B200;
+#alertable\-ok:active {
+ color:#fff;
+ background-color:#00b200;
 }
 
 /* Cancel button */
-#alertable\-cancel
-{
- border:solid 1px #ddd;
- background:#C4A636;
+#alertable\-cancel {
+ border:solid 1px #ecbb00;
+ background-color:#ecbb00;
  font-family:inherit;
 /* font-size:inherit; */
  font-weight:bold;
@@ -237,8 +241,7 @@ input.fakelink:hover
 
 #alertable\-cancel:hover,
 #alertable\-cancel:focus,
-#alertable\-cancel:active
-{
- color:#FFF;
- background:#F00;
+#alertable\-cancel:active {
+ color:#fff;
+ background-color:#f00;
 }
