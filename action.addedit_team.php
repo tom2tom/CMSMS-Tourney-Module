@@ -778,7 +778,7 @@ if($pmod)
  $('#{$id}delete').click(function() {
   if (player_selected()) {
    var tg = this;
-   $.alertable.confirm('{$t}',{
+   $.alertable.confirm('$t',{
     okName: '{$this->Lang('yes')}',
     cancelName: '{$this->Lang('no')}'
    }).then(function() {
