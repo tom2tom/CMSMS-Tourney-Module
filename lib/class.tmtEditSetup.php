@@ -486,7 +486,7 @@ EOS;
 		if($ob)
 		{
 
-			$ob = new MessageSender();
+			$ob = new Notifier\MessageSender();
 			$ob->Load();
 			$sms = ($ob->text != FALSE);
 			$mail = ($ob->mail != FALSE);

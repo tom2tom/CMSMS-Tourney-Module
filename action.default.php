@@ -195,7 +195,7 @@ if($bdata['contact'])
 		{
 			unset($ob);
 			//check for valid address for results
-			$funcs = new MessageSender(); //TODO does this auto-load for CMSMS 1.9?
+			$funcs = new Notifier\MessageSender();
 			$valid = $funcs->ValidateAddress($bdata['contact'],$bdata['smspattern']);
 			if(array_filter($valid)) //any comforming address will do
 				$submit = $this->CreateInputSubmitDefault($id,'result',$this->Lang('submit2'));
