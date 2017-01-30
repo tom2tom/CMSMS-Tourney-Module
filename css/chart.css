@@ -24,29 +24,29 @@
 	border:2px solid #f00;
 	background-color:#fff;
 	color:#000;
-	font-size:12px; //font normally set as pts
+	font-size:12px; /* font normally set as pts */
 }
 /* matches to be played and whose schedule is indicative, tentative ... */
 .box:nonfirm
 {
 	border-color:#00f;
-	background-color:#ffcb94; //orange
+	background-color:#ffcb94; /* orange */
 }
 /* matches to be played and whose schedule is finalised, confirmed ... */
 .box:firm
 {
 	border-color:#f00;
-	background-color:#b7e8b1; //green
+	background-color:#b7e8b1; /* green */
 }
 /* matches already finished */
 .box:played
 {
 	border-color:#002c8f;
-	background-color:#bfd6ec; //blue
+	background-color:#bfd6ec; /* blue */
 }
 .box:winner
 {
 	border-color:#80007f;
-	background-color:#e5b400; //gold
+	background-color:#e5b400; /* gold */
 	color:#000;
 }
