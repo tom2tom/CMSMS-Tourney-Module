@@ -102,7 +102,7 @@ class tmtComm
 		$mdata = $db->GetRow($sql,array($match_id));
 		if($mdata)
 		{
-			$sender = new Notifier\MessageSender();
+			$sender = new \Notifier\MessageSender();
 			$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 			$bdata = $db->GetRow($sql,array($bracket_id));
 			//general vars for template
@@ -170,7 +170,7 @@ class tmtComm
 			$tB = (int)$mdata['teamB'];
 			if($tA > 0 || $tB > 0)
 			{
-				$sender = new Notifier\MessageSender();
+				$sender = new \Notifier\MessageSender();
 				$sql = 'SELECT * FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 				$bdata = $db->GetRow($sql,array($bracket_id));
 				//general vars for template
