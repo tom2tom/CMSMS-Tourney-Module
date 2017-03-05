@@ -47,17 +47,12 @@ else
 $this->SetPreference('export_encoding',$params['tmt_export_encoding']);
 
 /*
-$utils = new tmtUtils();
-$oldpw = $this->GetPreference('masterpass');
-if($oldpw)
-	$oldpw = $utils->unfusc($oldpw);
+$cfuncs = new Tourney\Crypter($this);
+$oldpw = $cfuncs->decrypt_preference('masterpass');
 $newpw = trim($params['tmt_masterpass']);
-if($oldpw != $newpw)
-{
+if($oldpw != $newpw) {
 	//update all data which uses password
-	if($newpw)
-		$newpw = $utils->fusc($newpw);
-	$this->SetPreference('masterpass',$newpw);
+	$cfuncs->encrypt_preference('masterpass',$newpw);
 }
 */
 

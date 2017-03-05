@@ -5,6 +5,7 @@ Copyright (C) 2014-2016 Tom Phane <tpgww@onepost.net>
 Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
+
 $tplvars = array();
 //permissions hierarchy
 $pdev = $this->CheckPermission('Modify Any Page');
@@ -618,10 +619,8 @@ if ($padm)
 		$tplvars['hidden'] =  $this->CreateInputHidden($id,'tmt_export_encoding', $expchars);
 
 /*
-	$utils = new tmtUtils();
-	$pw = $this->GetPreference('masterpass');
-	if($pw)
-		$pw = $utils->unfusc($pw);
+	$cfuncs = new Tourney\Crypter($this);
+	$pw = $cfuncs->decrypt_preference('masterpass');
 	$misc[] = array($this->Lang('title_password'),
 		$this->CreateTextArea(false,$id,$pw,'tmt_masterpass','cloaked',
 			$id.'tmt_passwd','','',40,2));
