@@ -16,8 +16,7 @@ class tmtComm
 	function __construct(&$mod)
 	{
 		$this->mod = $mod;
-		if(class_exists('Notifier',FALSE))
-		{
+		if (class_exists('Notifier', FALSE)) {
 			$this->cansend = TRUE;
 			$path = $mod->GetModulePath();
 			$name = $mod->GetName();
@@ -25,14 +24,17 @@ class tmtComm
 			$base = substr($path,0,$offs);
 			$this->incpath = cms_join_path($base.'Notifier','lib','class.');
 			spl_autoload_register(array($this,'loader'));
-		}
-		else
+		} else {
 			$this->cansend = FALSE;
+		}
 	}
 
 	private function loader($className)
 	{
-		include $this->incpath.$className.'.php';
+		$fp = $this->incpath.$className.'.php';
+		if (file_exists($fp)) {
+			include $fp;
+		}
 	}
 
 	/**

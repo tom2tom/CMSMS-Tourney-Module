@@ -175,8 +175,13 @@ if ($format)
 else
 	$format = 'd F y';
 $this->SetPreference('date_format',$format);
-//$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
 
+/*
+$s = 'nQCeESKBr99A';
+$this->SetPreference($s, hash('sha256', $s.microtime()));
+$cfuncs = new Tourney\Crypter($this);
+$cfuncs->encrypt_preference('masterpass',base64_decode('RXZlcnlvbmUgaXMgYSB3aW5uZXIgaGVyZQ=='));
+*/
 $updir = $config['uploads_path'];
 if($updir && is_dir($updir))
 {
