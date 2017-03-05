@@ -28,6 +28,8 @@ PERIOD and/or TIME may be
  chronologically after X (except when spanning a time-period-end
  e.g. 23:30..2:30 or Friday..Sunday or December..February).
 
+TODO support e.g. Sunday@10..Monday@15:30
+
 Ordinary numeric series and sequences are supported, and for such sequences,
 Y must be greater than X, and X, or both X and Y, may be negative.
 
@@ -44,12 +46,12 @@ The term 'week' isn't system-pollable, and must be translated manually. Weeks
 always start on Sunday (and so 'week' can be considered equivalent to
 'Sunday..Saturday').
 
-TODO Any period-descriptor may be prefaced by (translated, TODO any case) 'not'
-or 'except' to specify a period to be excluded from the days otherwise covered
-by other period-descriptors.
+Any period-descriptor may be prefaced by (translated, TODO any case) 'not' or
+'except' to specify a period to be excluded from the days otherwise covered by
+other period-descriptors.
 
-TODO Any period-descriptor may be qualifed by (translated, TODO any case) 'each'
-or 'every' N, to represent fixed-interval repetition such as 'every 2nd Wednesday'.
+Any period-descriptor may be qualifed by (translated, TODO any case) 'each' or
+'every' N, to represent fixed-interval repetition such as 'every 2nd Wednesday'.
 And in turn must qualify (PS..PE) where PS and PE are period-descriptors repsectively
 representing the 1st of the repeats, and the maximum for the last of the repeats
 (which may actually be before PE if that's how the repetition turns out)
@@ -237,9 +239,11 @@ class tmtWhenRuleLexer
 				$a = substr($a,1);
 				$b = substr($b,1);
 			} else {
-				return 1; }
+				return 1;
+			}
 		} elseif ($b[0] == '!') {
-			return -1; }
+			return -1;
+		}
 		//bare years don't work correctly
 		$s = (strpos($a,'-') !== FALSE) ? $a:$a.'-1-1';
 		//for relative times, don't need localised DateTime object
@@ -448,7 +452,7 @@ class tmtWhenRuleLexer
 				} elseif (strpos($val,'..') !== FALSE) {
 					$r = self::ParsePeriodSequence($val,FALSE); //reorder if appropriate
 					if (is_array($r) && is_numeric($r[0]))
-						$val = $r[0].'..'.$r[2]; //no sub-array here, prior to flip/de-dup
+						$val = $r[0].'..'.$r[2];
 					elseif ($r && is_numeric($r))
 						$val = $r;
 					else {
@@ -503,9 +507,7 @@ class tmtWhenRuleLexer
 		unset($val);
 		if ($parts == FALSE)
 			return '';
-		//remove dup's without sorting
-		$parts = array_flip($parts);
-		$parts = array_flip($parts);
+		$parts = array_unique($parts, SORT_REGULAR); //arrays too
 		if (count($parts) > 1)
 			usort($parts,array($this,$cmp)); //keys now contiguous
 		if ($getstr)
@@ -578,8 +580,10 @@ class tmtWhenRuleLexer
 	and grouping all sun* before others in includes and/or excludes.
 	Either or both time args may be a sequence
 	*/
-	private function cmp_times($a, $b)
+	private function cmp_times($aa, $ba)
 	{
+		$a = $aa[0]; //work with the string-forms
+		$b = $ba[0];
 		if ($a[0] == '!') {
 			if ($b[0] != '!') {
 				return 1;
@@ -603,13 +607,16 @@ class tmtWhenRuleLexer
 		}
 		if ($ra !== FALSE) {
 			if ($rb === FALSE) {
-				return -1; } else {
+				return -1;
+			} else {
 				$ma = (strlen($a) > $ra+2);
 				if ($ma) {
-					$na = $a[$ra+2]; }
+					$na = $a[$ra+2];
+				}
 				$mb = (strlen($b) > $rb+2);
 				if ($mb) {
-					$nb = $b[$rb+2]; }
+					$nb = $b[$rb+2];
+				}
 				if ($ma && $mb) {
 					if ($na != $nb)
 						return (ord($nb)-ord($na)); //'+' < '-' so reverse
@@ -622,7 +629,8 @@ class tmtWhenRuleLexer
 						$b = substr($b,$rb+2);
 						return self::cmp_plaintimes($b,$a); //swapped
 					} else {
-						return FALSE; }
+						return FALSE;
+					}
 				} elseif ($ma && !$mb) {
 					return ($na=='+') ? 1:-1;
 				} elseif ($mb && !$ma) {
@@ -664,9 +672,10 @@ class tmtWhenRuleLexer
 				return 0;
 			}
 		} elseif ($rb !== FALSE) {
-			return ($sa !== FALSE) ? -1 : 1; } //sunset after sunrise, before others
-		elseif ($sb !== FALSE) {
-			return ($ra !== FALSE) ? -1 : 1; }//ditto
+			return ($sa !== FALSE) ? -1 : 1; //sunset after sunrise, before others
+		} elseif ($sb !== FALSE) {
+			return ($ra !== FALSE) ? -1 : 1; //ditto
+		}
 		//now just time-values
 		return self::cmp_plaintimes($a,$b);
 	}
@@ -739,8 +748,10 @@ match-array(s) have
 				if ($hiset) {
 					//order by +- offset
 					if ($loparts[1] == '+' && $hiparts[1] == '-') {
-						$swap = TRUE; } elseif ($loparts[1] == '-' && $hiparts[1] == '+') {
-						$swap = FALSE; } else {
+						$swap = TRUE;
+					} elseif ($loparts[1] == '-' && $hiparts[1] == '+') {
+						$swap = FALSE;
+					} else {
 						$kl = self::MergeTime($loparts);
 						$kh = self::MergeTime($hiparts);
 						if ($kl && $kh) {
@@ -752,15 +763,18 @@ match-array(s) have
 						} elseif ($kh) { //lo has no time-offset
 							$swap = ($hiparts[1] == '-');
 						} else {
-							$swap = FALSE; }
+							$swap = FALSE;
+						}
 						}
 				} elseif ($hirise) {
-					$swap = TRUE; } //rise before set
-				else {
-					$swap = FALSE; }
+					$swap = TRUE; //rise before set
+				} else {
+					$swap = FALSE;
+				}
 			} elseif ($lorise) {
 				if ($hiset) {
-					$swap = FALSE; } elseif ($hirise) {
+					$swap = FALSE;
+				} elseif ($hirise) {
 					//order by +- offset
 					$kl = self::MergeTime($loparts);
 					$kh = self::MergeTime($hiparts);
@@ -773,16 +787,19 @@ match-array(s) have
 					} elseif ($kh) { //lo has no time-offset
 						$swap = ($hiparts[1] == '-');
 					} else {
-						$swap = FALSE; }
+						$swap = FALSE;
+					}
 				} else {
-					$swap = FALSE;}
+					$swap = FALSE;
+				}
 			} elseif ($hiset) {
-				$swap = FALSE;  } //stet if only one has sun*
-			elseif ($hirise) {
-				$swap = FALSE; } //ditto
-			else {
+				$swap = FALSE; //stet if only one has sun*
+			} elseif ($hirise) {
+				$swap = FALSE; //ditto
+			} else {
 				//TODO
-				$swap = (self::TimeofDay($hiparts[1]) < self::TimeofDay($loparts[1])); }
+				$swap = (self::TimeofDay($hiparts[1]) < self::TimeofDay($loparts[1]));
+			}
 
 			if ($swap) {
 				$t = $parts[0];
@@ -840,7 +857,7 @@ match-array(s) have
 				}
 				$r = $r || $p;
 			} else {
-				$r = self::ParseTimeSequence($val); //reorder if appropriate
+				$r = self::ParseTimeSequence($val,$getstr); //reorder if appropriate
 				if ($r !== FALSE) {
 					$val = $r;
 				}
@@ -853,11 +870,23 @@ match-array(s) have
 		unset($val);
 		if ($parts == FALSE)
 			return '';
-		//remove dup's without sorting
-		$parts = array_flip($parts);
-		$parts = array_flip($parts); //keys now contiguous
-		if (count($parts) > 1)
-			usort($parts,array($this,'cmp_times'));
+		$parts = array_unique($parts,SORT_REGULAR);
+		if (count($parts) > 1) {
+			$sortable = array();
+			foreach ($parts as $val) {
+				if (is_array($val))
+					$sortable[] = array($val[0].'..'.$val[2],$val);
+				else
+					$sortable[] = array($val,$val);
+			}
+			usort($sortable,array($this,'cmp_times'));
+			$parts = array();
+			foreach($sortable as $val) {
+				$parts[] = $val[1];
+			}
+		} else {
+			$parts = array(reset($parts)); //force key 0
+		}
 		if ($getstr)
 			return implode(',',$parts);
 		else
@@ -895,17 +924,21 @@ match-array(s) have
 		$hasyear = FALSE;
 
 		if (preg_match('/[12]\d{3}(?![-\d])/',$str)) { //includes YYYY-only
-			$hasyear = TRUE; }
+			$hasyear = TRUE;
+		}
 		if (strpos($str,'M') !== FALSE) {
-			$hasmonth = TRUE; }
+			$hasmonth = TRUE;
+		}
 		if (!$hasmonth && preg_match('/[12]\d{3}-(1[0-2]|0?[1-9])(?![-\d])/',$str)) { //includes YYYY-[M]M-only
 			$hasyear = TRUE;
 			$hasmonth = TRUE;
 		}
 		if (strpos($str,'W') !== FALSE) {
-			$hasweek = TRUE; }
+			$hasweek = TRUE;
+		}
 		if (strpos($str,'D') !== FALSE) {
-			$hasday = TRUE; }
+			$hasday = TRUE;
+		}
 		if (!($hasday || $hasweek)) {
 			if (preg_match('/^-(0?[1-9]|[12]\d|3[01])(?![-\d])(?![-:\d])/',$str)) { //begins with -[1-31]
 				$hasday = TRUE;
@@ -941,7 +974,7 @@ match-array(s) have
 			if ($longdate) {
 				return 13;
 			}
-			return (strpos($str,'(') === FALSE && strpos($str,'D') !== FALSE) ? 4:5;
+			return (strpos($str,'(',1) === FALSE && strpos($str,'D') !== FALSE) ? 4:5;
 		}
 		return 0;
 	}
@@ -1183,21 +1216,21 @@ match-array(s) have
 		$storeseg = 0; //index of 1st array-element to merge & store
 		$clean = '';
 		$depth = 0;
-
 		$segs = explode('(',$descriptor);
 		$cs = count($segs);
-		foreach ($segs as $i=>&$one) {
+		for ($i = 0; $i < $cs; $i++) {
 			$depth++;
+			$one = $segs[$i];
 			if ($one) {
 				$segl = strlen($one);
 				$segat = strrpos($one,'@',-1);
 				$e = self::EndScan($one,0); //no need for success-check
 				$t = substr($one,0,$e+1);
 				//process as period[@time] or time alone
-				if ($segat === FALSE && (strpos($t,':') !== FALSE || strpos($t,'S') !== FALSE)) {
-					$t = self::CleanTime($t);
+				if ($segat === FALSE && (strpos($t,':') !== FALSE || strpos($t,'RS') !== FALSE || strpos($t,'SS') !== FALSE)) {
+					$t = self::CleanTime($t,TRUE);
 				} elseif (strpos($t,',') !== FALSE || strpos($t,'..') !== FALSE) {
-					$t = self::CleanPeriod($t);
+					$t = self::CleanPeriod($t,TRUE);
 				} elseif (strpos($t,'EE1') === 0 && (strlen($t) == 3 || !is_numeric($t[3]))) { //ignore 1-separated 'eachers'
 					$segs[$i] = '';
 					continue;
@@ -1212,11 +1245,10 @@ match-array(s) have
 				if ($cb > 0) {
 					$depth -= $cb;
 					if ($depth < 0) {//CHECKME or 1?
-						return FALSE; }
+						return FALSE;
+					}
 					if ($cs == 2 && $i > 0 && $segs[$i-1] == '') { //special case (stuff)
-						if ($p >= $segl) {
-							unset($segs[$i-1]);
-						} else {
+						if ($p < $segl) {
 							$t .= str_repeat(')',$cb);
 						}
 					} else {
@@ -1227,8 +1259,6 @@ match-array(s) have
 						if ($i > 0) {
 							$t .= ')'; //correction
 						}
-					} elseif ($i > 0 && $segs[$i-1] == '') {
-						unset($segs[$i-1]);
 					}
 				}
 				//skip ')' in source-string
@@ -1237,17 +1267,17 @@ match-array(s) have
 					$one = $t;
 				} else {
 					$rest = substr($one,$e); //more stuff to end of segment
-					//may be singleton e.g. @14:00 or include part-separator e.g. ,M1 or @9:00,1
+					//may be singleton e.g. @14:00 or include part-separator e.g. ,M1 or @9:00,1 or @18:00..23:00,D6@20:00..23:00
 					$p = strpos($rest,',');
 					if ($p === FALSE) { //no part-separator in $rest
 						if ($rest[0] == '@') {
 							$t .= '@';
 							if ($e+1 < $segl) { //after @ might have '..' sequence or time
-								$t .= self::CleanTime($rest);
+								$t .= self::CleanTime($rest,TRUE);
 							}
 							$one = $t;
 						} else {
-							$one = $t.self::CleanPeriod($rest); //$rest might contain '..' sequence only?
+							$one = $t.self::CleanPeriod($rest,TRUE); //$rest might contain '..' sequence only?
 						}
 					} else {
 						//we're done with the current part
@@ -1255,31 +1285,39 @@ match-array(s) have
 						if ($s[0] == '@') {
 							$t .= '@';
 							if ($e+1 < $segl) {
-								$t .= self::CleanTime($s); } //after @ might have '..' sequence or time
+								$t .= self::CleanTime($s,TRUE);
+							} //after @ might have '..' sequence or time
 							$one = $t;
 						} else
-							$one = $t.self::CleanPeriod($s); //TODO or CleanTime() ?
+							$one = $t.self::CleanPeriod($s,TRUE); //TODO or CleanTime() ?
 						$clean .= implode('(',array_slice($segs,$storeseg,$i-$storeseg+1));
 						$c = substr_count($clean,'(');
 						if (substr_count($clean,')') != $c) {
-							return FALSE; }
-						$parts[] = $clean;
+							return FALSE;
+						}
 						$storeseg = $i+1; //next merge begins after this segment
 						$t = substr($rest,$p+1);
-						if (strpos($t,',') !== FALSE || strpos($t,'..') !== FALSE)
-							$t = self::CleanPeriod($t);
-						//if more seg(s), next implode() won't know about this bit
-						if ($i < $cs-1) {
-							$t .= '('; }
+						if (strpos($t,',') !== FALSE || strpos($t,'..') !== FALSE) {
+							$p = strpos($clean,$t);
+							$parts[] = substr($clean,0,$p-1);
+							$clean = $t; //re-process the rest of this one
+							$segs[$i] = $t;
+							$i--;
+							$depth++;
+							continue;
+						}
+						$parts[] = $clean;
+						if ($i < $cs-1) { //if more seg(s), next implode() won't know about this bit
+							$t .= '(';
+						}
 						$clean = $t;
 						$depth = 0;
 					}
 				}
 			}
 		}
-		unset($one);
 		//last (or entire) part
-		$clean .= implode('(',array_slice($segs,$storeseg,$i-$storeseg+1));
+		$clean .= implode('(',array_slice($segs,$storeseg,$i-$storeseg));
 		if ($clean) {
 			$p = substr_count($clean,'(');
 			if (substr_count($clean,')') != $p) {
@@ -1298,18 +1336,18 @@ match-array(s) have
 				if ($p == 0 && !$e) {
 					$parsed['P'] = FALSE;
 					$parsed['F'] = 1; //enum for only-time-specified
-					$parsed['T'] = $report ? $one : self::CleanTime($one,FALSE);
+					$parsed['T'] = $report ? $one : array_values(self::CleanTime($one,FALSE));
 				} else //$p > 0 || $e
 					if ($p > 0 && $e) {
-					$parsed['P'] = $report ? $one : self::SplitPeriod($one);
+					$parsed['P'] = $report ? $one : array_values(self::SplitPeriod($one));
 					$parsed['F'] = self::GetFocus($one);
 					$parsed['T'] = FALSE;
 				} elseif ($p > 0) {
 					$t = substr($one,0,$p);
-					$parsed['P'] = $report ? $t : self::SplitPeriod($t);
+					$parsed['P'] = $report ? $t : array_values(self::SplitPeriod($t));
 					$parsed['F'] = self::GetFocus($t);
 					$t = substr($one,$p+1);
-					$parsed['T'] = $report ? $t : self::CleanTime($t,FALSE);
+					$parsed['T'] = $report ? $t : array_values(self::CleanTime($t,FALSE));
 				}
 			} else { //PERIOD OR TIME
 				if (preg_match('~[DMW]~',$one))
@@ -1344,9 +1382,9 @@ match-array(s) have
 				if ($condtype == 1) { //time
 					$parsed['P'] = FALSE;
 					$parsed['F'] = 1;
-					$parsed['T'] = $report ? $one : self::CleanTime($one,FALSE);
+					$parsed['T'] = $report ? $one : array_values(self::CleanTime($one,FALSE));
 				} elseif ($condtype == 2) { //period
-					$parsed['P'] = $report ? $one : self::SplitPeriod($one);
+					$parsed['P'] = $report ? $one : array_values(self::SplitPeriod($one));
 					$parsed['F'] = self::GetFocus($one);
 					$parsed['T'] = FALSE;
 				} else { //could be either - re-consider, after all are known
@@ -1485,7 +1523,8 @@ match-array(s) have
 	public function ParseDescriptor($descriptor/*, $locale=''*/)
 	{
 		if ($descriptor) {
-			return self::Lex($descriptor/*,$locale*/); }
+			return self::Lex($descriptor/*,$locale*/);
+		}
 		$this->conds = FALSE;
 		return TRUE;
 	}
@@ -1505,7 +1544,8 @@ match-array(s) have
 	public function CheckDescriptor($descriptor/*, $locale=''*/)
 	{
 		if ($descriptor) {
-			return self::Lex($descriptor,/*$locale,*/TRUE); }
+			return self::Lex($descriptor,/*$locale,*/TRUE);
+		}
 		$this->conds = FALSE;
 		return '';
 	}
