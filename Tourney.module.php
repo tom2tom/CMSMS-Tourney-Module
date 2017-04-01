@@ -53,7 +53,7 @@ class Tourney extends CMSModule
 	const NOWIN = 16;
 
 	public $before20;
-//	public $havemcrypt;
+	public $oldtemplates;
 
 	protected $PermAdminName = 'Modify TourneyModule Settings';
 	protected $PermModName = 'Modify Brackets';
@@ -66,7 +66,7 @@ class Tourney extends CMSModule
 		$this->RegisterModulePlugin(TRUE);
 		global $CMS_VERSION;
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
-//		$this->havemcrypt = function_exists('mcrypt_encrypt');
+		$this->oldtemplates = $this->before20 || 1; //TODO
 	}
 
 	function AllowAutoInstall()
@@ -313,7 +313,7 @@ EOS;
 		}
 		return $groups;
 	}
-	
+
 	//construct series of hidden objects to support page-recreation when editing comp
 	function GetHiddenParms($id,&$params,$tabname=FALSE)
 	{
@@ -599,7 +599,7 @@ Europe/Vilnius'
 		}
 		else
 			$repl = array('1','2','3');
-		
+
 		foreach($repl as $indx)
 		{
 			if(isset(${"s$indx"}))
@@ -743,7 +743,7 @@ Europe/Vilnius'
 	{
 		if ($iconfile)
 		{
-			$p = strpos($iconfile,'/'); 
+			$p = strpos($iconfile,'/');
 			if ($p === FALSE)
 			{
 				$theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
