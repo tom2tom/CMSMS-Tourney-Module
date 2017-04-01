@@ -166,9 +166,6 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 
 		if(!empty($message)) $tplvars['message'] = $message;
 
-		$tplvars['form_start'] = $mod->CreateFormStart($id,'addedit_comp',$returnid);
-		$tplvars['form_end'] = $mod->CreateFormEnd();
-
 		if($activetab == FALSE)
 			$activetab = 'maintab';
 		$tplvars['tabs_start'] = $mod->StartTabHeaders().
@@ -181,19 +178,20 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			$mod->SetTabHeader('resultstab',$mod->Lang('tab_results'),($activetab =='resultstab')).
 //			$mod->SetTabHeader('historytab',$mod->Lang('tab_history'),($activetab =='historytab')).
 			$mod->EndTabHeaders() . $mod->StartTabContent();
-		$tplvars['tabs_end'] = $mod->EndTabContent();
-
+		//workaround CMSMS2 crap 'auto-end', EndTab() & EndTabContent() before [1st] StartTab()
 		$tplvars += array(
+			'form_start' => $mod->CreateFormStart($id,'addedit_comp',$returnid),
+			'form_end' => $mod->CreateFormEnd(),
+			'tab_end' => $mod->EndTab(),
+			'tabs_end' => $mod->EndTabContent(),
 			'maintab_start' => $mod->StartTab('maintab'),
 			'scheduletab_start' => $mod->StartTab('scheduletab'),
 			'advancedtab_start' => $mod->StartTab('advancedtab'),
 			'charttab_start' => $mod->StartTab('charttab'),
 			'playertab_start' => $mod->StartTab('playerstab'),
 			'matchtab_start' => $mod->StartTab('matchestab'),
-			'resultstab_start' => $mod->StartTab('resultstab'),
-//			'historytab_start' => $mod->StartTab('historytab'),
-
-			'tab_end' => $mod->EndTab() //for CMSMS 2+ must be after EndTabContent()
+			'resultstab_start' => $mod->StartTab('resultstab')
+//			'historytab_start' => $mod->StartTab('historytab')
 		);
 		//accumulator for hidden items,to be parked on page
 		$hidden = $mod->CreateInputHidden($id,'bracket_id',$data->bracket_id);

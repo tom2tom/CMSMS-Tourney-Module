@@ -16,10 +16,9 @@ class tmtTemplate
 	*/
 	public static function Set(&$mod,$tplname,$content)
 	{
-		if($mod->before20 || 1)	//TODO if using old templates anyway
+		if ($mod->oldtemplates) {
 			$mod->SetTemplate($tplname,$content);
-		else
-		{
+		} else {
 			try {
 				$tpl = new CmsLayoutTemplate();
 				$tpl->set_name('tmt_'.$tplname); //must be unique!
@@ -37,7 +36,7 @@ class tmtTemplate
 			$tpl->set_type($type);
 			$tpl->set_content($content);
 			$tpl->set_type_dflt(false);
-//		$tpl->set_listable(true); //CMSMS 2.1+
+//			$tpl->set_listable(true); //CMSMS 2.1+
 			$tpl->save();
 		}
 	}
@@ -49,10 +48,9 @@ class tmtTemplate
 	*/
 	public static function Get(&$mod,$tplname)
 	{
-		if($mod->before20 || 1) //TODO if using old templates anyway
+		if ($mod->oldtemplates) {
 			return $mod->GetTemplate($tplname);
-		else
-		{
+		} else {
 			try {
 				$tpl = CmsLayoutTemplate::load('tmt_'.$tplname);
 			} catch (CmsDataNotFoundException $e) {
@@ -69,10 +67,9 @@ class tmtTemplate
 	*/
 	public static function Delete(&$mod,$tplname)
 	{
-		if($mod->before20 || 1) //TODO if using old templates anyway
+		if ($mod->oldtemplates) {
 			$mod->DeleteTemplate($tplname);
-		else
-		{
+		} else {
 			try {
 				$tpl = CmsLayoutTemplate::load('tmt_'.$tplname);
 			} catch (CmsDataNotFoundException $e) {
@@ -92,25 +89,24 @@ class tmtTemplate
 	*/
 	public static function Process(&$mod,$tplname,$tplvars,$cache=TRUE)
 	{
-		global $smarty;
-		if($mod->before20)
-		{
-			$smarty->assign($tplvars);
-			echo $mod->ProcessTemplate($tplname);
+		if ($mod->before20) {
+			global $smarty;
+		} else {
+			$smarty = $mod->GetActionTemplateObject();
 		}
-		else
-		{
-			if($cache)
-			{
+		$smarty->assign($tplvars);
+		if ($mod->oldtemplates) {
+			echo $mod->ProcessTemplate($tplname);
+		} else {
+			if ($cache) {
 				$cache_id = md5('tmt'.$tplname.serialize(array_keys($tplvars)));
 				$lang = CmsNlsOperations::get_current_language();
 				$compile_id = md5('tmt'.$tplname.$lang);
 				$tpl = $smarty->CreateTemplate($mod->GetFileResource($tplname),$cache_id,$compile_id,$smarty);
-				if(!$tpl->isCached())
+				if(!$tpl->isCached()) {
 					$tpl->assign($tplvars);
-			}
-			else
-			{
+				}
+			} else {
 				$tpl = $smarty->CreateTemplate($mod->GetFileResource($tplname),NULL,NULL,$smarty,$tplvars);
 			}
 			$tpl->display();
@@ -127,14 +123,15 @@ class tmtTemplate
 	*/
 	public static function ProcessFromData(&$mod,$data,$tplvars)
 	{
-		global $smarty;
-		if($mod->before20)
-		{
-			$smarty->assign($tplvars);
-			return $mod->ProcessTemplateFromData($data);
+		if ($mod->before20) {
+			global $smarty;
+		} else {
+			$smarty = $mod->GetActionTemplateObject();
 		}
-		else
-		{
+		$smarty->assign($tplvars);
+		if ($mod->oldtemplates) {
+			return $mod->ProcessTemplateFromData($data);
+		} else {
 			$tpl = $smarty->CreateTemplate('eval:'.$data,NULL,NULL,$smarty,$tplvars);
 			return $tpl->fetch();
 		}

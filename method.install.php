@@ -211,8 +211,7 @@ $this->SetPreference('abandon_name',$this->Lang('name_abandoned'));
 $this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$'); //for SMS messages to cell/mobile numbers
 
 $base = cms_join_path(dirname(__FILE__),'templates','');
-if($this->before20)
-{
+if ($this->oldtemplates) {
 	$s = ''.@file_get_contents($base.'chart_custom.tpl');
 /*if ($s == FALSE)
 		$s = '<div id="bracketchart" style="overflow:auto;">{$image}</div>';
@@ -270,9 +269,7 @@ if($this->before20)
 */
 	$this->SetTemplate('tweetin_default_template',$s);
 	$this->SetTemplate('textin_default_template',$s);
-}
-else
-{
+} else {
 	$myname = $this->GetName();
 	$me = get_userid(false);
 	$files = array(
@@ -293,7 +290,7 @@ else
 		'tweet_request.tpl',
 		'tweet_cancelled.tpl',
 	);
-	foreach(array(
+	foreach (array(
 		'chart',
 
 		'textin',
@@ -310,28 +307,32 @@ else
 		'tweetout',
 		'tweetrequest',
 		'tweetcancel',
-	) as $i=>$name)
-	{
+	) as $i=>$name)	{
 		$ttype = new CmsLayoutTemplateType();
 		$ttype->set_originator($myname);
 		$ttype->set_name($name);
 		$ttype->set_owner($me);
 		$s = ''.@file_get_contents($base.$files[$i]);
-		if($s)
-		{
+		if ($s) {
 			$ttype->set_dflt_flag();
 			$ttype->set_dflt_contents($s);
 		}
-		$ttype->save();
-		if($s)
-		{
+		try {
+			$ttype->save();
+			$tid = $ttype->get_type();
+		} catch (Exception $e) {
+			$tid = FALSE;
+		}
+		if ($s && $tid) {
 			$tpl = new CmsLayoutTemplate();
-			$tpl->set_type($ttype);
+			$tpl->set_type($tid);
 			$tpl->set_name('tmt_'.$name.'_default_content'); //must be unique!
 			$tpl->set_content($s);
 			$tpl->set_type_dflt(true);
-//		$tpl->set_listable($flag); //CMSMS 2.1+
-			$tpl->save();
+//			$tpl->set_listable($flag); //CMSMS 2.1+
+			try {
+				$tpl->save();
+			} catch (Exception $e) {}
 		}
 	}
 }

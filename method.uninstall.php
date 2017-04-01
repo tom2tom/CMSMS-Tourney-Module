@@ -100,19 +100,17 @@ $this->RemovePermission($this->PermSeeName);
 $this->RemovePreference();
 
 // templates
-$this->DeleteTemplate(); //old-style templates can be for any version
-if(!$this->before20)
-{
+if ($this->oldtemplates) {
+	$this->DeleteTemplate();
+} else {
 	$types = CmsLayoutTemplateType::load_all_by_originator($this->GetName());
-	if($types)
-	{
-		foreach($types as $type)
-		{
+	if ($types) {
+		foreach ($types as $type) {
 			$templates = $type->get_template_list();
-			if($templates)
-			{
-				foreach($templates as $tpl)
+			if ($templates) {
+				foreach ($templates as $tpl) {
 					$tpl->delete();
+				}
 			}
 			$type->delete();
 		}
@@ -126,4 +124,3 @@ if(!$this->before20)
 $this->RemoveEventHandler('Core','LoginPost');
 
 ?>
-
