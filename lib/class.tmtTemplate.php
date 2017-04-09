@@ -93,6 +93,9 @@ class tmtTemplate
 			global $smarty;
 		} else {
 			$smarty = $mod->GetActionTemplateObject();
+			if (!$smarty) {
+				global $smarty;
+			}
 		}
 		$smarty->assign($tplvars);
 		if ($mod->oldtemplates) {
@@ -127,6 +130,9 @@ class tmtTemplate
 			global $smarty;
 		} else {
 			$smarty = $mod->GetActionTemplateObject();
+			if (!$smarty) {
+				global $smarty;
+			}
 		}
 		$smarty->assign($tplvars);
 		if ($mod->oldtemplates) {
@@ -136,7 +142,6 @@ class tmtTemplate
 			return $tpl->fetch();
 		}
 	}
-
 }
 
 ?>
