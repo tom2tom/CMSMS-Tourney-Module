@@ -573,7 +573,7 @@ if($rows)
 
 	if($pmod)
 	{
-		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.alertable.min.js"></script>';
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery.alertable.min.js"></script>';
 
 		$jsloads[] = <<< EOS
  teamtable.find('.plr_delete').children().click(function(ev) {
@@ -610,7 +610,7 @@ if($pc > 1)
 {
 	if($pmod)
 	{
-		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery.tablednd.min.js"></script>';
 
 		//setup some ajax-parameters - partial data for tableDnD::onDrop
 		$url = $this->CreateLink($id,'order_team',NULL,NULL,array('team_id'=>$thistid,'neworders'=>''),NULL,TRUE);
@@ -688,8 +688,8 @@ EOS;
 EOS;
 
 	$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/lib/js/jquery.metadata.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/lib/js/jquery.SSsort.min.js"></script>
 EOS;
 
 	$onsort = <<< EOS
@@ -843,7 +843,7 @@ if($pc > 0)
 
 $tplvars['hidden'] = $hidden;
 
-$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tmtfuncs.js"></script>';
+$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery.tmtfuncs.js"></script>';
 
 if($jsloads) {
 	array_unshift($jsfuncs, PHP_EOL.'var teamtable = $(\'#team\');'.PHP_EOL);

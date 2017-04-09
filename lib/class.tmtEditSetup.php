@@ -205,7 +205,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 		$jsincs = array();
 		$baseurl = $mod->GetModuleURLPath();
 
-		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tmtfuncs.js"></script>';
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery.tmtfuncs.js"></script>';
 
 		if($pmod)
 		{
@@ -346,9 +346,9 @@ EOS;
  });
 EOS;
 	$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.alertable.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/lib/js/jquery.metadata.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/lib/js/jquery.SSsort.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/lib/js/jquery.alertable.min.js"></script>
 EOS;
 
 	$jsfuncs[] = <<< EOS
@@ -774,9 +774,9 @@ EOS;
 		{
 			//for popup calendars
 			$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/pikaday.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/pikaday.jquery.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/php-date-formatter.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/lib/js/pikaday.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/lib/js/pikaday.jquery.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/lib/js/php-date-formatter.min.js"></script>
 EOS;
 			$nextm = $mod->Lang('nextm');
 			$prevm = $mod->Lang('prevm');
@@ -1068,7 +1068,7 @@ EOS;
 			{
 				if($tcount>1)
 				{
-					$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
+					$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery.tablednd.min.js"></script>';
 
 					$jsloads[] = <<< EOS
  $('#tmt_players').addClass('table_drag').tableDnD({

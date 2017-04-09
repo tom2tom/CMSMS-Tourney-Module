@@ -6,6 +6,21 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
 
+function rmdir_recursive($dir)
+{
+	foreach(scandir($dir) as $file) {
+		if (!($file === '.' || $file === '..')) {
+			$fp = $dir.DIRECTORY_SEPARATOR.$file;
+			if (is_dir($fp)) {
+				rmdir_recursive($fp);
+			} else {
+ 				@unlink($fp);
+			}
+		}
+	}
+	rmdir($dir);
+}
+
 if (!$this->CheckAccess('admin'))
 	return $this->Lang('lackpermission');
 
@@ -13,8 +28,7 @@ $pref = cms_db_prefix();
 $taboptarray = array('mysql' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci',
  'mysqli' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci');
 $dict = NewDataDictionary($db);
-switch ($oldversion)
-{
+switch ($oldversion) {
  case '0.1.0':
  case '0.1.1':
 	$rel = $this->GetPreference('uploads_dir');
@@ -22,14 +36,14 @@ switch ($oldversion)
 		$this->SetPreference('uploads_dir',$this->GetName());
 	$this->SetPreference('phone_regex','^(\+|\d)[0-9]{7,16}$');
 
-	$flds = "
-	type I(1) DEFAULT ".Tourney::KOTYPE.",
-	match_days C(256),
-	playgap N(6.2),
-	playgaptype I(1) DEFAULT 2,
-	placegap N(6.2),
-	placegaptype I(1) DEFAULT 2
-";
+	$flds = '
+type I(1) DEFAULT '.Tourney::KOTYPE.',
+match_days C(256),
+playgap N(6.2),
+playgaptype I(1) DEFAULT 2,
+placegap N(6.2),
+placegaptype I(1) DEFAULT 2
+';
 	$sql = $dict->AlterColumnSQL($pref.'module_tmt_brackets',$flds);
 	if(!$dict->ExecuteSQLArray($sql))
 	{
@@ -38,10 +52,10 @@ switch ($oldversion)
 		return $msg;
 	}
 
-	$flds = "
-	admin_editgroup,
-	match_hours,
-";
+	$flds = '
+admin_editgroup,
+match_hours,
+';
 	$sql = $dict->DropColumnSQL($pref.'module_tmt_brackets',$flds);
 	if(!$dict->ExecuteSQLArray($sql))
 	{
@@ -49,19 +63,19 @@ switch ($oldversion)
 		$this->Audit(0, $this->Lang('friendlyname'), $msg);
 		return $msg;
 	}
-	$flds = "
-	groupid I(2) DEFAULT 0,
-	fixtype I(1) DEFAULT 0,
-	locale C(12),
-	twtfrom C(18),
-	smsfrom C(18),
-	smsprefix C(6),
-	smspattern C(32),
-	calendarid C(24),
-	latitude N(8.3),
-	longitude N(8.3),
-	atformat C(16)
-";
+	$flds = '
+groupid I(2) DEFAULT 0,
+fixtype I(1) DEFAULT 0,
+locale C(12),
+twtfrom C(18),
+smsfrom C(18),
+smsprefix C(6),
+smspattern C(32),
+calendarid C(24),
+latitude N(8.3),
+longitude N(8.3),
+atformat C(16)
+';
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_brackets',$flds);
 	$dict->ExecuteSQLArray($sql,FALSE);
 
@@ -76,12 +90,12 @@ switch ($oldversion)
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_history','history_id I KEY');
 	$dict->ExecuteSQLArray($sql,FALSE);
 
-	$flds = "
-	bracket_id I NOTNULL DEFAULT 0,
-	handle C(24),
-	pubtoken C(64),
-	privtoken C(80)
-";
+	$flds = '
+bracket_id I NOTNULL DEFAULT 0,
+handle C(24),
+pubtoken C(64),
+privtoken C(80)
+';
 	$sql = $dict->CreateTableSQL($pref.'module_tmt_tweet', $flds, $taboptarray);
 	$dict->ExecuteSQLArray($sql);
 	$sql = $dict->CreateIndexSQL('idx_tweetid', $pref.'module_tmt_tweet', 'bracket_id');
@@ -118,19 +132,20 @@ switch ($oldversion)
 		 $this->Lang('tpl_tweetresult','{if $smsfrom}{$smsfrom}{elseif $contact}{$contact}{elseif $owner}{$owner}{else}'.$this->Lang('organisers').'{/if}');
 	tmtTemplate::Set($this,'tweetrequest_default_template',$s);
 
-	$fields = "
-		group_id I(2) KEY,
-		name C(128),
-		displayorder I(2),
-		flags I(1) DEFAULT 1
-	";
-	$sqlarray = $dict->CreateTableSQL($pref.'module_tmt_groups', $fields, $taboptarray);
+	$flds = '
+group_id I(2) KEY,
+name C(128),
+displayorder I(2),
+flags I(1) DEFAULT 1
+';
+	$sqlarray = $dict->CreateTableSQL($pref.'module_tmt_groups', $flds, $taboptarray);
 	$dict->ExecuteSQLArray($sqlarray);
 	$db->CreateSequence($pref.'module_tmt_groups_seq');
 	// add default group 0
 	$sql = 'INSERT INTO '.$pref.'module_tmt_groups (group_id,name,displayorder) VALUES (0,?,1)';
 	$db->Execute($sql,array($this->Lang('groupdefault')));
- case '0.2':
+
+ case '0.2.0':
  case '0.2.1':
  case '0.2.2':
  	$fp = cms_join_path(dirname(__FILE__),'lib','class.Calendar.php');
@@ -157,14 +172,15 @@ switch ($oldversion)
 	$sql = $dict->DropTableSQL($pref.'module_tmt_tweet');
 	$dict->ExecuteSQLArray($sql);
 
-	$flds = "
+	$flds = '
 available C(128)
-";
+';
 	$sql = $dict->AddColumnSQL($pref.'module_tmt_people',$flds);
 	$dict->ExecuteSQLArray($sql,FALSE);
 
-//	$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
-
+	//redundant directory
+	$fp = cms_join_path(dirname(__FILE__), 'include');
+	if (is_dir($fp)) {
+		rmdir_recursive($fp);
+	}
 }
-
-?>
