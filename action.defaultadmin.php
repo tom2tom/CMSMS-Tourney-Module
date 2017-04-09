@@ -52,6 +52,8 @@ $tplvars['tab_headers'] = $this->StartTabHeaders().
 	$this->SetTabHeader('grpdata',$this->lang('tab_groups'),$seetab1).
 	$t.
 	$this->EndTabHeaders().$this->StartTabContent();
+//workaround CMSMS2 crap 'auto-end', EndTab() & EndTabContent() before [1st] StartTab()
+$tplvars['end_tab'] = $this->EndTab();
 $tplvars['tab_footers'] = $this->EndTabContent();
 
 //need diversion for 'import_comp' action
@@ -60,7 +62,6 @@ $tplvars['start_itemsform'] = $this->CreateFormStart($id, 'process_items', $retu
 $tplvars['end_form'] = $this->CreateFormEnd();
 
 $tplvars['start_items_tab'] = $this->StartTab('itmdata');
-$tplvars['end_tab'] = $this->EndTab();
 
 $tplvars['title_name'] = $this->Lang('title_name');
 $tplvars['title_tag'] = ($pdev) ? $this->Lang('title_tag'):NULL;
@@ -105,7 +106,7 @@ if ($rows)
 	{
 		$alt = $this->Lang('exportxml');
 		$iconexport =
-		'<img src="'.$baseurl.'/images/xml.gif" alt="'.$alt.'" title="'.$alt.'" border="0" />';
+		'<img src="'.$baseurl.'/images/xml.png" alt="'.$alt.'" title="'.$alt.'" border="0" />';
 	}
 
 	foreach ($rows as $bdata)
@@ -231,7 +232,7 @@ EOS;
 		$tplvars['deletebtn'] = $this->CreateInputSubmit($id,'delete_item',$this->Lang('delete'),
 			'title="'.$this->Lang('deletesel_tip').'"');  //jQuery confirmation
 		//for popup confirmation
-		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.alertable.min.js"></script>';
+		$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery.alertable.min.js"></script>';
 		$jsloads[] = <<<EOS
  $('.delitmlink').click(function(ev) {
   var tg = ev.target,
@@ -510,7 +511,7 @@ EOS;
  return false;
  });
 EOS;
-			$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.tablednd.min.js"></script>';
+			$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery.tablednd.min.js"></script>';
 			$tplvars['dndhelp'] = $this->Lang('help_dnd');
 			$tplvars['sortbtn2'] = $this->CreateInputSubmit($id,'sort',
 				$this->Lang('sort'));
@@ -624,7 +625,7 @@ if ($padm)
 	$misc[] = array($this->Lang('title_password'),
 		$this->CreateTextArea(false,$id,$pw,'tmt_masterpass','cloaked',
 			$id.'tmt_passwd','','',40,2));
-	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery-inputCloak.min.js"></script>';
+	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery-inputCloak.min.js"></script>';
 	$jsloads[] =<<<EOS
  $('#{$id}tmt_passwd').inputCloak({
   type:'see4',
