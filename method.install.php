@@ -40,8 +40,8 @@ latitude N(8.3),
 longitude N(8.3),
 placegap N(6.2),
 placegaptype I(1) DEFAULT 2,
-startdate '.CMS_ADODB_DT.',
-enddate '.CMS_ADODB_DT.',
+startdate DT,
+enddate DT,
 html I(1) DEFAULT 0,
 timezone C(32),
 logic X,
@@ -102,7 +102,7 @@ nextm I(8),
 nextlm I(8),
 teamA I(8),
 teamB I(8),
-playwhen '.CMS_ADODB_DT.',
+playwhen DT,
 place C(64),
 score C(64),
 status I(1) DEFAULT 0,
@@ -129,7 +129,7 @@ $flds = '
 history_id I(8) KEY,
 bracket_id I(8),
 changer C(128),
-changewhen '.CMS_ADODB_DT.',
+changewhen DT,
 olddata C(128),
 newdata C(128),
 comment X
@@ -177,10 +177,9 @@ else
 $this->SetPreference('date_format',$format);
 
 /*
-$s = 'nQCeESKBr99A';
-$this->SetPreference($s, hash('sha256', $s.microtime()));
-$cfuncs = new Tourney\Crypter($this);
-$cfuncs->encrypt_preference('masterpass',base64_decode('RXZlcnlvbmUgaXMgYSB3aW5uZXIgaGVyZQ=='));
+$cfuncs = new Tourney\CryptInit($this);
+$cfuncs->init_crypt();
+$cfuncs->encrypt_preference(Tourney\Crypter::MKEY,base64_decode('RXZlcnlvbmUgaXMgYSB3aW5uZXIgaGVyZQ=='));
 */
 $updir = $config['uploads_path'];
 if($updir && is_dir($updir))
