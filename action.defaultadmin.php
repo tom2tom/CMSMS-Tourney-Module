@@ -621,9 +621,10 @@ if ($padm)
 
 /*
 	$cfuncs = new Tourney\Crypter($this);
-	$pw = $cfuncs->decrypt_preference('masterpass');
+	$key = Tourney\Crypter::MKEY;
+	$pw = $cfuncs->decrypt_preference($key);
 	$misc[] = array($this->Lang('title_password'),
-		$this->CreateTextArea(false,$id,$pw,'tmt_masterpass','cloaked',
+		$this->CreateTextArea(false,$id,$pw,'tmt_'.$key,'cloaked',
 			$id.'tmt_passwd','','',40,2));
 	$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery-inputCloak.min.js"></script>';
 	$jsloads[] =<<<EOS

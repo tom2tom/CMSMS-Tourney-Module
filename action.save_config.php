@@ -48,11 +48,12 @@ $this->SetPreference('export_encoding',$params['tmt_export_encoding']);
 
 /*
 $cfuncs = new Tourney\Crypter($this);
-$oldpw = $cfuncs->decrypt_preference('masterpass');
-$newpw = trim($params['tmt_masterpass']);
+$key = Tourney\Crypter::MKEY;
+$oldpw = $cfuncs->decrypt_preference($key);
+$newpw = trim($params['tmt_'.$key]);
 if($oldpw != $newpw) {
-	//update all data which uses password
-	$cfuncs->encrypt_preference('masterpass',$newpw);
+	//TODO update all data which uses password
+	$cfuncs->encrypt_preference($key,$newpw);
 }
 */
 
