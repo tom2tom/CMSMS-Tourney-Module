@@ -399,7 +399,8 @@ flags
  	reset($params['delete']);
 	$order = key($params['delete']);
 	$sql = 'UPDATE '.$pref.'module_tmt_people SET flags=2 WHERE id=? AND displayorder=? AND flags!=2';
-	$res = $db->Execute($sql,array($thistid,$order));
+	$db->Execute($sql,array($thistid,$order));
+//	$res = $db->Affected_Rows() not reliable after UPDATE
 	$keeps = array_diff($params['plr_order'],array($order));
 	if($keeps)
 	{

@@ -78,12 +78,12 @@ if(isset($params['apply']) || isset($params['submit']))
 		if(!($stat || $matches))
 		{
 			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0';
-			$rs = $db->SelectLimit($sql,1,-1,array($bracket_id));
-			if($rs)
+			$rst = $db->SelectLimit($sql,1,-1,array($bracket_id));
+			if($rst)
 			{
-				if(!$rs->EOF) //match(es) exist, so must be completed bracket
+				if(!$rst->EOF) //match(es) exist, so must be completed bracket
 					$stat = 1;
-				$rs->Close();
+				$rst->Close();
 			}
 		}
 		$mainfields['chartbuild'] = $stat;
@@ -92,9 +92,8 @@ if(isset($params['apply']) || isset($params['submit']))
 		$sql = 'UPDATE '.$pref.'module_tmt_brackets SET '.$fields.' WHERE bracket_id=?';
 		$args = array_values($mainfields);
 		$args[] = $bracket_id;
-		$res = $db->Execute($sql,$args);
-
-		if($res)
+		$db->Execute($sql,$args);
+		if (1) { //$db->Affected_Rows() not reliable after UPDATE
 		{
 			if($motpl != NULL)
 			{

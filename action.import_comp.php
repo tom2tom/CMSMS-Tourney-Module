@@ -71,7 +71,8 @@ if ($bracketdata && !empty($bracketdata['count'])) //proxy for valid version che
 		$fc = count($fields);
 		$fillers = str_repeat('?,',$fc-1).'?';
 		$sql = 'INSERT INTO '.$pref.'module_tmt_brackets ('.implode(',',$fields).') VALUES ('.$fillers.')';
-		if ($db->Execute($sql,$values))
+		$db->Execute($sql,$values);
+		if (1) //$db->Affected_Rows() not reliable after UPDATE
 		{
 			if (!empty($onebracket['templates']) && is_array ($onebracket['templates']))
 			{

@@ -30,7 +30,8 @@ $sql = 'UPDATE '.$pref.'module_tmt_groups SET displayorder = CASE group_id ';
 foreach ($grps as $gid)
     $sql .= 'WHEN '.(int)$gid.' THEN ? ';
 $sql .= 'ELSE displayorder END WHERE group_id IN ('.implode(',',$grps).')';
-if ($db->Execute ($sql,$news))
+$db->Execute ($sql,$news);
+if (1) //$db->Affected_Rows() not reliable after UPDATE
 	echo $nc; //send back the count of updates
 else
 	echo 0;

@@ -37,7 +37,8 @@ foreach ($news as &$o)
 unset ($o);
 $news[] = $id;
 $db->StartTrans();
-if ($db->Execute ($sql,$news))
+$db->Execute ($sql,$news);
+if (1) //$db->Affected_Rows() not reliable after UPDATE
 {
 	//revert neg's
 	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=-displayorder WHERE id=? AND displayorder<0';

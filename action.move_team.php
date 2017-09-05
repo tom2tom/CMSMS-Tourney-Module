@@ -22,8 +22,7 @@ if ($nc < 2)
 $pref = cms_db_prefix();
 $sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=2 ORDER BY displayorder';
 $teams = $db->GetCol($sql, array($params['bracket_id']));
-if ($teams === FALSE || count($teams) != $nc)
-{
+if ($teams === FALSE || count($teams) != $nc) {
 	echo 0;
 	exit;
 }
@@ -31,7 +30,8 @@ $sql = 'UPDATE '.$pref.'module_tmt_teams SET displayorder = CASE team_id ';
 foreach ($teams as $tid)
     $sql .= 'WHEN '.(int)$tid.' THEN ? ';
 $sql .= 'ELSE displayorder END WHERE team_id IN ('.implode(',',$teams).')';
-if ($db->Execute ($sql,$news))
+$db->Execute ($sql,$news);
+if (1) //$db->Affected_Rows() not reliable after UPDATE
 	echo $nc; //send back the count of updates
 else
 	echo 0;
