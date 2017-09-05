@@ -12,34 +12,32 @@ $ret = 0; //default clean
 $bracket_id = (int)$params['bracket_id'];
 $pref = cms_db_prefix();
 $sql = 'SELECT match_id FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags!=0';
-$rs = $db->Execute($sql,array($bracket_id));
-if($rs)
-{
-	if (!$rs->EOF)
+$rst = $db->Execute($sql, array($bracket_id));
+if ($rst) {
+	if (!$rst->EOF) {
 		$ret = 1; //dirty
-	$rs->Close();
+	}
+	$rst->Close();
 }
-if($ret == 0)
-{
+if ($ret == 0) {
 	$sql = 'SELECT team_id FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags!=0';
-	$rs = $db->Execute($sql,array($bracket_id));
-	if($rs)
-	{
-		if (!$rs->EOF)
+	$rst = $db->Execute($sql, array($bracket_id));
+	if ($rst) {
+		if (!$rst->EOF) {
 			$ret = 1;
-		$rs->Close();
+		}
+		$rst->Close();
 	}
 }
-if($ret == 0)
-{
+if ($ret == 0) {
 	$sql = 'SELECT id FROM '.$pref.'module_tmt_people WHERE id IN (SELECT team_id FROM '.
 	$pref.'module_tmt_teams WHERE bracket_id=?) AND flags!=0';
-	$rs = $db->Execute($sql,array($bracket_id));
-	if($rs)
-	{
-		if (!$rs->EOF)
+	$rst = $db->Execute($sql, array($bracket_id));
+	if ($rst) {
+		if (!$rst->EOF) {
 			$ret = 1;
-		$rs->Close();
+		}
+		$rst->Close();
 	}
 }
 
