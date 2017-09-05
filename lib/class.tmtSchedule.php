@@ -240,7 +240,7 @@ AND match_id NOT IN (SELECT DISTINCT nextm FROM '.$pref.'module_tmt_matches WHER
 			$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamA=NULL,playwhen=NULL WHERE match_id=? AND teamA=?';
 			$db->Execute($sql,array($mdata['nextm'],$winner));
 			$sql = 'UPDATE '.$pref.'module_tmt_matches SET teamB=NULL,playwhen=NULL WHERE match_id=? AND teamB=?';
-			$rs2 = $db->Execute($sql,array($mdata['nextm'],$winner));
+			$db->Execute($sql,array($mdata['nextm'],$winner)); //no reliable success-check after UPDATE
 			return TRUE;
 		}
 		return FALSE;
@@ -367,7 +367,7 @@ SELECT bracket_id FROM '.$pref.'module_tmt_brackets WHERE groupid=?
 		}
 		return $allteams;
 	}
-	
+
 	/**
 	ScheduleMatches:
 	@mod: reference to module object
@@ -648,7 +648,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			$numseeds = 0; //don't use $allteams at all
 			break;
 		}
-	
+
 		if($rs)
 		{
 			$exseeds = self::RandomOrder($rs,$numseeds - $rs);
@@ -673,7 +673,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 				$tmp = $fixteams[$i+1];
 				$fixteams[$i+1] = $fixteams[$s];
 				$fixteams[$s] = $tmp;
-			} 							
+			}
 		}
 		$f = 0; //start with first (if any) member of $fixteams[]
 
@@ -886,7 +886,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 				//$allteams left with floaters only
 			}
 		}
-	
+
 		$numteams -= $numfix; //no. of floating teams
 		$rs = FALSE;
 		switch($stype)
@@ -935,7 +935,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 				$tmp = $fixteams[$i+1];
 				$fixteams[$i+1] = $fixteams[$s];
 				$fixteams[$s] = $tmp;
-			} 							
+			}
 		}
 		$f = 0; //start with first (if any) member of $fixteams[]
 
@@ -1249,7 +1249,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::MRES.' AND (N.teamA IS NULL OR N.t
 			{
 				$sql = 'SELECT timezone FROM '.$pref.'module_tmt_brackets WHERE bracket_id=?';
 				$zone = $db->GetOne($sql,array($bracket_id));
-			}			
+			}
 			$dt = new DateTime('+'.Tourney::LEADHOURS.' hours',new DateTimeZone($zone));
 			$sql = 'SELECT 1 AS yes FROM '.$pref.'module_tmt_matches WHERE bracket_id=? AND flags=0 AND status IN ('.Tourney::FIRM.','.Tourney::TOLD.','.Tourney::ASKED.','.Tourney::AFIRM.
 			') AND playwhen IS NOT NULL AND playwhen < '.$dt->format('Y-m-d G:i:s').
@@ -1314,7 +1314,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::MRES.' AND (N.teamA IS NULL OR N.t
 	{
 		$pref = cms_db_prefix();
 		$db = cmsms()->GetDb();
-	
+
 		if(self::MatchCommitted($db,$pref,$bracket_id,$zone))
 		{
 			$args = array($bracket_id);
