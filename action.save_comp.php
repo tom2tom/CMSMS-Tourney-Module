@@ -93,7 +93,7 @@ if(isset($params['apply']) || isset($params['submit']))
 		$args = array_values($mainfields);
 		$args[] = $bracket_id;
 		$db->Execute($sql,$args);
-		if (1) { //$db->Affected_Rows() not reliable after UPDATE
+		if (1)  //$db->Affected_Rows() not reliable after UPDATE
 		{
 			if($motpl != NULL)
 			{
