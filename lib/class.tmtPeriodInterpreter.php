@@ -82,7 +82,7 @@ class tmtPeriodInterpreter
 				if ($doy) {
 					$ret[$yn] = $doy;
 				}
-				$yn++;
+				++$yn;
 			}
 		}
 		$doy = array();
@@ -327,11 +327,11 @@ class tmtPeriodInterpreter
 			if ($found['years'][0] == '*') { //no year-parameter recorded
 				if (preg_match('/^[12]\d{3}([,.].+)?$/',$elmt)) {
 					$found['years'] = self::ToArray($elmt);
-					$dc++;
+					++$dc;
 					continue;
 				} elseif (preg_match('/^EE([2-9]|1\d+)YE$/',$elmt,$matches)) {
 					$found['years'] = array(); //'eacher' but we can't know where to start/end
-					$dc++;
+					++$dc;
 					continue;
 				}
 			}
@@ -345,7 +345,7 @@ class tmtPeriodInterpreter
 					} elseif (isset($parts[$i+1])) {
 						$parts[$i+1] = 'M'.$parts[$i+1];
 					}
-					$dc++;
+					++$dc;
 					continue;
 				} elseif (preg_match('/^[12]\d{3}\-(0?[1-9]|1[0-2])([,.].+)?$/',$elmt)) {
 					if (strpos($elmt,',') !== FALSE) {
@@ -369,7 +369,7 @@ class tmtPeriodInterpreter
 						$found['months'] = array($elmt);
 					}
 					$found['years'] = '-';
-					$dc++;
+					++$dc;
 					continue;
 				}
 			}
@@ -390,7 +390,7 @@ class tmtPeriodInterpreter
 					} elseif (isset($parts[$i+1])) {
 						$parts[$i+1] = 'W'.$parts[$i+1];
 					}
-					$dc++;
+					++$dc;
 					continue;
 				}
 			}
@@ -415,11 +415,11 @@ class tmtPeriodInterpreter
 					} elseif (isset($parts[$i+1])) {
 						$parts[$i+1] = 'D'.$parts[$i+1];
 					}
-					$dc++;
+					++$dc;
 					continue;
 				} elseif (preg_match('/^(\-)?([1-9]|[12]\d|3[01])([,.].+)?$/',$elmt)) { //day(s) of month
 					$found['days'] = self::ToArray($elmt);
-					$dc++;
+					++$dc;
 					continue;
 				} elseif (preg_match('/^[12]\d{3}\-(0?[1-9]|1[0-2])\-(0?[1-9]|[12]\d|3[01])([,.].+)?$/',$elmt)) { //date(s)
 					if (strpos($elmt,',') !== FALSE) {
@@ -442,14 +442,14 @@ class tmtPeriodInterpreter
 					} else {
 						$found['dates'] = array(ltrim($elmt,'!'));
 					}
-					$dc++;
+					++$dc;
 					continue;
 				}
 			}
 			if (preg_match('/^EE([2-9]|1\d+)((.)E)?$/',$elmt,$matches)) {
 				$hint = empty($matches[3]) ? FALSE:$matches[3];
 				self::AddEach($hint,(int)$matches[1],$found);
-				$dc++;
+				++$dc;
 			}
 		}
 
@@ -674,7 +674,7 @@ if ($years[0] == '*') { //DEBUG
 				$doy[] = $d; //first-day-of-week
 			} elseif (is_numeric($days[0])) {
 				foreach ($days as $dow) { //1-based
-					$dow--;
+					--$dow;
 					if ($s+$dow <= $e)
 						$doy[] = $d + $dow;
 				}
@@ -845,7 +845,7 @@ if ($years[0] == '*') { //DEBUG
 					$ret[$yn] = $doy;
 				}
 				$dtw = $dte;
-				$yn++;
+				++$yn;
 			}
 		}
 		$doy = array();

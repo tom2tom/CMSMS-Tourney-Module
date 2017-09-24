@@ -313,7 +313,7 @@ if(isset($params['apply']) || isset($params['submit']))
 					if($name == FALSE || $name == $pname)
 						$name = NULL;
 					$db->Execute($sql,array($name,$row['seeding'],$row['contactall'],$order,$tid));
-					$order++;
+					++$order;
 					$contact = $row['contact'];
 					if($contact != $pcontact)
 						$funcs->UpdateFirstPlayer($tid,FALSE,$contact); //update contact in people table

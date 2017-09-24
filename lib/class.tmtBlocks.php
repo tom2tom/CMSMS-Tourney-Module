@@ -34,15 +34,15 @@ class tmtBlocks
 				if ($a >= $c && $b <= $d) {
 					unset($starts1[$i]);
 					unset($ends1[$i]);
-					$i++;
+					++$i;
 					continue;
 				} elseif ($a < $c && $d < $b) {
 					$t = array_search($i,array_keys($starts1)); //current array-offset
 					array_splice($ends1,$t,0,$c-1); //insert before $ends1[$i]
-					$t++;
+					++$t;
 					array_splice($starts1,$t,0,$d+1); //insert after $starts1[$i]
 					$i = $t; //arrays have been re-keyed
-					$ic++;
+					++$ic;
 					continue;
 				} elseif ($d < $b) {
 					$starts1[$i] = $d+1;
@@ -52,10 +52,10 @@ class tmtBlocks
 			}
 			$t = $j;
 			if ($ends2[$j] <= $ends1[$i]) {
-				$j++;
+				++$j;
 			}
 			if ($ends1[$i] <= $ends2[$t]) {
-				$i++;
+				++$i;
 			}
 		}
 		foreach ($starts1 as $i=>$t) {
@@ -101,13 +101,13 @@ class tmtBlocks
 				$ends[] = $bnd;
 				if ($bnd == $ends1[$i]) { //1-block is ended
 					if (++$i == $ic) {
-						$j++;
+						++$j;
 						break;
 					}
 				}
 				if ($bnd == $ends2[$j]) { //2-block is ended
 					if (++$j == $jc) {
-						$i++;
+						++$i;
 						break;
 					}
 				}
@@ -126,7 +126,7 @@ class tmtBlocks
 		if ($ic > 0) {
 			if ($ic > 1) {
 				//merge adjacent blocks
-				$ic--;
+				--$ic;
 				for ($i=0; $i<$ic; $i++) {
 					$j = $i+1;
 					if ($ends[$i] >= $starts[$j]-1) {

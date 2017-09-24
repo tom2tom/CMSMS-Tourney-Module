@@ -185,7 +185,7 @@ if ($bracketdata && !empty($bracketdata['count'])) //proxy for valid version che
 							$fillers = str_repeat('?,',$fc-1).'?';
 							$sql = 'INSERT INTO '.$pref.'module_tmt_matches ('.implode(',',$fields).') VALUES ('.$fillers.')';
 							$db->Execute($sql,$values);
-							$mid++;
+							++$mid;
 						}
 					}
 				}

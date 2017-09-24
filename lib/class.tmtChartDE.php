@@ -55,7 +55,7 @@ class tmtChartDE extends tmtChartBase
 			{
 				$bt = $top + $diffv*($i-1)/2;
 				$data[$mid] = array('bl'=>$bl,'bt'=>$bt); //inside margins
-				$mid++;
+				++$mid;
 			}
 			$this->layout[$lvl] = $data;
 			$bl += $diffh;
@@ -87,7 +87,7 @@ class tmtChartDE extends tmtChartBase
 			{
 				$bt = $tml + $i*$step*$diffv;
 				$data[$mid] = array('bl'=>$bl,'bt'=>$bt);
-				$mid++;
+				++$mid;
 			}
 			$this->layout[$lvl] = $data;
 			$bl += $diffh;

@@ -100,7 +100,7 @@ elseif(isset($params['sort']))
 	{
 		$id = (int)$params['group_active'][$indx];
 		$db->Execute($sql,array($ord,$id));
-		$ord++;
+		++$ord;
 	}
 	unset($name);
 }

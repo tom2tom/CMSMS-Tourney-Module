@@ -21,7 +21,7 @@ if(!function_exists('OrderTeamMembers'))
 		{
 			$db->Execute($sql,array($tmporder,$tid,$row['displayorder']));
 			$row['displayorder'] = -$tmporder;
-			$tmporder--;
+			--$tmporder;
 			$row['id'] = (int)$row['id']; //cleanups
 			$row['flags'] = (int)$row['flags'];
 		}
@@ -48,7 +48,7 @@ if(!function_exists('OrderTeamData'))
 		$rows[$indx]['name']=$params['plr_name'][$k];
 		$rows[$indx]['contact']=$params['plr_contact'][$k];
 		$rows[$indx]['available']=$params['plr_available'][$k];
-		$indx++;
+		++$indx;
 	}
 	return $rows;
  }
@@ -93,7 +93,7 @@ if(isset($params['submit']))
 			$teamflags = 3; //any non-0 member-flag signals team has been altered
 		//1st set new orders < 0 to prevent overwrites
 		$db->Execute($sql,array($name,$contact,$avail,-$saver,$flags,$tid,$params['plr_order'][$indx]));
-		$saver++;
+		++$saver;
 	}
 	//now we can set real orders
  	$sql = 'UPDATE '.$pref.'module_tmt_people SET displayorder=-displayorder WHERE id=? AND displayorder<0';
@@ -115,7 +115,7 @@ if(isset($params['submit']))
 		foreach($teams as $tid)
 		{
 			$db->Execute($sql,array($order,$tid));
-			$order++;
+			++$order;
 		}
 	}
 	$this->Redirect($id,'addedit_comp',$returnid,$this->GetEditParms($params,'playerstab'));
@@ -250,7 +250,7 @@ if($op == 1) //new team
 {
 	$sql = 'SELECT COUNT(1) AS num FROM '.$pref.'module_tmt_teams WHERE bracket_id=? AND flags != 2';
 	$num = $db->GetOne($sql,array($bracket_id)); //start team last in order
-	$num++;
+	++$num;
 	$sql = 'INSERT INTO '.$pref."module_tmt_teams VALUES (?,?,NULL,NULL,0,$num,1)";//new-team flag
 	$db->Execute($sql,array($newtid,$bracket_id));
 	$main = array(
@@ -415,7 +415,7 @@ flags
 			$rows[$indx]['available'] = $params['plr_available'][$key];
 			$rows[$indx]['displayorder'] = $order;
 			$rows[$indx]['flags'] = $params['plr_flags'][$key];
-			$indx++;
+			++$indx;
 		}
 	}
 	else
@@ -485,7 +485,7 @@ flags
 			$rows[$indx]['name'] = $params['plr_name'][$key];
 			$rows[$indx]['contact'] = $params['plr_contact'][$key];
 			$rows[$indx]['available'] = $params['plr_available'][$key];
-			$indx++;
+			++$indx;
 		}
 	}
 	else
@@ -568,7 +568,7 @@ if($rows)
 		$one->selected = $this->CreateInputCheckbox($id,'psel[]',$row['displayorder'],-1);
 		$players[] = $one;
 		($rowclass=='row1'?$rowclass='row2':$rowclass='row1');
-		$indx++;
+		++$indx;
 	}
 	$tplvars['items'] = $players;
 

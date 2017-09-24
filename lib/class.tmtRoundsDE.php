@@ -44,7 +44,7 @@ class tmtRoundsDE
 			{
 				$bc /= 2;
 				$mcount += $bc;
-				$lvl++;
+				++$lvl;
 			}
 			return $lvl;
 		}
@@ -59,7 +59,7 @@ class tmtRoundsDE
 			$lvl += 2;
 		}
 		if ($bc > 1 && $mcount < ($offset + $bc/2))
-			$lvl++;
+			++$lvl;
 		return $lvl;
 	}
 

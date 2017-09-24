@@ -94,7 +94,7 @@ function check_checksum_data(&$report)
 		list($md5sum,$file) = explode('--:--',$line,2);
 	}
 	if (!$md5sum || !$file) {
-		$errorlines++;
+		++$errorlines;
 		continue;
 	}
 
@@ -110,13 +110,13 @@ function check_checksum_data(&$report)
 	if (is_dir($fn)) continue;
 
 	if (!is_readable($fn)) {
-		$notreadable++;
+		++$notreadable;
 		continue;
 	}
 
 	$md5 = md5_file($fn);
 	if (!$md5) {
-		$md5failed++;
+		++$md5failed;
 		continue;
 	}
 
@@ -125,7 +125,7 @@ function check_checksum_data(&$report)
 	}
 
 	// it passed.
-	$filespassed++;
+	++$filespassed;
   }
   fclose($fh);
 

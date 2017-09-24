@@ -34,7 +34,7 @@ class tmtRoundsKO
 		{
 			$bc /= 2;
 			$mcount += $bc;
-			$lvl++;
+			++$lvl;
 		}
 		return $lvl;
 	}

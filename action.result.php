@@ -226,7 +226,7 @@ if ($mdata)
 		$tA = $this->TeamName($teams['teamA']);
 		$tB = $this->TeamName($teams['teamB']);
 		$lbl = sprintf($relations['vs'],$tA,$tB);
-		$indx++;
+		++$indx;
 		//radio button, plus hidden shown[] (NOT 'list[]' or 'view[]'!) to return all row indices so can get index of selected row
 		$one->button = '<input type="hidden" name="'.$id.'shown[]" value="'.$mid.'">'.
 		'<input class="mradio" type="radio" name="'.$id.$name.'" id="'.$id.$name.$indx.'" value="'.$mid.'" /><label for="'.$id.$name.$indx.'"> '.$lbl.'</label>';

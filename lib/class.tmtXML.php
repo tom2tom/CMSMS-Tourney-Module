@@ -383,7 +383,7 @@ EOS;
 					$v = (!empty($val['value'])) ? $val['value'] : NULL; //default value is NULL
 					$value[$val['tag']] = $v;
 					if($val['type'] == 'complete' && $lvl > 1)
-						$opened[$lvl-1]++;
+						++$opened[$lvl-1];
 					break;
 				case 'close': //end of a level
 					if ($val['level'] > 1)

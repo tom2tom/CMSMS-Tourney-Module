@@ -918,12 +918,12 @@ function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false)
 			} else {
 				$this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
 			}
-			$i++;
+			++$i;
 			$sep = -1;
 			$j = $i;
 			$l = 0;
 			$ns = 0;
-			$nl++;
+			++$nl;
 			if($border && $nl==2)
 				$b = $b2;
 			continue;
@@ -932,7 +932,7 @@ function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false)
 		{
 			$sep = $i;
 			$ls = $l;
-			$ns++;
+			++$ns;
 		}
 
 		if ($this->isTtf) {
@@ -947,7 +947,7 @@ function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false)
 			if($sep==-1)
 			{
 				if($i==$j)
-					$i++;
+					++$i;
 				if($this->ws>0)
 				{
 					$this->ws = 0;
@@ -977,12 +977,12 @@ function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false)
 			$j = $i;
 			$l = 0;
 			$ns = 0;
-			$nl++;
+			++$nl;
 			if($border && $nl==2)
 				$b = $b2;
 		}
 		else
-			$i++;
+			++$i;
 	}
 	// Last chunk
 	if($this->ws>0)
@@ -1038,7 +1038,7 @@ function Write($h, $txt, $link='')
 			} else {
 				$this->Cell($w,$h,substr($s,$j,$i-$j),0,2,'',0,$link);
 			}
-			$i++;
+			++$i;
 			$sep = -1;
 			$j = $i;
 			$l = 0;
@@ -1048,7 +1048,7 @@ function Write($h, $txt, $link='')
 				$w = $this->w-$this->rMargin-$this->x;
 				$wmax = ($w-2*$this->cMargin);
 			}
-			$nl++;
+			++$nl;
 			continue;
 		}
 		if($c==' ')
@@ -1072,12 +1072,12 @@ function Write($h, $txt, $link='')
 					$this->y += $h;
 					$w = $this->w-$this->rMargin-$this->x;
 					$wmax = ($w-2*$this->cMargin);
-					$i++;
-					$nl++;
+					++$i;
+					++$nl;
 					continue;
 				}
 				if($i==$j)
-					$i++;
+					++$i;
 				if ($this->isTtf) {
 					$this->Cell($w,$h,mb_substr($s,$j,$i-$j,'UTF-8'),0,2,'',0,$link);
 				} else {
@@ -1100,10 +1100,10 @@ function Write($h, $txt, $link='')
 				$w = $this->w-$this->rMargin-$this->x;
 				$wmax = ($w-2*$this->cMargin);
 			}
-			$nl++;
+			++$nl;
 		}
 		else
-			$i++;
+			++$i;
 	}
 	// Last chunk
 	if($i!=$j) {

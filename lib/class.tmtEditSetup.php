@@ -1044,7 +1044,7 @@ EOS;
 							$downtext,'onclick="set_params(this);"');
 					else
 						$one->downlink = '';
-					$indx++;
+					++$indx;
 					$one->editlink = $mod->CreateInputLinks($id,'edit['.$tid.']','edit.gif',FALSE,
 						$mod->Lang('edit'),'onclick="set_params(this);"');
 					$one->deletelink = $mod->CreateInputLinks($id,'delete_team['.$tid.']','delete.gif',FALSE,
@@ -1345,7 +1345,7 @@ EOS;
 							{
 								$excl = key($data->matches);
 								if($excl)
-									$excl--;
+									--$excl;
 								$name = $rnd->MatchTeamID_Mid($mod,$bdata,$tc,$data->matches,$mid,$level,$excl);
 							}
 							if($name != $data->bye || $one->teamA != $data->bye)

@@ -344,7 +344,7 @@ if($groups)
 			}
 			else
 				$one->uplink = '';
-			$mc++;
+			++$mc;
 			$previd = $gid; //i.e. always set before use
 			if ($gid > 0) //preserve the default group
 				$one->deletelink = $this->CreateLink($id,'delete_group','',

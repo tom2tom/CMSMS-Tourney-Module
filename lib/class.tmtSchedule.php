@@ -87,9 +87,9 @@ class tmtSchedule
 					$order[$indx] = $vs;
 				}
 				else if($tout) //leave gap for seeded opponent
-					$to++;
+					++$to;
 				else
-					$ti--;
+					--$ti;
 			}
 			else
 			{
@@ -103,9 +103,9 @@ class tmtSchedule
 					$order[$indx] = $vs;
 				}
 				else if($bout)
-					$bo--; //leave gap for seeded opponent
+					--$bo; //leave gap for seeded opponent
 				else
-					$bi++;
+					++$bi;
 			}
 		}
 		$r = $full - $seedcount;
@@ -130,7 +130,7 @@ class tmtSchedule
 						$r -= 2;
 						$fixcount -= 2;
 						if($fixcount == 0) break 2;
-						$i--;
+						--$i;
 						if(++$fp > 4) $fp = 1;
 					}
 					break;
@@ -144,7 +144,7 @@ class tmtSchedule
 						$r -= 2;
 						$fixcount -= 2;
 						if($fixcount == 0) break 2;
-						$i--;
+						--$i;
 						if(++$fp > 4) $fp = 1;
 					}
 					break;
@@ -583,7 +583,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		foreach($allteams as $seed)
 		{
 			if($seed < 0)
-				$numfix++;
+				++$numfix;
 			else
 				break;
 		}
@@ -599,8 +599,8 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			$numfix -= $mc;
 			if($numfix % 2)	//need even no. of fixers
 			{
-				$mc++;
-				$numfix--;
+				++$mc;
+				--$numfix;
 			}
 			while($mc > 0)
 			{
@@ -609,7 +609,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 				$tid = key($allteams);
 				unset($allteams[$tid]);
 				$allteams[$tid] = '';
-				$mc--;
+				--$mc;
 			}
 			if($numfix)
 			{
@@ -845,7 +845,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 		foreach($allteams as $seed)
 		{
 			if($seed < 0)
-				$numfix++;
+				++$numfix;
 			else
 				break;
 		}
@@ -861,8 +861,8 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 			$numfix -= $mc;
 			if($numfix % 2)	//need even no. of fixers
 			{
-				$mc++;
-				$numfix--;
+				++$mc;
+				--$numfix;
 			}
 			while($mc > 0)
 			{
@@ -871,7 +871,7 @@ WHERE bracket_id=? AND flags!=2 ORDER BY (CASE WHEN seeding IS NULL THEN 1 ELSE 
 				$tid = key($allteams);
 				unset($allteams[$tid]);
 				$allteams[$tid] = '';
-				$mc--;
+				--$mc;
 			}
 			if($numfix)
 			{
@@ -1214,7 +1214,7 @@ WHERE M.bracket_id=? AND M.status>='.Tourney::MRES.' AND (N.teamA IS NULL OR N.t
 			foreach($matches as $A=>$B)
 			{
 				$db->Execute($sql,array($mid,$bracket_id,$A,$B));
-				$mid++;
+				++$mid;
 			}
 			return TRUE;
 		}

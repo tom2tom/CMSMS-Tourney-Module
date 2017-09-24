@@ -1219,7 +1219,7 @@ match-array(s) have
 		$segs = explode('(',$descriptor);
 		$cs = count($segs);
 		for ($i = 0; $i < $cs; $i++) {
-			$depth++;
+			++$depth;
 			$one = $segs[$i];
 			if ($one) {
 				$segl = strlen($one);
@@ -1302,8 +1302,8 @@ match-array(s) have
 							$parts[] = substr($clean,0,$p-1);
 							$clean = $t; //re-process the rest of this one
 							$segs[$i] = $t;
-							$i--;
-							$depth++;
+							--$i;
+							++$depth;
 							continue;
 						}
 						$parts[] = $clean;
@@ -1469,7 +1469,7 @@ match-array(s) have
 						if (!(preg_match('/^[!E]/',$one['P']) || preg_match('/^[!E]/',$parsed['P']))) {
 							$parsed['P'] .= ','.$one['P'];
 							unset($this->conds[$i]);
-							$i++;
+							++$i;
 							continue;
 						}
 					}

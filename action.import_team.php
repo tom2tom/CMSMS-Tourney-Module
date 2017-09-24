@@ -165,12 +165,12 @@ flags
 						if(!$avail) $avail = NULL;
 						$args = array($addid,$name,$contact,$avail,$order);
 						$db->Execute($sql2,$args);
-						$order++;
+						++$order;
 					}
 				}
 			}
 			$added[] = $addid;
-			$teamorder++;
+			++$teamorder;
 		}
 	}
 	fclose($handle);

@@ -82,7 +82,7 @@ class tmtChartRR extends tmtChartBase
 		foreach($teams as $tid)
 		{
 			$names[$order] = $this->mod->TeamName($tid);
-			$order++;
+			++$order;
 		}
 		$fmt = $bdata['atformat'];
 //	tmtUtils()?
