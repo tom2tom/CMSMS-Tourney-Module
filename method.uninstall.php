@@ -6,28 +6,6 @@ Refer to licence and other details at the top of file Tourney.module.php
 More info at http://dev.cmsmadesimple.org/projects/tourney
 */
 
-//NB caller must be very careful that top-level dir is valid!
-function delTree($dir)
-{
-	$files = array_diff(scandir($dir),array('.','..'));
-	if($files)
-	{
-		foreach($files as $file)
-		{
-			$fp = cms_join_path($dir,$file);
-			if(is_dir($fp))
-			{
-			 	if(!delTree($fp))
-					return false;
-			}
-			else
-				unlink($fp);
-		}
-		unset($files);
-	}
-	return rmdir($dir);
-}
-
 if (! $this->CheckAccess('admin')) return;
 
 $pref = cms_db_prefix();
@@ -40,9 +18,9 @@ if($fp && is_dir($fp))
 	$ud = $this->GetPreference('uploads_dir','');
 	if($ud)
 	{
-		$fp = cms_join_path($fp,$ud);
+		$fp .= DIRECTORY_SEPARATOR.$ud;
 		if($fp && is_dir($fp))
-			delTree($fp);
+			recursive_delete($fp);
 	}
 	else
 	{
