@@ -29,11 +29,16 @@ class tmtComm
 		}
 	}
 
+	public function __destruct()
+	{
+		spl_autoload_unregister(array($this,'loader'));
+	}
+
 	private function loader($className)
 	{
 		$fp = $this->incpath.$className.'.php';
 		if (file_exists($fp)) {
-			include $fp;
+			require $fp;
 		}
 	}
 
