@@ -721,7 +721,7 @@ EOS;
 		$onsort = 'null'; //no mods >> do nothing after sorting
 
 	$jsloads[] = <<< EOS
- $.SSsort.addParser({
+ $.fn.SSsort.addParser({
   id: 'textinput',
   is: function(s,node) {
    var n = node.childNodes[0];

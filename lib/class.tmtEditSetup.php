@@ -270,7 +270,7 @@ EOS;
 			$onsort = 'null'; //no sort-processing if no mods allowed
 
 		$jsloads[] = <<< EOS
- $.SSsort.addParser({
+ $.fn.SSsort.addParser({
   id: 'neglastinput',
   is: function(s,node) {
    var n = node.childNodes[0];
@@ -296,7 +296,7 @@ EOS;
   watch: true,
   type: 'numeric'
  });
- $.SSsort.addParser({
+ $.fn.SSsort.addParser({
   id: 'isoinput',
   is: function(s,node) {
    var n = node.childNodes[0];
@@ -313,7 +313,7 @@ EOS;
   watch: true,
   type: 'numeric'
  });
- $.SSsort.addParser({
+ $.fn.SSsort.addParser({
   id: 'textinput',
   is: function(s,node) {
    var n = node.childNodes[0];
