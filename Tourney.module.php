@@ -63,7 +63,7 @@ class Tourney extends CMSModule
 	function __construct()
 	{
 		parent::__construct();
-		$this->RegisterModulePlugin(TRUE);
+		$this->RegisterModulePlugin();
 		global $CMS_VERSION;
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
 		$this->oldtemplates = $this->before20 || 1; //TODO
@@ -91,7 +91,7 @@ class Tourney extends CMSModule
 
 	function GetVersion()
 	{
-		return '0.3';
+		return '0.4';
 	}
 
 	function GetHelp()
@@ -129,6 +129,29 @@ class Tourney extends CMSModule
 		return TRUE;
 	}
 
+	public function HasCapability($capability, $params = array())
+	{
+		switch ($capability) {
+			case CmsCoreCapabilities::PLUGIN_MODULE:
+//			case CmsCoreCapabilities::TASKS:
+				return TRUE;
+		}
+		return FALSE;
+	}
+/*
+	public function get_tasks()
+	{
+		if ($this->before20) {
+			return array(
+TODO			 new tmtTODOTask(),
+			);
+		} else {
+			return [
+			 new Tourney\TODOTask(),
+			];
+		}
+	}
+*/
 	function HasAdmin()
 	{
 		return TRUE;
